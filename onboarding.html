@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Set Up Your Properties — NRI Bridge India</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* Step progress bar */
+  .onboard-progress { display:flex; justify-content:center; align-items:center; gap:0; margin-bottom:36px; }
+  .progress-step { display:flex; align-items:center; gap:0; }
+  .progress-dot {
+    width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:0.82rem; font-weight:700; border:2px solid rgba(0,0,0,0.1);
+    background:var(--white); color:var(--text-mid); transition:all 0.4s;
+  }
+  .progress-dot.active { border-color:var(--green-pop); background:var(--green-pop); color:var(--white); }
+  .progress-dot.done { border-color:var(--green-pop); background:rgba(74,106,46,0.1); color:var(--green-pop); }
+  .progress-line { width:60px; height:2px; background:rgba(0,0,0,0.08); transition:background 0.4s; }
+  .progress-line.done { background:var(--green-pop); }
+
+  /* Wizard steps */
+  .onboard-step { display:none; }
+  .onboard-step.active { display:block; animation:fadeUp 0.4s ease both; }
+
+  /* Property cards */
+  .property-card {
+    background:var(--white); border:1.5px solid rgba(0,0,0,0.08); border-radius:var(--radius-md);
+    padding:24px; margin-bottom:16px; transition:all 0.3s;
+  }
+  .property-card:hover { border-color:rgba(74,106,46,0.2); }
+  .property-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .property-header h3 { font-family:'Playfair Display',serif; font-size:1rem; font-weight:600; color:var(--text-dark); }
+  .property-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .property-fields .form-group { margin-bottom:0; }
+
+  .btn-remove-prop {
+    padding:6px 14px; border:1px solid rgba(220,53,69,0.25); border-radius:var(--radius-sm);
+    background:transparent; cursor:pointer; color:#dc3545; font-size:0.78rem; font-weight:500;
+    transition:all 0.3s; font-family:inherit;
+  }
+  .btn-remove-prop:hover { background:rgba(220,53,69,0.06); }
+
+  .btn-add-property {
+    padding:14px; border:2px dashed rgba(0,0,0,0.1); border-radius:var(--radius-md);
+    background:transparent; cursor:pointer; font-family:inherit; font-size:0.88rem;
+    color:var(--green-pop); font-weight:600; transition:all 0.3s; width:100%; margin-bottom:24px;
+  }
+  .btn-add-property:hover { background:rgba(74,106,46,0.03); border-color:var(--green-pop); }
+
+  /* Plan selection per property */
+  .plan-selector { margin-top:16px; }
+  .plan-selector-label { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-mid); margin-bottom:10px; }
+
+  .billing-toggle-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .billing-toggle-row span { font-size:0.82rem; }
+  .billing-toggle-row .active-label { font-weight:600; color:var(--text-dark); }
+  .billing-toggle-row .inactive-label { font-weight:400; color:var(--text-mid); opacity:0.6; }
+  .save-tag { font-size:0.7rem; font-weight:700; background:rgba(74,106,46,0.1); color:var(--green-pop); padding:2px 8px; border-radius:100px; }
+
+  .toggle-switch { position:relative; width:44px; height:24px; cursor:pointer; }
+  .toggle-switch input { display:none; }
+  .toggle-track { position:absolute; inset:0; background:var(--border); border-radius:100px; transition:background 0.3s; }
+  .toggle-thumb { position:absolute; top:2px; left:2px; width:20px; height:20px; background:var(--white); border-radius:50%; transition:transform 0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+  .toggle-switch input:checked ~ .toggle-track { background:var(--green-pop); }
+  .toggle-switch input:checked ~ .toggle-thumb { transform:translateX(20px); }
+
+  .plan-options { display:flex; flex-direction:column; gap:10px; }
+  .plan-opt {
+    border:1.5px solid rgba(0,0,0,0.08); border-radius:var(--radius-md);
+    padding:16px 18px; cursor:pointer; transition:all 0.3s;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .plan-opt:hover { border-color:var(--green-pop); background:rgba(74,106,46,0.02); }
+  .plan-opt.selected { border-color:var(--green-pop); background:rgba(74,106,46,0.05); box-shadow:0 0 0 3px rgba(74,106,46,0.08); }
+  .plan-opt-left { display:flex; flex-direction:column; gap:2px; }
+  .plan-opt-name { font-family:'Playfair Display',serif; font-weight:600; font-size:0.95rem; color:var(--text-dark); }
+  .plan-opt-desc { font-size:0.75rem; color:var(--text-mid); }
+  .plan-opt-right { display:flex; align-items:center; gap:12px; }
+  .plan-opt-price { font-family:'Playfair Display',serif; font-weight:700; font-size:1rem; color:var(--green-pop); white-space:nowrap; }
+  .plan-radio {
+    width:20px; height:20px; border-radius:50%; border:2px solid rgba(0,0,0,0.12);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.3s;
+  }
+  .plan-opt.selected .plan-radio { border-color:var(--green-pop); }
+  .plan-opt.selected .plan-radio::after { content:''; width:10px; height:10px; border-radius:50%; background:var(--green-pop); }
+
+  /* Review summary */
+  .review-section { margin-bottom:24px; }
+  .review-section h4 { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-mid); margin-bottom:10px; }
+  .review-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.04); font-size:0.88rem; }
+  .review-row:last-child { border-bottom:none; }
+  .review-label { color:var(--text-mid); }
+  .review-value { font-weight:600; color:var(--text-dark); }
+  .review-plan-badge {
+    display:inline-block; padding:3px 10px; border-radius:var(--radius-pill);
+    background:rgba(74,106,46,0.1); color:var(--green-pop); font-size:0.75rem;
+    font-weight:600; text-transform:uppercase; letter-spacing:0.05em;
+  }
+  .review-total { font-size:1.1rem; font-weight:700; color:var(--green-pop); }
+  .review-property-block { background:rgba(0,0,0,0.02); border-radius:var(--radius-sm); padding:14px; margin-bottom:10px; }
+  .review-property-block h5 { font-size:0.85rem; font-weight:600; margin-bottom:6px; }
+
+  /* Buttons */
+  .btn-back {
+    background:none; border:none; color:var(--text-mid); font-size:0.85rem;
+    font-weight:500; cursor:pointer; padding:8px 0; font-family:inherit;
+    display:flex; align-items:center; gap:6px; margin-bottom:16px; transition:color 0.3s;
+  }
+  .btn-back:hover { color:var(--text-dark); }
+
+  .onboard-card {
+    background:var(--bg-cream); border-radius:var(--radius-lg); padding:48px 40px;
+    max-width:680px; margin:0 auto; box-shadow:0 20px 60px rgba(0,0,0,0.15);
+  }
+  .onboard-heading { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; color:var(--text-dark); margin-bottom:6px; }
+  .onboard-sub { font-size:0.88rem; color:var(--text-mid); margin-bottom:28px; }
+
+  @media(max-width:600px) {
+    .onboard-card { padding:32px 20px; margin:0 12px; }
+    .property-fields { grid-template-columns:1fr; }
+    .progress-line { width:32px; }
+    .plan-opt { flex-direction:column; align-items:flex-start; gap:8px; }
+    .plan-opt-right { width:100%; justify-content:space-between; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><a href="propnri-saas-site.html"><img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:80px;width:auto;display:block;"></a></div>
+  <ul class="nav-links">
+    <li><a href="propnri-saas-site.html">Home</a></li>
+    <li><a href="propnri-saas-site.html#services">Services</a></li>
+    <li><a href="propnri-saas-site.html#pricing">Pricing</a></li>
+    <li><a href="propnri-saas-site.html#how">How It Works</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <div class="nav-actions" id="navActions">
+    <a href="login.html" class="btn-outline">Log in</a>
+    <a href="signup.html" class="btn-primary">Get Started</a>
+  </div>
+</nav>
+
+<main class="auth-page" style="min-height:100vh;padding-top:140px;padding-bottom:60px;">
+  <div class="onboard-card">
+
+    <!-- Progress -->
+    <div class="onboard-progress">
+      <div class="progress-step">
+        <div class="progress-dot active" data-step="1">1</div>
+      </div>
+      <div class="progress-line" id="line1"></div>
+      <div class="progress-step">
+        <div class="progress-dot" data-step="2">2</div>
+      </div>
+      <div class="progress-line" id="line2"></div>
+      <div class="progress-step">
+        <div class="progress-dot" data-step="3">3</div>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 1: Add Properties ═══ -->
+    <div class="onboard-step active" id="step1">
+      <h1 class="onboard-heading" id="welcomeHeading">Add Your Properties</h1>
+      <p class="onboard-sub">Tell us about the properties you'd like us to manage. You can always add more later.</p>
+
+      <div id="propertiesList"></div>
+
+      <button type="button" class="btn-add-property" onclick="addProperty()">+ Add Another Property</button>
+      <div class="form-error" id="propError" style="text-align:center;margin-bottom:16px;">Please enter at least one property with a city name</div>
+
+      <button type="button" class="btn-auth" onclick="validateStep1()">Continue — Select Plans →</button>
+    </div>
+
+    <!-- ═══ STEP 2: Select Plan Per Property ═══ -->
+    <div class="onboard-step" id="step2">
+      <button type="button" class="btn-back" onclick="goToStep(1)">← Back to Properties</button>
+      <h1 class="onboard-heading">Choose Plans</h1>
+      <p class="onboard-sub">Select a subscription plan for each property. Toggle to annual billing to save 15%.</p>
+
+      <div id="planSelections"></div>
+
+      <div class="form-error" id="planError" style="text-align:center;margin-bottom:16px;">Please select a plan for each property</div>
+      <button type="button" class="btn-auth" onclick="validateStep2()">Review & Confirm →</button>
+    </div>
+
+    <!-- ═══ STEP 3: Review ═══ -->
+    <div class="onboard-step" id="step3">
+      <button type="button" class="btn-back" onclick="goToStep(2)">← Back to Plans</button>
+      <h1 class="onboard-heading">Review & Confirm</h1>
+      <p class="onboard-sub">Verify your property setup and subscriptions before confirming.</p>
+
+      <div class="review-section">
+        <h4>Account</h4>
+        <div class="review-row"><span class="review-label">Name</span><span class="review-value" id="revName"></span></div>
+        <div class="review-row"><span class="review-label">Email</span><span class="review-value" id="revEmail"></span></div>
+      </div>
+
+      <div class="review-section">
+        <h4>Properties & Plans</h4>
+        <div id="revProperties"></div>
+      </div>
+
+      <div class="review-section">
+        <div class="review-row" style="border-top:2px solid rgba(0,0,0,0.08);padding-top:14px;">
+          <span class="review-label" style="font-weight:600;">Total Monthly</span>
+          <span class="review-total" id="revTotal"></span>
+        </div>
+      </div>
+
+      <button type="button" class="btn-auth" id="confirmBtn" onclick="confirmOnboarding()">Confirm & Start Managing</button>
+    </div>
+
+    <!-- ═══ SUCCESS ═══ -->
+    <div class="onboard-step" id="stepSuccess">
+      <div class="auth-success">
+        <div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <h3>You're All Set!</h3>
+        <p>Your properties and subscriptions are active. Redirecting to your dashboard...</p>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  // Check session
+  var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
+  if (!session) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Update nav
+  var navActions = document.getElementById('navActions');
+  navActions.innerHTML =
+    '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;">Hi, ' + session.name.split(' ')[0] + '</span>' +
+    '<button class="btn-outline" onclick="localStorage.removeItem(\'nri_session\');location.href=\'login.html\';">Log out</button>';
+
+  // Personalize heading
+  document.getElementById('welcomeHeading').textContent = 'Welcome, ' + session.name.split(' ')[0] + '!';
+
+  // ── State ──
+  var properties = [];
+  var currentStep = 1;
+
+  // Plan definitions
+  var PLANS = {
+    bronze: { name: 'Bronze', tag: 'Peace of Mind', monthly: 4999, desc: 'Monthly inspection, photo/video reports, WhatsApp updates, emergency alerts' },
+    silver: { name: 'Silver', tag: 'Care & Maintenance', monthly: 9999, desc: 'Bronze + maintenance coordination, vendor mgmt, 1 free cleaning, priority complaints' },
+    platinum: { name: 'Platinum', tag: 'Full Property Management', monthly: 0, desc: '10% of monthly rent + one-time 1 month rent after tenant onboarding', isPercentage: true }
+  };
+
+  // Read plan param from URL
+  var urlParams = new URLSearchParams(window.location.search);
+  var preselectedPlan = urlParams.get('plan') || '';
+
+  // Initialize with one property
+  addProperty();
+
+  // ── Navigation ──
+  window.goToStep = function(step) {
+    document.querySelectorAll('.onboard-step').forEach(function(el) { el.classList.remove('active'); });
+    document.getElementById('step' + step).classList.add('active');
+    currentStep = step;
+
+    document.querySelectorAll('.progress-dot').forEach(function(dot, i) {
+      dot.classList.remove('active', 'done');
+      if (i + 1 < step) dot.classList.add('done');
+      if (i + 1 === step) dot.classList.add('active');
+    });
+    var line1 = document.getElementById('line1');
+    var line2 = document.getElementById('line2');
+    line1.classList.toggle('done', step > 1);
+    line2.classList.toggle('done', step > 2);
+
+    if (step === 2) buildPlanSelectors();
+    if (step === 3) buildReview();
+  };
+
+  // ── Step 1: Properties ──
+  var propCounter = 0;
+
+  window.addProperty = function() {
+    propCounter++;
+    var idx = propCounter;
+    properties.push({ id: idx, city: '', type: 'apartment', plan: '', billing: 'monthly', rent: '' });
+
+    var div = document.createElement('div');
+    div.className = 'property-card';
+    div.id = 'prop-' + idx;
+    div.innerHTML =
+      '<div class="property-header">' +
+        '<h3>Property ' + propCounter + '</h3>' +
+        (propCounter > 1 ? '<button type="button" class="btn-remove-prop" onclick="removeProperty(' + idx + ')">Remove</button>' : '') +
+      '</div>' +
+      '<div class="property-fields">' +
+        '<div class="form-group">' +
+          '<label class="form-label">City</label>' +
+          '<input type="text" class="form-input prop-city" data-id="' + idx + '" placeholder="e.g. Mumbai, Bangalore">' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Property Type</label>' +
+          '<select class="form-input prop-type" data-id="' + idx + '">' +
+            '<option value="apartment">Apartment</option>' +
+            '<option value="house">Independent House</option>' +
+            '<option value="villa">Villa</option>' +
+            '<option value="commercial">Commercial</option>' +
+            '<option value="plot">Plot / Land</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Monthly Rent (&#8377;)</label>' +
+          '<input type="number" class="form-input prop-rent" data-id="' + idx + '" placeholder="e.g. 25000">' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label">Bedrooms</label>' +
+          '<select class="form-input prop-bedrooms" data-id="' + idx + '">' +
+            '<option value="">N/A</option>' +
+            '<option value="1">1 BHK</option>' +
+            '<option value="2">2 BHK</option>' +
+            '<option value="3">3 BHK</option>' +
+            '<option value="4">4 BHK</option>' +
+            '<option value="5+">5+ BHK</option>' +
+          '</select>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('propertiesList').appendChild(div);
+  };
+
+  window.removeProperty = function(id) {
+    var el = document.getElementById('prop-' + id);
+    if (el) el.remove();
+    properties = properties.filter(function(p) { return p.id !== id; });
+  };
+
+  window.validateStep1 = function() {
+    var valid = true;
+    // Read property data from DOM
+    properties = [];
+    document.querySelectorAll('.property-card').forEach(function(card) {
+      var cityEl = card.querySelector('.prop-city');
+      var typeEl = card.querySelector('.prop-type');
+      var rentEl = card.querySelector('.prop-rent');
+      var bedroomsEl = card.querySelector('.prop-bedrooms');
+      var id = parseInt(cityEl.getAttribute('data-id'));
+
+      if (!cityEl.value.trim()) {
+        cityEl.classList.add('error');
+        valid = false;
+      } else {
+        cityEl.classList.remove('error');
+        properties.push({
+          id: id,
+          city: cityEl.value.trim(),
+          type: typeEl.value,
+          rent: rentEl.value ? parseInt(rentEl.value) : 0,
+          bedrooms: bedroomsEl.value,
+          plan: preselectedPlan || '',
+          billing: 'monthly'
+        });
+      }
+    });
+
+    if (!valid || properties.length === 0) {
+      document.getElementById('propError').classList.add('visible');
+      return;
+    }
+    document.getElementById('propError').classList.remove('visible');
+    goToStep(2);
+  };
+
+  // ── Step 2: Plan selection per property ──
+  function buildPlanSelectors() {
+    var container = document.getElementById('planSelections');
+    container.innerHTML = '';
+
+    properties.forEach(function(prop, idx) {
+      var div = document.createElement('div');
+      div.className = 'property-card';
+      div.id = 'plansel-' + prop.id;
+
+      var billingId = 'billing-' + prop.id;
+      var isAnnual = prop.billing === 'annual';
+
+      var bronzePrice = isAnnual ? Math.round(4999 * 12 * 0.85) : 4999;
+      var silverPrice = isAnnual ? Math.round(9999 * 12 * 0.85) : 9999;
+      var bronzeLabel = isAnnual ? '\u20B9' + bronzePrice.toLocaleString('en-IN') + '/yr' : '\u20B94,999/mo';
+      var silverLabel = isAnnual ? '\u20B9' + silverPrice.toLocaleString('en-IN') + '/yr' : '\u20B99,999/mo';
+
+      div.innerHTML =
+        '<div class="property-header">' +
+          '<h3>' + prop.city + ' — ' + capitalize(prop.type) + '</h3>' +
+        '</div>' +
+        '<div class="plan-selector">' +
+          '<div class="billing-toggle-row">' +
+            '<span class="' + (!isAnnual ? 'active-label' : 'inactive-label') + '" id="mLbl-' + prop.id + '">Monthly</span>' +
+            '<label class="toggle-switch">' +
+              '<input type="checkbox" id="' + billingId + '" ' + (isAnnual ? 'checked' : '') + ' onchange="toggleBilling(' + prop.id + ')">' +
+              '<span class="toggle-track"></span>' +
+              '<span class="toggle-thumb"></span>' +
+            '</label>' +
+            '<span class="' + (isAnnual ? 'active-label' : 'inactive-label') + '" id="aLbl-' + prop.id + '">Annual</span>' +
+            '<span class="save-tag">Save 15%</span>' +
+          '</div>' +
+          '<div class="plan-options" id="plans-' + prop.id + '">' +
+            buildPlanOption(prop.id, 'bronze', 'Bronze', 'Peace of Mind', bronzeLabel, prop.plan === 'bronze') +
+            buildPlanOption(prop.id, 'silver', 'Silver', 'Care & Maintenance', silverLabel, prop.plan === 'silver') +
+            buildPlanOption(prop.id, 'platinum', 'Platinum', 'Full Property Management',
+              prop.rent ? '10% = \u20B9' + Math.round(prop.rent * 0.1).toLocaleString('en-IN') + '/mo' : '10% of rent/mo',
+              prop.plan === 'platinum') +
+          '</div>' +
+          (prop.plan === 'platinum' && prop.rent ? '<div style="font-size:0.75rem;color:var(--text-mid);margin-top:8px;padding-left:4px;">+ One-time: \u20B9' + prop.rent.toLocaleString('en-IN') + ' (1 month rent after tenant onboarding)</div>' : '') +
+        '</div>';
+
+      container.appendChild(div);
+    });
+  }
+
+  function buildPlanOption(propId, planKey, name, tag, price, selected) {
+    return '<div class="plan-opt' + (selected ? ' selected' : '') + '" data-plan="' + planKey + '" onclick="selectPlan(' + propId + ',\'' + planKey + '\')">' +
+      '<div class="plan-opt-left">' +
+        '<span class="plan-opt-name">' + name + ' — "' + tag + '"</span>' +
+        '<span class="plan-opt-desc">' + PLANS[planKey].desc + '</span>' +
+      '</div>' +
+      '<div class="plan-opt-right">' +
+        '<span class="plan-opt-price">' + price + '</span>' +
+        '<div class="plan-radio"></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  window.selectPlan = function(propId, planKey) {
+    var prop = properties.find(function(p) { return p.id === propId; });
+    if (prop) prop.plan = planKey;
+
+    var container = document.getElementById('plans-' + propId);
+    container.querySelectorAll('.plan-opt').forEach(function(el) {
+      el.classList.toggle('selected', el.getAttribute('data-plan') === planKey);
+    });
+
+    // Show platinum note
+    var card = document.getElementById('plansel-' + propId);
+    var existingNote = card.querySelector('.platinum-note');
+    if (existingNote) existingNote.remove();
+    if (planKey === 'platinum' && prop.rent) {
+      var note = document.createElement('div');
+      note.className = 'platinum-note';
+      note.style.cssText = 'font-size:0.75rem;color:var(--text-mid);margin-top:8px;padding-left:4px;';
+      note.textContent = '+ One-time: \u20B9' + prop.rent.toLocaleString('en-IN') + ' (1 month rent after tenant onboarding)';
+      card.querySelector('.plan-selector').appendChild(note);
+    }
+
+    document.getElementById('planError').classList.remove('visible');
+  };
+
+  window.toggleBilling = function(propId) {
+    var prop = properties.find(function(p) { return p.id === propId; });
+    var checkbox = document.getElementById('billing-' + propId);
+    var isAnnual = checkbox.checked;
+    prop.billing = isAnnual ? 'annual' : 'monthly';
+
+    // Update labels
+    var mLbl = document.getElementById('mLbl-' + propId);
+    var aLbl = document.getElementById('aLbl-' + propId);
+    mLbl.className = isAnnual ? 'inactive-label' : 'active-label';
+    aLbl.className = isAnnual ? 'active-label' : 'inactive-label';
+
+    // Update prices
+    var bronzePrice = isAnnual ? Math.round(4999 * 12 * 0.85) : 4999;
+    var silverPrice = isAnnual ? Math.round(9999 * 12 * 0.85) : 9999;
+    var bronzeLabel = isAnnual ? '\u20B9' + bronzePrice.toLocaleString('en-IN') + '/yr' : '\u20B94,999/mo';
+    var silverLabel = isAnnual ? '\u20B9' + silverPrice.toLocaleString('en-IN') + '/yr' : '\u20B99,999/mo';
+
+    var container = document.getElementById('plans-' + propId);
+    var opts = container.querySelectorAll('.plan-opt');
+    opts[0].querySelector('.plan-opt-price').textContent = bronzeLabel;
+    opts[1].querySelector('.plan-opt-price').textContent = silverLabel;
+  };
+
+  window.validateStep2 = function() {
+    var allSelected = properties.every(function(p) { return p.plan; });
+    if (!allSelected) {
+      document.getElementById('planError').classList.add('visible');
+      return;
+    }
+    document.getElementById('planError').classList.remove('visible');
+    goToStep(3);
+  };
+
+  // ── Step 3: Review ──
+  function buildReview() {
+    document.getElementById('revName').textContent = session.name;
+    document.getElementById('revEmail').textContent = session.email;
+
+    var propHtml = '';
+    var totalMonthly = 0;
+
+    properties.forEach(function(p, i) {
+      var plan = PLANS[p.plan];
+      var priceStr = '';
+      var monthlyAmount = 0;
+
+      if (p.plan === 'platinum') {
+        monthlyAmount = p.rent ? Math.round(p.rent * 0.1) : 0;
+        priceStr = p.rent
+          ? '10% = \u20B9' + monthlyAmount.toLocaleString('en-IN') + '/mo'
+          : '10% of monthly rent';
+        if (p.rent) {
+          priceStr += ' + \u20B9' + p.rent.toLocaleString('en-IN') + ' one-time';
+        }
+      } else {
+        monthlyAmount = plan.monthly;
+        if (p.billing === 'annual') {
+          var annualTotal = Math.round(plan.monthly * 12 * 0.85);
+          monthlyAmount = Math.round(annualTotal / 12);
+          priceStr = '\u20B9' + annualTotal.toLocaleString('en-IN') + '/yr (saves 15%)';
+        } else {
+          priceStr = '\u20B9' + plan.monthly.toLocaleString('en-IN') + '/mo';
+        }
+      }
+
+      totalMonthly += monthlyAmount;
+
+      propHtml +=
+        '<div class="review-property-block">' +
+          '<h5>' + p.city + ' — ' + capitalize(p.type) + '</h5>' +
+          '<div class="review-row"><span class="review-label">Plan</span><span class="review-plan-badge">' + plan.name + '</span></div>' +
+          '<div class="review-row"><span class="review-label">Billing</span><span class="review-value">' + capitalize(p.billing) + '</span></div>' +
+          '<div class="review-row"><span class="review-label">Price</span><span class="review-value">' + priceStr + '</span></div>' +
+        '</div>';
+    });
+
+    document.getElementById('revProperties').innerHTML = propHtml;
+    document.getElementById('revTotal').textContent = '\u20B9' + totalMonthly.toLocaleString('en-IN') + '/mo';
+  }
+
+  window.confirmOnboarding = function() {
+    var btn = document.getElementById('confirmBtn');
+    btn.disabled = true;
+    btn.textContent = 'Proceeding to Payment\u2026';
+
+    // Save property + plan selections to localStorage for payment page
+    var orderData = properties.map(function(p) {
+      return { city: p.city, type: p.type, rent: p.rent, bedrooms: p.bedrooms, plan: p.plan, billing: p.billing };
+    });
+    localStorage.setItem('nri_order', JSON.stringify(orderData));
+
+    setTimeout(function() {
+      window.location.href = 'payment.html';
+    }, 600);
+  };
+
+  // ── Helpers ──
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+})();
+</script>
+
+</body>
+</html>
