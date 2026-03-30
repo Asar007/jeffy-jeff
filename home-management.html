@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Management Services — NRI Bridge India</title>
+<meta name="description" content="Complete home management services for NRI property owners. Tenant acquisition, rent collection, maintenance, legal compliance, inspections and more — all in one place.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .hm-intro {
+    max-width: 900px; margin: 0 auto 56px; text-align: center;
+  }
+  .hm-intro p {
+    font-size: 1rem; line-height: 1.7; color: var(--text-mid); opacity: 0.8;
+    max-width: 640px; margin: 0 auto;
+  }
+
+
+
+  /* CTA Section */
+  .hm-cta {
+    background: rgba(74,106,46,0.06); border-radius: var(--radius-lg);
+    padding: 48px 40px; text-align: center; max-width: 800px; margin: 56px auto 0;
+  }
+  .hm-cta h3 {
+    font-family: 'Playfair Display', serif; font-size: 1.6rem;
+    font-weight: 600; color: var(--text-dark); margin-bottom: 10px;
+  }
+  .hm-cta p {
+    font-size: 0.95rem; color: var(--text-mid); margin-bottom: 24px;
+    max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.6;
+  }
+  .hm-cta .cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .hm-cta .btn-hero { background: var(--accent); color: var(--text-light); }
+  .hm-cta .btn-hero:hover { background: var(--green-pop); }
+  .hm-cta .btn-ghost { border-color: var(--accent); color: var(--text-dark); }
+  .hm-cta .btn-ghost:hover { background: rgba(45,58,30,0.05); }
+
+  @media (max-width: 600px) {
+    .hm-cta { padding: 32px 20px; }
+    .tier-legend { gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><a href="propnri-saas-site.html"><img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:80px;width:auto;display:block;"></a></div>
+  <ul class="nav-links">
+    <li><a href="propnri-saas-site.html">Home</a></li>
+    <li><a href="home-management.html" class="active">Services</a></li>
+    <li><a href="propnri-saas-site.html#pricing">Pricing</a></li>
+    <li><a href="propnri-saas-site.html#how">How It Works</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <div class="nav-actions" id="navActions">
+    <a href="login.html" class="btn-outline">Log in</a>
+    <a href="signup.html" class="btn-primary">Get Started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="service-hero section-pad">
+  <div class="section-tag">Complete Solution</div>
+  <h1>Home Management Services</h1>
+  <p>Everything your property needs — from finding the right tenant to managing utilities. One comprehensive service that handles it all so you don't have to fly back for anything.</p>
+</section>
+
+<!-- ALL SERVICES -->
+<section class="services section-pad" id="all-services">
+  <div class="hm-intro">
+    <div class="section-tag">All Services</div>
+    <h2 class="section-title">8 Services, One Subscription</h2>
+    <p>Each service is included in our tiered plans. Choose the plan that fits your needs and get access to professional property management across every aspect.</p>
+  </div>
+
+
+
+  <div class="services-grid">
+    <a href="service-tenant-acquisition.html" class="service-card" id="svc-tenant-acquisition">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <h3>Tenant Acquisition & Leasing</h3>
+      <p>Marketing, tenant screening, background checks, and lease execution — ensuring reliable occupancy and steady income.</p>
+      <span class="learn-more">Learn more →</span>
+    </a>
+
+    <a href="service-rent-collection.html" class="service-card" id="svc-rent-collection">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <h3>Rent Collection & Financial</h3>
+      <p>Timely rent collection, payment tracking, late payment handling, and monthly income statements for complete transparency.</p>
+      <span class="learn-more">Learn more →</span>
+    </a>
+
+    <a href="service-property-maintenance.html" class="service-card" id="svc-property-maintenance">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </div>
+      <h3>Property Maintenance & Repairs</h3>
+      <p>Routine and emergency maintenance, vetted vendors, periodic inspections, and preventive planning to preserve property value.</p>
+      <span class="learn-more">Learn more →</span>
+    </a>
+
+    <a href="service-property-inspection.html" class="service-card" id="svc-property-inspection">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h3>Property Inspection & Reporting</h3>
+      <p>Scheduled inspections with photo/video reports, condition assessments, and early maintenance identification.</p>
+      <span class="learn-more">Learn more →</span>
+    </a>
+
+    <a href="service-tenant-relationship.html" class="service-card" id="svc-tenant-relationship">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <h3>Tenant Relationship Management</h3>
+      <p>Handling complaints, conflict resolution, tenant retention, and move-in/move-out processes for smooth tenancies.</p>
+      <span class="learn-more">Learn more →</span>
+    </a>
+
+    <a href="service-legal-compliance.html" class="service-card" id="svc-legal-compliance">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <h3>Legal & Compliance</h3>
+      <p>Legally compliant lease agreements, local rental law adherence, KYC documentation, and eviction management when needed.</p>
+      <span class="learn-more">Learn more →</span>
+    </a>
+
+    <a href="service-lease-renewal.html" class="service-card" id="svc-lease-renewal">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </div>
+      <h3>Lease Renewal & Vacancy</h3>
+      <p>Lease renewal negotiations, market-based rent revisions, exit formalities, and rapid re-listing to minimize vacancy.</p>
+      <span class="learn-more">Learn more →</span>
+    </a>
+
+    <a href="service-utility-management.html" class="service-card" id="svc-utility-management">
+      <div class="service-icon">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <h3>Utility & Bill Management</h3>
+      <p>Electricity, water, gas, internet, and society maintenance payments — all handled on time so nothing lapses.</p>
+      <div class="tier-tags">
+        <span class="tier-tag silver">Silver</span>
+        <span class="tier-tag platinum">Platinum</span>
+      </div>
+      <span class="learn-more">Learn more →</span>
+    </a>
+  </div>
+
+  <!-- CTA -->
+  <div class="hm-cta">
+    <h3>Ready to manage your property stress-free?</h3>
+    <p>Choose a plan that fits your needs and let us take care of everything while you focus on your life abroad.</p>
+    <div class="cta-btns">
+      <a href="propnri-saas-site.html#pricing" class="btn-hero">View Plans & Pricing</a>
+      <a href="signup.html" class="btn-ghost">Get Started →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="nav-logo"><img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:80px;width:auto;display:block;"></div>
+      <p>End-to-end property management for Non-Resident Indians. Managing your assets in India so you can focus on your life abroad.</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="home-management.html">All Services</a></li>
+          <li><a href="service-tenant-acquisition.html">Tenant Acquisition</a></li>
+          <li><a href="service-rent-collection.html">Rent Collection</a></li>
+          <li><a href="service-property-maintenance.html">Maintenance</a></li>
+          <li><a href="service-property-inspection.html">Inspections</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Cities We Cover</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">NRI Tax Guide</a></li>
+          <li><a href="#">RERA Compliance</a></li>
+          <li><a href="#">FAQs</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">&copy; 2026 NRI Bridge India. All rights reserved. Registered in India.</div>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = 'fadeUp 0.7s ease both';
+        entry.target.style.animationDelay = entry.target.dataset.delay || '0s';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.service-card').forEach((el, i) => {
+    el.style.opacity = '0';
+    el.dataset.delay = `${(i % 8) * 0.08}s`;
+    observer.observe(el);
+  });
+
+  // Session-aware nav
+  (function() {
+    var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
+    if (session) {
+      var navActions = document.getElementById('navActions');
+      navActions.innerHTML =
+        '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;">Hi, ' + session.name.split(' ')[0] + '</span>' +
+        '<button class="btn-outline" onclick="localStorage.removeItem(\'nri_session\');location.reload();">Log out</button>';
+    }
+  })();
+</script>
+
+</body>
+</html>
