@@ -327,9 +327,20 @@
       else if(svc==='parental') c.innerHTML += buildParentalForm();
       else if(svc==='legal') c.innerHTML += buildLegalForm();
     });
-    // Init items
+    // Init existing items or add first item
     selectedServices.forEach(function(svc){
-      if(!serviceDetails[svc] || getItems(svc).length===0) addItem(svc);
+      var items = getItems(svc);
+      if(items.length===0) {
+        addItem(svc);
+      } else {
+        var container = document.getElementById(svc+'Items');
+        items.forEach(function(item){
+          container.appendChild(createItemDOM(svc, item.id));
+          document.querySelectorAll('[data-svc="'+svc+'"][data-id="'+item.id+'"]').forEach(function(el){
+            if(item[el.dataset.field] !== undefined) el.value = item[el.dataset.field];
+          });
+        });
+      }
     });
   }
 
@@ -345,12 +356,7 @@
   function buildParentalForm(){return '<div class="detail-section" id="detail-parental"><h3>❤️ Parental Care</h3><div id="parentalItems"></div><button type="button" class="btn-add-item" onclick="addItem(\'parental\')">+ Add Family Member</button></div>'}
   function buildLegalForm(){return '<div class="detail-section" id="detail-legal"><h3>📄 Legal & Documentation</h3><div id="legalItems"></div><button type="button" class="btn-add-item" onclick="addItem(\'legal\')">+ Add Case / Document</button></div>'}
 
-  window.addItem = function(svc){
-    counters[svc]++;
-    var id = counters[svc];
-    var items = getItems(svc);
-    items.push({id:id});
-    var container = document.getElementById(svc+'Items');
+  function createItemDOM(svc, id){
     var div = document.createElement('div');
     div.className='item-card';div.id=svc+'-item-'+id;
     if(svc==='home'){
@@ -362,7 +368,16 @@
     } else{
       div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'legal\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Case/Document Type</label><select class="form-input" data-svc="legal" data-id="'+id+'" data-field="type"><option value="poa">Power of Attorney</option><option value="property-reg">Property Registration</option><option value="will">Will / Succession</option><option value="tax">Tax Filing</option><option value="court">Court Case</option><option value="govt-doc">Government Document</option></select></div><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="legal" data-id="'+id+'" data-field="city" placeholder="e.g. Chennai"></div><div class="form-group" style="grid-column:span 2"><label class="form-label">Description</label><input type="text" class="form-input" data-svc="legal" data-id="'+id+'" data-field="desc" placeholder="Brief description"></div></div>';
     }
-    container.appendChild(div);
+    return div;
+  }
+
+  window.addItem = function(svc){
+    counters[svc]++;
+    var id = counters[svc];
+    var items = getItems(svc);
+    items.push({id:id});
+    var container = document.getElementById(svc+'Items');
+    container.appendChild(createItemDOM(svc, id));
   };
 
   window.removeItem = function(svc,id){
