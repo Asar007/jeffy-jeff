@@ -300,7 +300,6 @@
   if(preCat && SVC_NAMES[preCat]){
     selectedServices.push(preCat);
     document.querySelector('.svc-check[data-svc="'+preCat+'"]').classList.add('selected');
-    if(prePlan) servicePlans[preCat] = prePlan;
   }
 
   // Step 1: Toggle services
@@ -396,7 +395,27 @@
     goToStep(3);
   };
 
-  // Step 3: Plans
+  // Step 3: Per-item Plans
+  // Keys use format: 'home-1', 'vehicle-3', 'parental-pair-1', 'legal-2'
+  function getItemLabel(svc, item){
+    if(svc==='home') return (item.type||'Property')+ ' in '+(item.city||'—');
+    if(svc==='vehicle') return (item.model||item.type||'Vehicle')+' ('+(item.reg||'—')+')';
+    if(svc==='legal') return (item.type||'Case')+' in '+(item.city||'—');
+    if(svc==='parental') return item.name||'Member';
+    return 'Item';
+  }
+
+  function getParentalPairs(){
+    var members = getItems('parental');
+    var pairs = [];
+    for(var i=0;i<members.length;i+=2){
+      var pair = {index: Math.floor(i/2)+1, members: [members[i]]};
+      if(members[i+1]) pair.members.push(members[i+1]);
+      pairs.push(pair);
+    }
+    return pairs;
+  }
+
   function buildPlanSelectors(){
     var c = document.getElementById('planSelections');
     c.innerHTML='';
@@ -404,44 +423,55 @@
 
     selectedServices.forEach(function(svc,svcIdx){
       var isAddon = hasDiscount && svcIdx > 0;
-      var billing = serviceBilling[svc]||'monthly';
-      var prices = PLAN_PRICES[svc];
-      var sec = document.createElement('div');
-      sec.className='plan-section';
-      var discountHtml = isAddon ? '<div class="discount-note">🎉 20% add-on discount applied!</div>' : '';
-      var billingId = 'bill-'+svc;
 
-      sec.innerHTML='<h3>'+SVC_NAMES[svc]+'</h3><p class="plan-sub">'+getItems(svc).length+' item(s) added</p>'+discountHtml+
-        '<div class="billing-row"><span class="'+(billing==='monthly'?'active-lbl':'inactive-lbl')+'" id="mL-'+svc+'">Monthly</span>'+
-        '<label class="toggle-sw"><input type="checkbox" id="'+billingId+'" '+(billing==='annual'?'checked':'')+' onchange="toggleBilling(\''+svc+'\')"><span class="toggle-tr"></span><span class="toggle-th"></span></label>'+
-        '<span class="'+(billing==='annual'?'active-lbl':'inactive-lbl')+'" id="aL-'+svc+'">Annual</span><span class="save-tag">Save 15%</span></div>'+
-        '<div class="plan-options" id="opts-'+svc+'"></div>';
-      c.appendChild(sec);
-
-      renderPlanOptions(svc,isAddon);
+      if(svc==='parental'){
+        var pairs = getParentalPairs();
+        pairs.forEach(function(pair){
+          var planKey = 'parental-pair-'+pair.index;
+          var names = pair.members.map(function(m){return m.name||'Member'}).join(' & ');
+          var subLabel = pair.members.length===1 ? '1 person' : '2 persons (pair)';
+          buildItemPlanSection(c, svc, planKey, '❤️ '+names, subLabel, isAddon);
+        });
+      } else {
+        var items = getItems(svc);
+        var icons = {home:'🏠', vehicle:'🚗', legal:'📄'};
+        items.forEach(function(item){
+          var planKey = svc+'-'+item.id;
+          var label = icons[svc]+' '+getItemLabel(svc, item);
+          var subLabel = SVC_NAMES[svc];
+          buildItemPlanSection(c, svc, planKey, label, subLabel, isAddon, item);
+        });
+      }
     });
   }
 
-  function renderPlanOptions(svc,isAddon){
-    var container = document.getElementById('opts-'+svc);
+  function buildItemPlanSection(container, svc, planKey, title, subLabel, isAddon, item){
+    var billing = serviceBilling[planKey]||'monthly';
+    var sec = document.createElement('div');
+    sec.className='plan-section';
+    var discountHtml = isAddon ? '<div class="discount-note">🎉 20% add-on discount applied!</div>' : '';
+
+    sec.innerHTML='<h3 style="font-size:0.95rem">'+title+'</h3><p class="plan-sub">'+subLabel+'</p>'+discountHtml+
+      '<div class="billing-row"><span class="'+(billing==='monthly'?'active-lbl':'inactive-lbl')+'" id="mL-'+planKey+'">Monthly</span>'+
+      '<label class="toggle-sw"><input type="checkbox" id="bill-'+planKey+'" '+(billing==='annual'?'checked':'')+' onchange="toggleItemBilling(\''+planKey+'\',\''+svc+'\')"><span class="toggle-tr"></span><span class="toggle-th"></span></label>'+
+      '<span class="'+(billing==='annual'?'active-lbl':'inactive-lbl')+'" id="aL-'+planKey+'">Annual</span><span class="save-tag">Save 15%</span></div>'+
+      '<div class="plan-options" id="opts-'+planKey+'"></div>';
+    container.appendChild(sec);
+    renderItemPlanOptions(svc, planKey, isAddon, item);
+  }
+
+  function renderItemPlanOptions(svc, planKey, isAddon, item){
+    var container = document.getElementById('opts-'+planKey);
     if(!container)return;
     container.innerHTML='';
     var prices = PLAN_PRICES[svc];
-    var billing = serviceBilling[svc]||'monthly';
-    var currentPlan = servicePlans[svc]||'';
+    var billing = serviceBilling[planKey]||'monthly';
+    var currentPlan = servicePlans[planKey]||'';
 
     var tiers = ['starter','standard','premium'];
-    var items = null;
-    if(svc==='home'){
-      items = getItems('home');
-      var allMaintOnly = items.length > 0 && items.every(function(item){return item.status === 'maint-only'});
-      if(allMaintOnly) {
-        tiers = ['starter','standard'];
-        if(currentPlan==='premium') {
-          currentPlan='';
-          servicePlans[svc]='';
-        }
-      }
+    if(svc==='home' && item && item.status === 'maint-only'){
+      tiers = ['starter','standard'];
+      if(currentPlan==='premium'){currentPlan='';servicePlans[planKey]='';}
     }
 
     tiers.forEach(function(tier){
@@ -459,43 +489,59 @@
       var opt = document.createElement('div');
       opt.className='plan-opt'+(currentPlan===tier?' selected':'');
       opt.setAttribute('data-plan',tier);
-      opt.onclick=function(){selectPlan(svc,tier)};
+      opt.onclick=function(){selectItemPlan(planKey,tier)};
       opt.innerHTML='<div><span class="plan-opt-name">'+PLAN_NAMES[tier]+'</span></div><div style="display:flex;align-items:center;gap:10px"><span class="plan-opt-price">'+label+'</span><div class="plan-radio"></div></div>';
       container.appendChild(opt);
     });
 
-    if(svc === 'home' && items && items.length > 0 && items.every(function(item){return item.status === 'maint-only'})){
+    if(svc==='home' && item && item.status === 'maint-only'){
       var msg = document.createElement('div');
-      msg.style.fontSize = '0.75rem';
-      msg.style.color = 'var(--text-mid)';
-      msg.style.marginTop = '8px';
-      msg.style.textAlign = 'center';
-      msg.textContent = '* Premium tier requires Tenant Management services, which is not applicable for Maintenance-only properties.';
+      msg.style.cssText='font-size:0.72rem;color:var(--text-mid);margin-top:8px;text-align:center';
+      msg.textContent = '* Premium requires Tenant Management — not applicable for maintenance-only.';
       container.appendChild(msg);
     }
   }
 
-  window.selectPlan = function(svc,tier){
-    servicePlans[svc]=tier;
-    document.querySelectorAll('#opts-'+svc+' .plan-opt').forEach(function(el){
+  window.selectItemPlan = function(planKey,tier){
+    servicePlans[planKey]=tier;
+    document.querySelectorAll('#opts-'+planKey+' .plan-opt').forEach(function(el){
       el.classList.toggle('selected',el.dataset.plan===tier);
     });
     document.getElementById('planError').classList.remove('visible');
   };
 
-  window.toggleBilling = function(svc){
-    var cb = document.getElementById('bill-'+svc);
-    serviceBilling[svc]=cb.checked?'annual':'monthly';
-    var mL=document.getElementById('mL-'+svc);
-    var aL=document.getElementById('aL-'+svc);
+  window.toggleItemBilling = function(planKey, svc){
+    var cb = document.getElementById('bill-'+planKey);
+    serviceBilling[planKey]=cb.checked?'annual':'monthly';
+    var mL=document.getElementById('mL-'+planKey);
+    var aL=document.getElementById('aL-'+planKey);
     mL.className=cb.checked?'inactive-lbl':'active-lbl';
     aL.className=cb.checked?'active-lbl':'inactive-lbl';
     var isAddon = selectedServices.length>1 && selectedServices.indexOf(svc)>0;
-    renderPlanOptions(svc,isAddon);
+    var item = null;
+    if(svc!=='parental'){
+      var itemId = parseInt(planKey.split('-').pop());
+      item = getItems(svc).find(function(i){return i.id===itemId});
+    }
+    renderItemPlanOptions(svc, planKey, isAddon, item);
   };
 
+  function getAllPlanKeys(){
+    var keys = [];
+    selectedServices.forEach(function(svc){
+      if(svc==='parental'){
+        var pairs = getParentalPairs();
+        pairs.forEach(function(pair){keys.push({key:'parental-pair-'+pair.index, svc:svc, pair:pair});});
+      } else {
+        getItems(svc).forEach(function(item){keys.push({key:svc+'-'+item.id, svc:svc, item:item});});
+      }
+    });
+    return keys;
+  }
+
   window.validateStep3 = function(){
-    var allSelected = selectedServices.every(function(s){return servicePlans[s]});
+    var allKeys = getAllPlanKeys();
+    var allSelected = allKeys.every(function(k){return servicePlans[k.key]});
     if(!allSelected){document.getElementById('planError').classList.add('visible');return}
     document.getElementById('planError').classList.remove('visible');
     goToStep(4);
@@ -521,7 +567,7 @@
 
   window.validateStep4 = function(){goToStep(5)};
 
-  // Step 5: Review
+  // Step 5: Review (per-item)
   function buildReview(){
     document.getElementById('revName').textContent=session.name;
     document.getElementById('revEmail').textContent=session.email;
@@ -530,19 +576,34 @@
 
     var html='';var total=0;
     var hasDiscount = selectedServices.length>1;
+    var allKeys = getAllPlanKeys();
 
-    selectedServices.forEach(function(svc,svcIdx){
-      var plan=servicePlans[svc];var billing=serviceBilling[svc]||'monthly';
-      var prices=PLAN_PRICES[svc];var basePrice=prices[plan];
-      var isAddon=hasDiscount&&svcIdx>0;
-      var amount=0;var priceStr='';
+    allKeys.forEach(function(entry){
+      var svc = entry.svc;
+      var planKey = entry.key;
+      var plan = servicePlans[planKey];
+      var billing = serviceBilling[planKey]||'monthly';
+      var prices = PLAN_PRICES[svc];
+      var basePrice = prices[plan];
+      var svcIdx = selectedServices.indexOf(svc);
+      var isAddon = hasDiscount && svcIdx > 0;
+      var amount = 0; var priceStr = '';
+
+      // Build a descriptive title
+      var title = '';
+      if(svc==='parental'){
+        var names = entry.pair.members.map(function(m){return m.name||'Member'}).join(' & ');
+        title = '❤️ Parental Care — '+names;
+      } else {
+        var icons = {home:'🏠', vehicle:'🚗', legal:'📄'};
+        title = icons[svc]+' '+getItemLabel(svc, entry.item);
+      }
 
       if(typeof basePrice==='string'){
         priceStr=basePrice;
-        var items=getItems(svc);
-        items.forEach(function(item){
-          if(item.rent){amount+=Math.round(parseInt(item.rent)*0.1)}
-        });
+        if(svc==='home' && entry.item && entry.item.rent){
+          amount = Math.round(parseInt(entry.item.rent)*0.1);
+        }
       } else {
         amount=basePrice;
         if(isAddon)amount=Math.round(amount*0.8);
@@ -552,18 +613,17 @@
       }
       total+=amount;
 
-      html+='<div class="review-block"><h5>'+SVC_NAMES[svc]+'</h5>'+
+      html+='<div class="review-block"><h5>'+title+'</h5>'+
         '<div class="review-row"><span class="review-label">Plan</span><span class="review-plan-badge">'+PLAN_NAMES[plan]+'</span></div>'+
         '<div class="review-row"><span class="review-label">Billing</span><span class="review-value">'+(billing==='annual'?'Annual':'Monthly')+'</span></div>'+
-        '<div class="review-row"><span class="review-label">Price</span><span class="review-value">'+priceStr+'</span></div>'+
-        '<div class="review-row"><span class="review-label">Items</span><span class="review-value">'+getItems(svc).length+'</span></div></div>';
+        '<div class="review-row"><span class="review-label">Price</span><span class="review-value">'+priceStr+'</span></div></div>';
     });
 
     document.getElementById('revServices').innerHTML=html;
 
     var discountHtml='';
     if(hasDiscount){discountHtml='<div class="review-row"><span class="review-label" style="color:var(--green-pop)">Add-on bundle discount (20%)</span><span class="review-value" style="color:var(--green-pop)">Applied ✓</span></div>'}
-    var hasAnnual=selectedServices.some(function(s){return(serviceBilling[s]||'monthly')==='annual'});
+    var hasAnnual=Object.keys(serviceBilling).some(function(k){return serviceBilling[k]==='annual'});
     if(hasAnnual){discountHtml+='<div class="review-row"><span class="review-label" style="color:var(--green-pop)">Annual billing discount (15%)</span><span class="review-value" style="color:var(--green-pop)">Applied ✓</span></div>'}
     document.getElementById('revDiscounts').innerHTML=discountHtml;
 
@@ -581,6 +641,7 @@
         users[userIdx].services=selectedServices;
         users[userIdx].serviceDetails=serviceDetails;
         users[userIdx].servicePlans=servicePlans;
+        users[userIdx].serviceBilling=serviceBilling;
         users[userIdx].paymentDate=new Date().toISOString();
         localStorage.setItem('nri_users',JSON.stringify(users));
       }
