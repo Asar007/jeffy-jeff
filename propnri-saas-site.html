@@ -3,35 +3,89 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NRI Bridge India — Property Management for Non-Resident Indians</title>
+<title>NRI Bridge India — Complete Life Management for Non-Resident Indians</title>
+<meta name="description" content="End-to-end management for NRIs — property, vehicle, parental care, and legal documentation. Trusted by 5,000+ NRIs across 28 cities.">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
+<style>
+  /* Pricing service tabs */
+  .pricing-service-tabs {
+    display:flex; justify-content:center; gap:6px; margin-bottom:36px; flex-wrap:wrap;
+  }
+  .pricing-service-tab {
+    padding:10px 22px; border:1.5px solid rgba(0,0,0,0.08); border-radius:var(--radius-pill);
+    background:var(--white); cursor:pointer; font-family:inherit; font-size:0.82rem;
+    font-weight:500; color:var(--text-mid); transition:all 0.3s;
+  }
+  .pricing-service-tab:hover { border-color:var(--green-pop); color:var(--green-pop); }
+  .pricing-service-tab.active {
+    border-color:var(--green-pop); background:var(--green-pop); color:var(--white); font-weight:600;
+  }
+
+  /* Services grid on landing */
+  .landing-services-grid {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:20px; max-width:1100px; margin:0 auto;
+  }
+  .landing-service-card {
+    display:block; text-align:center; padding:36px 24px; border-radius:var(--radius-md);
+    border:1.5px solid rgba(0,0,0,0.06); background:var(--white); text-decoration:none;
+    color:inherit; transition:all 0.4s;
+  }
+  .landing-service-card:hover {
+    border-color:rgba(74,106,46,0.2); transform:translateY(-4px);
+    box-shadow:0 12px 40px rgba(0,0,0,0.08);
+  }
+  .landing-service-card .ls-icon {
+    width:56px; height:56px; border-radius:16px; margin:0 auto 18px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .landing-service-card .ls-icon svg { width:26px; height:26px; stroke-width:1.5; fill:none; stroke:currentColor; }
+  .landing-service-card.cat-home .ls-icon { background:rgba(74,106,46,0.1); color:var(--green-pop); }
+  .landing-service-card.cat-vehicle .ls-icon { background:rgba(58,106,94,0.1); color:var(--service-vehicle); }
+  .landing-service-card.cat-parental .ls-icon { background:rgba(106,74,46,0.1); color:var(--service-parental); }
+  .landing-service-card.cat-legal .ls-icon { background:rgba(46,74,106,0.1); color:var(--service-legal); }
+  .landing-service-card h3 { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:600; margin-bottom:8px; color:var(--text-dark); }
+  .landing-service-card p { font-size:0.82rem; line-height:1.55; color:var(--text-mid); margin-bottom:14px; }
+  .landing-service-card .learn-more { font-size:0.8rem; font-weight:600; color:var(--green-pop); }
+
+  /* Bundle card */
+  .bundle-highlight {
+    margin-top:40px; max-width:760px; margin-left:auto; margin-right:auto;
+    background:linear-gradient(135deg, var(--bg-main) 0%, var(--accent) 100%);
+    border-radius:var(--radius-lg); padding:36px 40px; display:flex;
+    align-items:center; justify-content:space-between; gap:24px; color:var(--text-light);
+  }
+  .bundle-highlight h3 { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; margin-bottom:6px; }
+  .bundle-highlight p { font-size:0.88rem; opacity:0.85; max-width:380px; line-height:1.55; }
+  .bundle-price-box { text-align:center; flex-shrink:0; }
+  .bundle-price-box .amount { font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; display:block; }
+  .bundle-price-box .period { font-size:0.75rem; opacity:0.7; display:block; margin-bottom:12px; }
+  .bundle-price-box .btn-hero { background:var(--bg-cream); color:var(--text-dark); font-size:0.82rem; }
+  .bundle-price-box .btn-hero:hover { background:var(--white); }
+
+  @media(max-width:900px) {
+    .landing-services-grid { grid-template-columns:repeat(2,1fr); }
+  }
+  @media(max-width:600px) {
+    .landing-services-grid { grid-template-columns:1fr; }
+    .bundle-highlight { flex-direction:column; text-align:center; padding:28px 24px; }
+    .bundle-highlight p { max-width:100%; }
+    .pricing-service-tabs { gap:4px; }
+    .pricing-service-tab { padding:8px 14px; font-size:0.75rem; }
+  }
+</style>
 </head>
 <body>
 
-<!-- SHARED NAV START -->
-<nav>
-  <div class="nav-logo"><a href="propnri-saas-site.html"><img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:80px;width:auto;display:block;"></a></div>
-  <ul class="nav-links">
-    <li><a href="propnri-saas-site.html" class="active">Home</a></li>
-    <li><a href="home-management.html">Services</a></li>
-    <li><a href="#pricing">Pricing</a></li>
-    <li><a href="#how">How It Works</a></li>
-    <li><a href="#">Contact</a></li>
-  </ul>
-  <div class="nav-actions">
-    <a href="login.html" class="btn-outline">Log in</a>
-    <a href="signup.html" class="btn-primary">Get Started</a>
-  </div>
-</nav>
-<!-- SHARED NAV END -->
+<nav></nav>
+<script src="nav.js"></script>
 
 <!-- HERO -->
 <section class="hero">
   <img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:120px;width:auto;margin-bottom:16px;">
-  <div class="hero-badge"><span class="dot"></span> Trusted by 5,000+ NRI property owners</div>
-  <h1>Manage your <em>Indian</em><br><strong>properties</strong> from anywhere</h1>
-  <p>End-to-end property management for Non-Resident Indians. Tenant sourcing, rent collection, maintenance, legal compliance — all handled while you focus on your life abroad.</p>
+  <div class="hero-badge"><span class="dot"></span> Trusted by 5,000+ NRIs worldwide</div>
+  <h1>Manage your <em>Indian</em><br><strong>life</strong> from anywhere</h1>
+  <p>Properties, vehicles, parental care, legal documentation — everything your life in India needs, handled by our on-ground teams across 28 cities while you focus on your life abroad.</p>
   <div class="hero-ctas">
     <a href="signup.html" class="btn-hero">Start Free Consultation</a>
     <a href="#how" class="btn-ghost">See How It Works →</a>
@@ -62,8 +116,16 @@
     <div class="stat-label">Rent Collected Annually</div>
   </div>
   <div class="stat-item">
+    <div class="stat-num">1,800+</div>
+    <div class="stat-label">Vehicles Maintained</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">3,200+</div>
+    <div class="stat-label">Parents in Our Care</div>
+  </div>
+  <div class="stat-item">
     <div class="stat-num">99.2%</div>
-    <div class="stat-label">On-Time Collection</div>
+    <div class="stat-label">Client Satisfaction</div>
   </div>
   <div class="stat-item">
     <div class="stat-num">28</div>
@@ -71,20 +133,47 @@
   </div>
 </div>
 
-<!-- HOME MANAGEMENT — Single Service Card -->
+<!-- ALL SERVICES — 4 Card Grid -->
 <section class="services section-pad" id="services">
-  <div class="section-tag">Core Service</div>
-  <h2 class="section-title">Complete Home Management</h2>
-  <p class="section-sub">One subscription that covers every aspect of property management — from tenant acquisition to utility payments.</p>
+  <div class="section-tag">Our Services</div>
+  <h2 class="section-title">Everything Your Life in India Needs</h2>
+  <p class="section-sub">Four comprehensive service categories, one trusted platform. Pick what you need, bundle for savings.</p>
 
-  <div style="max-width:680px;margin:0 auto;">
-    <a href="home-management.html" class="service-card" id="home-management-card" style="display:block;padding:48px 40px;text-align:center;border:2px solid rgba(74,106,46,0.15);background:linear-gradient(135deg, var(--white) 0%, rgba(74,106,46,0.03) 100%);">
-      <div class="service-icon" style="width:72px;height:72px;border-radius:20px;margin:0 auto 24px;background:rgba(74,106,46,0.1);">
-        <svg viewBox="0 0 24 24" style="width:32px;height:32px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  <div class="landing-services-grid">
+    <a href="home-management.html" class="landing-service-card cat-home">
+      <div class="ls-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       </div>
-      <h3 style="font-size:1.5rem;margin-bottom:14px;">Home Management Services</h3>
-      <p style="font-size:0.95rem;max-width:480px;margin:0 auto 20px;opacity:0.75;">8 professional services under one roof — tenant acquisition, rent collection, maintenance, inspections, legal compliance, lease renewal, utility management, and tenant relations.</p>
-      <span class="learn-more" style="font-size:0.95rem;">View All Services →</span>
+      <h3>Home Management</h3>
+      <p>Tenant sourcing, rent collection, maintenance, inspections — 8 professional services under one roof.</p>
+      <span class="learn-more">8 Services →</span>
+    </a>
+
+    <a href="vehicle-management.html" class="landing-service-card cat-vehicle">
+      <div class="ls-icon">
+        <svg viewBox="0 0 24 24"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 5h3v6h-2"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+      <h3>Vehicle Management</h3>
+      <p>Insurance, servicing, fitness certificates, parking, selling, and registration — all handled remotely.</p>
+      <span class="learn-more">6 Services →</span>
+    </a>
+
+    <a href="parental-care.html" class="landing-service-card cat-parental">
+      <div class="ls-icon">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <h3>Parental Care</h3>
+      <p>Health check-ups, doctor visits, medicine delivery, emergency response, and regular well-being updates.</p>
+      <span class="learn-more">6 Services →</span>
+    </a>
+
+    <a href="legal-documentation.html" class="landing-service-card cat-legal">
+      <div class="ls-icon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <h3>Legal & Documentation</h3>
+      <p>Power of Attorney, property registration, tax filing, court monitoring, and government documents.</p>
+      <span class="learn-more">6 Services →</span>
     </a>
   </div>
 </section>
@@ -94,29 +183,29 @@
   <div style="text-align:center;">
     <div class="section-tag">Process</div>
     <h2 class="section-title" style="color:var(--text-light);">How it works</h2>
-    <p class="section-sub">Four simple steps to hassle-free property management from anywhere in the world.</p>
+    <p class="section-sub">Four simple steps to hassle-free management of your life in India, from anywhere in the world.</p>
   </div>
 
   <div class="steps-grid">
     <div class="step-card">
       <div class="step-num">1</div>
-      <h3>Onboard Your Property</h3>
-      <p>Share your property details and documents. We'll do a thorough assessment and setup your account.</p>
+      <h3>Select Your Services</h3>
+      <p>Choose the service categories you need — home, vehicle, parental care, or legal. Bundle them for savings.</p>
     </div>
     <div class="step-card">
       <div class="step-num">2</div>
-      <h3>We Find Tenants</h3>
-      <p>Our local team sources, screens, and places verified tenants with proper rental agreements.</p>
+      <h3>Onboard Your Details</h3>
+      <p>Share your property, vehicle, family, or legal details. We'll do a thorough assessment and set up your account.</p>
     </div>
     <div class="step-card">
       <div class="step-num">3</div>
-      <h3>Sit Back & Track</h3>
-      <p>Monitor rent, maintenance, and reports through your real-time dashboard from anywhere.</p>
+      <h3>We Handle Everything</h3>
+      <p>Our on-ground teams across 28 cities take over — managing, coordinating, and resolving issues in real-time.</p>
     </div>
     <div class="step-card">
       <div class="step-num">4</div>
-      <h3>Receive Rent Globally</h3>
-      <p>Rent is collected and transferred directly to your NRO/NRE bank account every month.</p>
+      <h3>Track & Live Worry-Free</h3>
+      <p>Monitor everything from your dashboard. Receive reports, updates, and alerts — all from the comfort of your home abroad.</p>
     </div>
   </div>
 </section>
@@ -125,7 +214,15 @@
 <section class="pricing section-pad" id="pricing">
   <div class="section-tag">Pricing</div>
   <h2 class="section-title">Transparent, simple pricing</h2>
-  <p class="section-sub">No hidden fees. Choose the plan that fits your property needs. Switch or cancel anytime.</p>
+  <p class="section-sub">No hidden fees. Choose the plan that fits your needs. Bundle services to save 20% on add-ons.</p>
+
+  <!-- Service Category Tabs -->
+  <div class="pricing-service-tabs">
+    <button class="pricing-service-tab active" data-category="home" onclick="switchPricingCategory('home')">🏠 Home</button>
+    <button class="pricing-service-tab" data-category="vehicle" onclick="switchPricingCategory('vehicle')">🚗 Vehicle</button>
+    <button class="pricing-service-tab" data-category="parental" onclick="switchPricingCategory('parental')">❤️ Parental</button>
+    <button class="pricing-service-tab" data-category="legal" onclick="switchPricingCategory('legal')">📄 Legal</button>
+  </div>
 
   <!-- Billing Toggle -->
   <div style="display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:40px;">
@@ -139,60 +236,19 @@
     <span style="font-size:0.72rem;font-weight:700;background:rgba(74,106,46,0.1);color:var(--green-pop);padding:3px 10px;border-radius:100px;">Save 15%</span>
   </div>
 
-  <div class="pricing-grid">
-    <!-- BRONZE -->
-    <div class="price-card">
-      <div class="card-name">Bronze</div>
-      <div class="card-tagline">"Peace of Mind"</div>
-      <div class="card-price"><span class="currency">₹</span><span class="price-amount" data-monthly="4,999" data-annual="4,249">4,999</span></div>
-      <div class="card-period">per property / <span class="period-label">per month</span></div>
-      <ul class="card-features">
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>Monthly property inspection</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>Photo + video report</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>Safety & functioning check</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>WhatsApp updates</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>Emergency alert support</li>
-      </ul>
-      <a href="#" class="btn-card btn-card-default" data-plan="bronze" onclick="handlePlanClick(event,'bronze')">Get Started</a>
-    </div>
+  <!-- Pricing cards — data driven via JS -->
+  <div class="pricing-grid" id="pricingGrid"></div>
 
-    <!-- SILVER (Featured) -->
-    <div class="price-card featured">
-      <div class="card-badge">Most Popular</div>
-      <div class="card-name">Silver</div>
-      <div class="card-tagline">"Care & Maintenance"</div>
-      <div class="card-price"><span class="currency">₹</span><span class="price-amount" data-monthly="9,999" data-annual="8,499">9,999</span></div>
-      <div class="card-period">per property / <span class="period-label">per month</span></div>
-      <ul class="card-features">
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--bg-highlight)" fill="none" stroke-width="1.5"/></svg></span>Everything in Bronze</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--bg-highlight)" fill="none" stroke-width="1.5"/></svg></span>Maintenance coordination</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--bg-highlight)" fill="none" stroke-width="1.5"/></svg></span>Vendor management</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--bg-highlight)" fill="none" stroke-width="1.5"/></svg></span>1 free cleaning/month</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--bg-highlight)" fill="none" stroke-width="1.5"/></svg></span>Priority complaint handling</li>
-      </ul>
-      <div class="card-note">Extra: Actual repair costs + 15–20% service fee</div>
-      <a href="#" class="btn-card btn-card-featured" data-plan="silver" onclick="handlePlanClick(event,'silver')">Start Free Trial</a>
+  <!-- NRI Complete Bundle -->
+  <div class="bundle-highlight">
+    <div>
+      <h3>NRI Complete Bundle</h3>
+      <p>All 4 service categories at Premium tier. Maximum coverage, maximum savings. One subscription for everything.</p>
     </div>
-
-    <!-- PLATINUM -->
-    <div class="price-card">
-      <div class="card-name">Platinum</div>
-      <div class="card-tagline">"Full Property Management"</div>
-      <div class="card-price" style="font-size:2.2rem;">10% of rent</div>
-      <div class="card-period">per property / per month</div>
-      <ul class="card-features">
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>Everything in Silver</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>Full tenant management</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>Background verification</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>Rent collection & transfers</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>Monthly financial report</li>
-        <li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="var(--green-pop)" fill="none" stroke-width="1.5"/></svg></span>Move-in / move-out handling</li>
-      </ul>
-      <div class="card-earnings">
-        <strong>One-time: 1 month rent</strong>
-        Charged after successful tenant onboarding
-      </div>
-      <a href="#" class="btn-card btn-card-default" data-plan="platinum" onclick="handlePlanClick(event,'platinum')">Get Started</a>
+    <div class="bundle-price-box">
+      <span class="amount">₹29,999</span>
+      <span class="period">per month / all services</span>
+      <a href="signup.html?plan=complete" class="btn-hero">Get NRI Complete</a>
     </div>
   </div>
 </section>
@@ -202,7 +258,7 @@
   <div style="text-align:center;">
     <div class="section-tag">Why NRI Bridge India</div>
     <h2 class="section-title" style="color:var(--text-light);">Built for NRIs, by people who understand</h2>
-    <p class="section-sub">We know the challenges of managing property from overseas. That's exactly why we built this.</p>
+    <p class="section-sub">We know the challenges of managing life in India from overseas. That's exactly why we built this.</p>
   </div>
 
   <div class="why-grid">
@@ -217,22 +273,22 @@
       <div class="why-icon">
         <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       </div>
-      <h3>Verified & Insured</h3>
-      <p>All tenants are background-checked. Properties are covered under our partner insurance plans.</p>
+      <h3>Verified & Trusted</h3>
+      <p>All service providers are background-checked. Every process is documented and transparent.</p>
     </div>
     <div class="why-card">
       <div class="why-icon">
         <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       </div>
       <h3>Real-Time Dashboard</h3>
-      <p>Track rent, expenses, inspections, and documents — all from one clean, intuitive dashboard.</p>
+      <p>Track properties, vehicles, family well-being, and legal cases — all from one clean, intuitive dashboard.</p>
     </div>
     <div class="why-card">
       <div class="why-icon">
         <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
       </div>
-      <h3>On-Ground Team</h3>
-      <p>Local property managers in 28 cities who physically visit, inspect, and resolve issues fast.</p>
+      <h3>On-Ground Teams</h3>
+      <p>Local teams in 28 cities who physically visit, inspect, coordinate, and resolve issues fast.</p>
     </div>
   </div>
 </section>
@@ -241,8 +297,8 @@
 <section class="testimonials section-pad">
   <div style="text-align:center;">
     <div class="section-tag">Testimonials</div>
-    <h2 class="section-title">What NRI owners say</h2>
-    <p class="section-sub">Hear from property owners across the globe who trust NRI Bridge India with their most valuable assets.</p>
+    <h2 class="section-title">What NRIs say about us</h2>
+    <p class="section-sub">Hear from clients across the globe who trust NRI Bridge India with their most important needs.</p>
   </div>
 
   <div class="testimonials-grid">
@@ -254,6 +310,28 @@
         <div class="author-info">
           <strong>Rajesh Kumar</strong>
           <span>Software Engineer · San Francisco</span>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <blockquote>"My parents in Pune get regular health check-ups, medicine deliveries, and weekly companionship visits. I sleep better at night knowing they're looked after."</blockquote>
+      <div class="testimonial-author">
+        <div class="author-avatar">AG</div>
+        <div class="author-info">
+          <strong>Anita Gupta</strong>
+          <span>Data Scientist · Toronto</span>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <blockquote>"Left my car in Delhi 3 years ago. NBI handles insurance, servicing, and even got the PUC renewed remotely. The car is in better shape than when I drove it!"</blockquote>
+      <div class="testimonial-author">
+        <div class="author-avatar">VM</div>
+        <div class="author-info">
+          <strong>Vikram Malhotra</strong>
+          <span>Consultant · Dubai</span>
         </div>
       </div>
     </div>
@@ -279,64 +357,35 @@
         </div>
       </div>
     </div>
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <blockquote>"Getting a Power of Attorney executed from Singapore used to be a nightmare. NBI coordinated everything — drafting, notarisation, apostille — in under 2 weeks."</blockquote>
+      <div class="testimonial-author">
+        <div class="author-avatar">NK</div>
+        <div class="author-info">
+          <strong>Neha Kapoor</strong>
+          <span>Banking VP · Singapore</span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- CTA -->
 <section class="cta-section section-pad">
-  <h2>Your property deserves<br>better management</h2>
-  <p>Join 5,000+ NRI property owners who manage their Indian properties stress-free from anywhere in the world.</p>
+  <h2>Your life in India deserves<br>better management</h2>
+  <p>Join thousands of NRIs who manage their Indian properties, vehicles, family care, and legal needs stress-free from anywhere in the world.</p>
   <div class="cta-btns">
-    <a href="signup.html" class="btn-hero">Book Free Consultation</a>
-    <a href="#" class="btn-ghost">Talk to Our Team →</a>
+    <a href="signup.html" class="btn-hero">Get Started Free</a>
+    <a href="#pricing" class="btn-ghost">View Plans & Pricing →</a>
   </div>
 </section>
 
-<!-- SHARED FOOTER START -->
-<footer>
-  <div class="footer-top">
-    <div class="footer-brand">
-      <div class="nav-logo"><img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:80px;width:auto;display:block;"></div>
-      <p>End-to-end property management for Non-Resident Indians. Managing your assets in India so you can focus on your life abroad.</p>
-    </div>
-    <div class="footer-cols">
-      <div class="footer-col">
-        <h4>Services</h4>
-        <ul>
-          <li><a href="home-management.html">All Services</a></li>
-          <li><a href="service-tenant-acquisition.html">Tenant Acquisition</a></li>
-          <li><a href="service-rent-collection.html">Rent Collection</a></li>
-          <li><a href="service-property-maintenance.html">Maintenance</a></li>
-          <li><a href="service-property-inspection.html">Inspections</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Company</h4>
-        <ul>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Cities We Cover</a></li>
-          <li><a href="#">Blog</a></li>
-          <li><a href="#">Careers</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Resources</h4>
-        <ul>
-          <li><a href="#">NRI Tax Guide</a></li>
-          <li><a href="#">RERA Compliance</a></li>
-          <li><a href="#">FAQs</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Terms of Service</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="footer-bottom">© 2026 NRI Bridge India. All rights reserved. Registered in India.</div>
-</footer>
-<!-- SHARED FOOTER END -->
+<footer></footer>
+<script src="footer.js"></script>
 
 <script>
+  // ── Animate on scroll ──
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -347,22 +396,95 @@
     });
   }, { threshold: 0.12 });
 
-  document.querySelectorAll('.service-card, .price-card, .why-card, .step-card, .testimonial-card, .stat-item').forEach((el, i) => {
+  document.querySelectorAll('.landing-service-card, .price-card, .why-card, .step-card, .testimonial-card, .stat-item').forEach((el, i) => {
     el.style.opacity = '0';
     el.dataset.delay = `${(i % 8) * 0.08}s`;
     observer.observe(el);
   });
 
-  // Check login session and update nav
-  (function() {
-    var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
-    if (session) {
-      var navActions = document.querySelector('.nav-actions');
-      navActions.innerHTML =
-        '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;">Hi, ' + session.name.split(' ')[0] + '</span>' +
-        '<button class="btn-outline" onclick="localStorage.removeItem(\'nri_session\');location.reload();">Log out</button>';
+  // ── Pricing Data ──
+  var PRICING = {
+    home: {
+      starter: { name: 'Starter', tag: 'Peace of Mind', monthly: 4999, features: ['Monthly property inspection', 'Photo + video report', 'Safety & functioning check', 'WhatsApp updates', 'Emergency alert support'] },
+      standard: { name: 'Standard', tag: 'Care & Maintenance', monthly: 9999, features: ['Everything in Starter', 'Maintenance coordination', 'Vendor management', '1 free cleaning/month', 'Priority complaint handling'], note: 'Extra: Actual repair costs + 15–20% service fee' },
+      premium: { name: 'Premium', tag: 'Full Management', customPrice: '10% of rent', features: ['Everything in Standard', 'Full tenant management', 'Background verification', 'Rent collection & transfers', 'Monthly financial report', 'Move-in / move-out handling'], note: 'One-time: 1 month rent after tenant onboarding' }
+    },
+    vehicle: {
+      starter: { name: 'Starter', tag: 'Basic Care', monthly: 1999, features: ['Insurance renewal tracking', 'Annual servicing coordination', 'PUC certificate renewal', 'Secure parking arrangement', 'Monthly vehicle health update'] },
+      standard: { name: 'Standard', tag: 'Complete Care', monthly: 3999, features: ['Everything in Starter', 'Bi-annual servicing', 'Battery & tyre checks', 'Engine start schedule', 'Priority roadside support'], note: 'Parts & repair costs billed separately' },
+      premium: { name: 'Premium', tag: 'Full Vehicle Management', monthly: 6999, features: ['Everything in Standard', 'Selling assistance', 'Registration & transfer', 'Accident claim support', 'Dedicated vehicle manager', 'RC/NOC/Hypothecation handling'] }
+    },
+    parental: {
+      starter: { name: 'Starter', tag: 'Well-Being Check', monthly: 4999, features: ['Weekly phone check-ins', 'Monthly health vitals report', 'Medicine ordering reminders', 'Emergency helpline access', 'Family update emails'] },
+      standard: { name: 'Standard', tag: 'Active Care', monthly: 8999, features: ['Everything in Starter', 'Bi-weekly in-person visits', 'Doctor appointment booking', 'Medicine doorstep delivery', 'Companion service (4 hrs/week)', 'Video call updates to you'], note: 'Hospital/medical costs billed separately' },
+      premium: { name: 'Premium', tag: 'Full Family Care', monthly: 14999, features: ['Everything in Standard', '24/7 emergency response', 'Hospital admission coordination', 'Daily companion/caretaker', 'Dietician & physiotherapy', 'Dedicated family care manager'] }
+    },
+    legal: {
+      starter: { name: 'Starter', tag: 'Document Assist', monthly: 2999, features: ['Government document procurement', 'Aadhaar/PAN updates', 'Basic legal consultation', 'Document courier service', 'Quarterly compliance check'] },
+      standard: { name: 'Standard', tag: 'Legal Support', monthly: 5999, features: ['Everything in Starter', 'Power of Attorney execution', 'Property mutation assistance', 'Tax filing (ITR/TDS)', 'Court date monitoring', 'Dedicated legal coordinator'], note: 'Stamp duty & registration fees billed separately' },
+      premium: { name: 'Premium', tag: 'Full Legal Management', monthly: 9999, features: ['Everything in Standard', 'Will & succession planning', 'Property sale/purchase support', 'DTAA benefit optimization', 'Litigation management', 'Dedicated legal counsel'] }
     }
-  })();
+  };
+
+  var currentCategory = 'home';
+  var isAnnual = false;
+
+  function renderPricingCards() {
+    var cat = PRICING[currentCategory];
+    var grid = document.getElementById('pricingGrid');
+    grid.innerHTML = '';
+
+    ['starter', 'standard', 'premium'].forEach(function(tier, idx) {
+      var plan = cat[tier];
+      var isFeatured = tier === 'standard';
+      var card = document.createElement('div');
+      card.className = 'price-card' + (isFeatured ? ' featured' : '');
+
+      var priceDisplay = '';
+      var periodDisplay = '';
+      if (plan.customPrice) {
+        priceDisplay = plan.customPrice;
+        periodDisplay = 'per property / per month';
+      } else {
+        var amount = isAnnual ? Math.round(plan.monthly * 12 * 0.85) : plan.monthly;
+        var formatted = amount.toLocaleString('en-IN');
+        priceDisplay = '<span class="currency">₹</span><span class="price-amount">' + formatted + '</span>';
+        periodDisplay = isAnnual
+          ? 'per year (billed annually)'
+          : 'per month';
+      }
+
+      var featuresHtml = plan.features.map(function(f) {
+        var checkColor = isFeatured ? 'var(--bg-highlight)' : 'var(--green-pop)';
+        return '<li><span class="check"><svg viewBox="0 0 12 12"><polyline points="2.5 6.5 5 9 9.5 3.5" stroke="' + checkColor + '" fill="none" stroke-width="1.5"/></svg></span>' + f + '</li>';
+      }).join('');
+
+      card.innerHTML =
+        (isFeatured ? '<div class="card-badge">Most Popular</div>' : '') +
+        '<div class="card-name">' + plan.name + '</div>' +
+        '<div class="card-tagline">"' + plan.tag + '"</div>' +
+        '<div class="card-price"' + (plan.customPrice ? ' style="font-size:2.2rem;"' : '') + '>' + priceDisplay + '</div>' +
+        '<div class="card-period">' + periodDisplay + '</div>' +
+        '<ul class="card-features">' + featuresHtml + '</ul>' +
+        (plan.note ? '<div class="card-' + (tier === 'premium' ? 'earnings' : 'note') + '"><strong>' + plan.note.split('.')[0] + '</strong>' + (plan.note.indexOf('.') > -1 ? plan.note.slice(plan.note.indexOf('.')) : '') + '</div>' : '') +
+        '<a href="#" class="btn-card ' + (isFeatured ? 'btn-card-featured' : 'btn-card-default') + '" data-plan="' + tier + '" onclick="handlePlanClick(event,\'' + tier + '\')">' + (isFeatured ? 'Start Free Trial' : 'Get Started') + '</a>';
+
+      grid.appendChild(card);
+
+      // Animate
+      card.style.opacity = '0';
+      card.dataset.delay = (idx * 0.1) + 's';
+      observer.observe(card);
+    });
+  }
+
+  function switchPricingCategory(cat) {
+    currentCategory = cat;
+    document.querySelectorAll('.pricing-service-tab').forEach(function(t) {
+      t.classList.toggle('active', t.getAttribute('data-category') === cat);
+    });
+    renderPricingCards();
+  }
 
   // Billing toggle
   (function() {
@@ -371,54 +493,55 @@
     var lblA = document.getElementById('lblAnnual');
     var track = document.getElementById('toggleTrack');
     var thumb = document.getElementById('toggleThumb');
-    var amounts = document.querySelectorAll('.price-amount');
-    var periods = document.querySelectorAll('.period-label');
 
     toggle.addEventListener('change', function() {
-      var annual = this.checked;
-      lblM.style.fontWeight = annual ? '500' : '600';
-      lblM.style.color = annual ? 'var(--text-mid)' : 'var(--text-dark)';
-      lblM.style.opacity = annual ? '0.6' : '1';
-      lblA.style.fontWeight = annual ? '600' : '500';
-      lblA.style.color = annual ? 'var(--text-dark)' : 'var(--text-mid)';
-      lblA.style.opacity = annual ? '1' : '0.6';
-      track.style.background = annual ? 'var(--green-pop)' : 'var(--border)';
-      thumb.style.transform = annual ? 'translateX(24px)' : 'translateX(0)';
-
-      amounts.forEach(function(el) {
-        var price = annual ? el.getAttribute('data-annual') : el.getAttribute('data-monthly');
-        if (price) el.textContent = price;
-      });
-      periods.forEach(function(el) {
-        el.textContent = annual ? 'per year (billed annually)' : 'per month';
-      });
+      isAnnual = this.checked;
+      lblM.style.fontWeight = isAnnual ? '500' : '600';
+      lblM.style.color = isAnnual ? 'var(--text-mid)' : 'var(--text-dark)';
+      lblM.style.opacity = isAnnual ? '0.6' : '1';
+      lblA.style.fontWeight = isAnnual ? '600' : '500';
+      lblA.style.color = isAnnual ? 'var(--text-dark)' : 'var(--text-mid)';
+      lblA.style.opacity = isAnnual ? '1' : '0.6';
+      track.style.background = isAnnual ? 'var(--green-pop)' : 'var(--border)';
+      thumb.style.transform = isAnnual ? 'translateX(24px)' : 'translateX(0)';
+      renderPricingCards();
     });
   })();
 
-  // Plan CTA routing — if logged in go to onboarding, otherwise signup
+  // Initial render
+  renderPricingCards();
+
+  // Plan CTA routing
   function handlePlanClick(e, plan) {
     e.preventDefault();
     var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
     if (session) {
-      window.location.href = 'onboarding.html?plan=' + plan;
+      window.location.href = 'onboarding.html?plan=' + plan + '&category=' + currentCategory;
     } else {
-      window.location.href = 'signup.html?plan=' + plan;
+      window.location.href = 'signup.html?plan=' + plan + '&category=' + currentCategory;
     }
   }
 
   // Pricing card tilt
-  document.querySelectorAll('.price-card').forEach(card => {
-    card.addEventListener('mousemove', e => {
-      const rect = card.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      const base = card.classList.contains('featured') ? 'scale(1.04) ' : '';
-      card.style.transform = `${base}perspective(800px) rotateY(${x * 4}deg) rotateX(${-y * 4}deg)`;
-    });
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = card.classList.contains('featured') ? 'scale(1.04)' : '';
-    });
+  document.addEventListener('mouseover', function(e) {
+    var card = e.target.closest('.price-card');
+    if (!card) return;
+    card.addEventListener('mousemove', tiltCard);
+    card.addEventListener('mouseleave', resetCard);
   });
+
+  function tiltCard(e) {
+    var rect = this.getBoundingClientRect();
+    var x = (e.clientX - rect.left) / rect.width - 0.5;
+    var y = (e.clientY - rect.top) / rect.height - 0.5;
+    var base = this.classList.contains('featured') ? 'scale(1.04) ' : '';
+    this.style.transform = base + 'perspective(800px) rotateY(' + (x * 4) + 'deg) rotateX(' + (-y * 4) + 'deg)';
+  }
+  function resetCard() {
+    this.style.transform = this.classList.contains('featured') ? 'scale(1.04)' : '';
+    this.removeEventListener('mousemove', tiltCard);
+    this.removeEventListener('mouseleave', resetCard);
+  }
 </script>
 </body>
 </html>

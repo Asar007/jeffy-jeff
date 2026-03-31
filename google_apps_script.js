@@ -12,6 +12,10 @@
  *   - Signup form submissions → "Signups" sheet
  *   - Login attempts → "Logins" sheet (for tracking/analytics)
  *   - Contact/consultation requests → "Contacts" sheet
+ *   - Onboarding submissions → "Onboarding" sheet (multi-service)
+ *   - Vehicle inquiries → "Vehicle Inquiries" sheet
+ *   - Parental care inquiries → "Parental Inquiries" sheet
+ *   - Legal inquiries → "Legal Inquiries" sheet
  */
 
 function doPost(e) {
@@ -23,7 +27,6 @@ function doPost(e) {
     if (type === 'signup') {
       var sheet = ss.getSheetByName('Signups') || ss.insertSheet('Signups');
 
-      // Add headers if sheet is empty
       if (sheet.getLastRow() === 0) {
         sheet.appendRow([
           'Timestamp', 'Name', 'Email', 'Phone', 'Country', 'Status'
@@ -81,6 +84,120 @@ function doPost(e) {
 
       return ContentService
         .createTextOutput(JSON.stringify({ status: 'success', message: 'Contact recorded' }))
+        .setMimeType(ContentService.MimeType.JSON);
+
+    } else if (type === 'onboarding') {
+      var sheet = ss.getSheetByName('Onboarding') || ss.insertSheet('Onboarding');
+
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow([
+          'Timestamp', 'Name', 'Email', 'Selected Services',
+          'Service Details (JSON)', 'Plans (JSON)', 'Billing',
+          'Total Monthly', 'Payment Method', 'Transaction ID'
+        ]);
+        sheet.getRange(1, 1, 1, 10).setFontWeight('bold');
+      }
+
+      sheet.appendRow([
+        new Date().toISOString(),
+        data.name || '',
+        data.email || '',
+        (data.selectedServices || []).join(', '),
+        JSON.stringify(data.serviceDetails || {}),
+        JSON.stringify(data.servicePlans || {}),
+        data.billing || 'monthly',
+        data.totalMonthly || 0,
+        data.paymentMethod || 'card',
+        data.transactionId || ''
+      ]);
+
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'success', message: 'Onboarding recorded' }))
+        .setMimeType(ContentService.MimeType.JSON);
+
+    } else if (type === 'vehicle-inquiry') {
+      var sheet = ss.getSheetByName('Vehicle Inquiries') || ss.insertSheet('Vehicle Inquiries');
+
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow([
+          'Timestamp', 'Name', 'Email', 'Phone',
+          'Vehicle Type', 'Registration Number', 'City',
+          'Service Needed', 'Message'
+        ]);
+        sheet.getRange(1, 1, 1, 9).setFontWeight('bold');
+      }
+
+      sheet.appendRow([
+        new Date().toISOString(),
+        data.name || '',
+        data.email || '',
+        data.phone || '',
+        data.vehicleType || '',
+        data.regNumber || '',
+        data.city || '',
+        data.serviceNeeded || '',
+        data.message || ''
+      ]);
+
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'success', message: 'Vehicle inquiry recorded' }))
+        .setMimeType(ContentService.MimeType.JSON);
+
+    } else if (type === 'parental-inquiry') {
+      var sheet = ss.getSheetByName('Parental Inquiries') || ss.insertSheet('Parental Inquiries');
+
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow([
+          'Timestamp', 'Name', 'Email', 'Phone',
+          'Parent Name', 'Parent City', 'Parent Age',
+          'Health Conditions', 'Service Needed', 'Message'
+        ]);
+        sheet.getRange(1, 1, 1, 10).setFontWeight('bold');
+      }
+
+      sheet.appendRow([
+        new Date().toISOString(),
+        data.name || '',
+        data.email || '',
+        data.phone || '',
+        data.parentName || '',
+        data.parentCity || '',
+        data.parentAge || '',
+        data.healthConditions || '',
+        data.serviceNeeded || '',
+        data.message || ''
+      ]);
+
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'success', message: 'Parental inquiry recorded' }))
+        .setMimeType(ContentService.MimeType.JSON);
+
+    } else if (type === 'legal-inquiry') {
+      var sheet = ss.getSheetByName('Legal Inquiries') || ss.insertSheet('Legal Inquiries');
+
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow([
+          'Timestamp', 'Name', 'Email', 'Phone',
+          'Case Type', 'City', 'Urgency',
+          'Description', 'Message'
+        ]);
+        sheet.getRange(1, 1, 1, 9).setFontWeight('bold');
+      }
+
+      sheet.appendRow([
+        new Date().toISOString(),
+        data.name || '',
+        data.email || '',
+        data.phone || '',
+        data.caseType || '',
+        data.city || '',
+        data.urgency || 'normal',
+        data.description || '',
+        data.message || ''
+      ]);
+
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'success', message: 'Legal inquiry recorded' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 

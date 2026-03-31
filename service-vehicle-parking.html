@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parking & Storage Management — NRI Bridge India</title>
+<meta name="description" content="Secure parking arrangements, periodic vehicle starting, and safe long-term storage solutions for NRI vehicles in India.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav></nav><script src="nav.js"></script>
+<section class="service-hero section-pad"><div class="section-tag">Vehicle Care</div><h1>Parking &amp; Storage Management</h1><p>Leaving your vehicle parked for months or years causes battery drain, tyre flat-spots, rust, and security concerns. We provide secure parking with regular maintenance to keep your vehicle safe and ready.</p></section>
+
+<section class="service-details section-pad">
+  <div style="text-align:center;"><div class="section-tag">What's Included</div><h2 class="section-title">Safe, Monitored Vehicle Storage</h2><p class="section-sub">Your vehicle stays secure, maintained, and ready to drive whenever you return.</p></div>
+  <div class="service-details-grid">
+    <div class="detail-card"><div class="detail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="22" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg></div><h3>Secure Parking</h3><p>Covered, monitored parking in safe locations near your home or our partner facilities.</p><ul><li>CCTV-monitored parking facilities</li><li>Weather-protected (covered/indoor) storage</li><li>Regular security checks and status updates</li></ul></div>
+    <div class="detail-card"><div class="detail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><h3>Regular Vehicle Starting</h3><p>Engines need periodic running to maintain battery life, lubrication, and component health.</p><ul><li>Bi-weekly engine idling (15-20 minutes)</li><li>Battery charging and health monitoring</li><li>AC system run to prevent compressor seizure</li></ul></div>
+    <div class="detail-card"><div class="detail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>Vehicle Protection</h3><p>Long-term storage preparation to prevent deterioration and protect your investment.</p><ul><li>Quality car cover installation</li><li>Rodent/pest control measures</li><li>Interior cleaning and desiccant placement</li></ul></div>
+    <div class="detail-card"><div class="detail-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><h3>Condition Monitoring</h3><p>Regular photo/video updates so you can see your vehicle's condition from anywhere.</p><ul><li>Monthly photo report with timestamps</li><li>Damage or issue alerts within 24 hours</li><li>Quarterly detailed condition assessment</li></ul></div>
+  </div>
+</section>
+
+<section class="value-section section-pad">
+  <div style="text-align:center;"><div class="section-tag">Value to You</div><h2 class="section-title" style="color:var(--text-light);">Why this matters</h2></div>
+  <div class="value-grid">
+    <div class="value-card"><div class="value-num">₹50K+</div><h3>Repair Costs Avoided</h3><p>Unattended vehicles often need ₹50,000+ in repairs after just 6 months. Regular care prevents this.</p></div>
+    <div class="value-card"><div class="value-num">24/7</div><h3>Security Monitoring</h3><p>Your vehicle is in CCTV-monitored, secure facilities with regular check-ins by our team.</p></div>
+    <div class="value-card"><div class="value-num">Drive Ready</div><h3>Anytime You Visit</h3><p>Land in India and drive away. Your vehicle is charged, fuelled, cleaned, and road-ready.</p></div>
+  </div>
+</section>
+
+<section class="plan-coverage section-pad">
+  <div style="text-align:center;"><div class="section-tag">Plans</div><h2 class="section-title" style="color:var(--text-light);">Available in these plans</h2></div>
+  <div class="coverage-grid">
+    <div class="coverage-card included"><div class="plan-name">Starter</div><div class="plan-price">&#8377;1,999/mo</div><div class="plan-status">&#10003; Basic Parking</div><a href="#" onclick="handlePlanClick(event,'starter')">Get Started</a></div>
+    <div class="coverage-card included"><div class="plan-name">Standard</div><div class="plan-price">&#8377;3,999/mo</div><div class="plan-status">&#10003; Parking + Starting</div><a href="#" onclick="handlePlanClick(event,'standard')">Get Started</a></div>
+    <div class="coverage-card included"><div class="plan-name">Premium</div><div class="plan-price">&#8377;6,999/mo</div><div class="plan-status">&#10003; Full Storage Care</div><a href="#" onclick="handlePlanClick(event,'premium')">Get Started</a></div>
+  </div>
+</section>
+
+<section class="cta-section section-pad"><h2>Your vehicle, safe and ready</h2><p>Secure storage with active maintenance. Return to a vehicle that's in better shape than you left it.</p><div class="cta-btns"><a href="#" class="btn-hero" onclick="handlePlanClick(event,'standard')">Get Started Today</a><a href="propnri-saas-site.html#pricing" class="btn-ghost">View All Plans &rarr;</a></div></section>
+
+<footer></footer><script src="footer.js"></script>
+<script>
+  const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.style.animation = 'fadeUp 0.7s ease both'; entry.target.style.animationDelay = entry.target.dataset.delay || '0s'; observer.unobserve(entry.target); } }); }, { threshold: 0.12 });
+  document.querySelectorAll('.detail-card, .value-card, .coverage-card').forEach((el, i) => { el.style.opacity = '0'; el.dataset.delay = `${(i % 6) * 0.1}s`; observer.observe(el); });
+  function handlePlanClick(e, plan) { e.preventDefault(); var s = JSON.parse(localStorage.getItem('nri_session') || 'null'); window.location.href = s ? 'onboarding.html?plan=' + plan + '&category=vehicle' : 'signup.html?plan=' + plan + '&category=vehicle'; }
+</script>
+</body></html>

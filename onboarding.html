@@ -3,433 +3,255 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Set Up Your Properties — NRI Bridge India</title>
+<title>Set Up Your Services — NRI Bridge India</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
-  /* Step progress bar */
-  .onboard-progress { display:flex; justify-content:center; align-items:center; gap:0; margin-bottom:36px; }
-  .progress-step { display:flex; align-items:center; gap:0; }
-  .progress-dot {
-    width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-size:0.82rem; font-weight:700; border:2px solid rgba(0,0,0,0.1);
-    background:var(--white); color:var(--text-mid); transition:all 0.4s;
-  }
-  .progress-dot.active { border-color:var(--green-pop); background:var(--green-pop); color:var(--white); }
-  .progress-dot.done { border-color:var(--green-pop); background:rgba(74,106,46,0.1); color:var(--green-pop); }
-  .progress-line { width:48px; height:2px; background:rgba(0,0,0,0.08); transition:background 0.4s; }
-  .progress-line.done { background:var(--green-pop); }
-  .progress-label { font-size:0.65rem; text-align:center; color:var(--text-mid); margin-top:6px; font-weight:500; }
-  .progress-step-wrap { display:flex; flex-direction:column; align-items:center; }
+  .onboard-progress{display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:36px}
+  .progress-step-wrap{display:flex;flex-direction:column;align-items:center}
+  .progress-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;border:2px solid rgba(0,0,0,.1);background:var(--white);color:var(--text-mid);transition:all .4s}
+  .progress-dot.active{border-color:var(--green-pop);background:var(--green-pop);color:var(--white)}
+  .progress-dot.done{border-color:var(--green-pop);background:rgba(74,106,46,.1);color:var(--green-pop)}
+  .progress-line{width:36px;height:2px;background:rgba(0,0,0,.08);transition:background .4s}
+  .progress-line.done{background:var(--green-pop)}
+  .progress-label{font-size:.6rem;text-align:center;color:var(--text-mid);margin-top:6px;font-weight:500}
+  .onboard-step{display:none}.onboard-step.active{display:block;animation:fadeUp .4s ease both}
+  .onboard-card{background:var(--bg-cream);border-radius:var(--radius-lg);padding:48px 40px;max-width:720px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+  .onboard-heading{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--text-dark);margin-bottom:6px}
+  .onboard-sub{font-size:.88rem;color:var(--text-mid);margin-bottom:28px}
+  .btn-back{background:none;border:none;color:var(--text-mid);font-size:.85rem;font-weight:500;cursor:pointer;padding:8px 0;font-family:inherit;display:flex;align-items:center;gap:6px;margin-bottom:16px;transition:color .3s}
+  .btn-back:hover{color:var(--text-dark)}
 
-  /* Wizard steps */
-  .onboard-step { display:none; }
-  .onboard-step.active { display:block; animation:fadeUp 0.4s ease both; }
+  /* Service selector cards */
+  .svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+  .svc-check{border:2px solid rgba(0,0,0,.08);border-radius:var(--radius-md);padding:20px;cursor:pointer;transition:all .3s;text-align:center}
+  .svc-check:hover{border-color:rgba(74,106,46,.3)}
+  .svc-check.selected{border-color:var(--green-pop);background:rgba(74,106,46,.04);box-shadow:0 0 0 3px rgba(74,106,46,.08)}
+  .svc-check .svc-icon{width:48px;height:48px;border-radius:14px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}
+  .svc-check .svc-icon svg{width:24px;height:24px;stroke-width:1.5;fill:none;stroke:currentColor}
+  .svc-check h3{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:600;margin-bottom:4px}
+  .svc-check p{font-size:.75rem;color:var(--text-mid);line-height:1.4}
+  .svc-check.cat-home .svc-icon{background:rgba(74,106,46,.1);color:var(--green-pop)}
+  .svc-check.cat-vehicle .svc-icon{background:rgba(58,106,94,.1);color:var(--service-vehicle)}
+  .svc-check.cat-parental .svc-icon{background:rgba(106,74,46,.1);color:var(--service-parental)}
+  .svc-check.cat-legal .svc-icon{background:rgba(46,74,106,.1);color:var(--service-legal)}
+  .svc-badge{display:inline-block;padding:2px 10px;border-radius:var(--radius-pill);font-size:.68rem;font-weight:600;margin-top:8px;background:rgba(74,106,46,.1);color:var(--green-pop)}
+  .svc-check.selected .svc-badge{background:var(--green-pop);color:var(--white)}
 
-  /* Property cards */
-  .property-card {
-    background:var(--white); border:1.5px solid rgba(0,0,0,0.08); border-radius:var(--radius-md);
-    padding:24px; margin-bottom:16px; transition:all 0.3s;
-  }
-  .property-card:hover { border-color:rgba(74,106,46,0.2); }
-  .property-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-  .property-header h3 { font-family:'Playfair Display',serif; font-size:1rem; font-weight:600; color:var(--text-dark); }
-  .property-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .property-fields .form-group { margin-bottom:0; }
+  /* Detail forms */
+  .detail-section{margin-bottom:24px;border:1.5px solid rgba(0,0,0,.08);border-radius:var(--radius-md);padding:20px}
+  .detail-section h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;margin-bottom:14px;color:var(--text-dark)}
+  .item-card{background:rgba(0,0,0,.02);border-radius:var(--radius-sm);padding:16px;margin-bottom:12px}
+  .item-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn-add-item{padding:10px;border:2px dashed rgba(0,0,0,.1);border-radius:var(--radius-md);background:transparent;cursor:pointer;font-family:inherit;font-size:.82rem;color:var(--green-pop);font-weight:600;transition:all .3s;width:100%}
+  .btn-add-item:hover{background:rgba(74,106,46,.03);border-color:var(--green-pop)}
+  .btn-remove{padding:4px 10px;border:1px solid rgba(220,53,69,.25);border-radius:var(--radius-sm);background:transparent;cursor:pointer;color:#dc3545;font-size:.72rem;font-weight:500;transition:all .3s;font-family:inherit;float:right}
+  .btn-remove:hover{background:rgba(220,53,69,.06)}
 
-  .btn-remove-prop {
-    padding:6px 14px; border:1px solid rgba(220,53,69,0.25); border-radius:var(--radius-sm);
-    background:transparent; cursor:pointer; color:#dc3545; font-size:0.78rem; font-weight:500;
-    transition:all 0.3s; font-family:inherit;
-  }
-  .btn-remove-prop:hover { background:rgba(220,53,69,0.06); }
+  /* Plan selector */
+  .plan-section{margin-bottom:20px;border:1.5px solid rgba(0,0,0,.08);border-radius:var(--radius-md);padding:20px}
+  .plan-section h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;margin-bottom:4px}
+  .plan-section .plan-sub{font-size:.75rem;color:var(--text-mid);margin-bottom:14px}
+  .discount-note{font-size:.72rem;color:var(--green-pop);font-weight:600;background:rgba(74,106,46,.08);padding:6px 12px;border-radius:var(--radius-sm);margin-bottom:14px;text-align:center}
+  .plan-options{display:flex;flex-direction:column;gap:8px}
+  .plan-opt{border:1.5px solid rgba(0,0,0,.08);border-radius:var(--radius-md);padding:14px 16px;cursor:pointer;transition:all .3s;display:flex;justify-content:space-between;align-items:center;position:relative}
+  .plan-opt:hover{border-color:var(--green-pop);background:rgba(74,106,46,.02)}
+  .plan-opt.selected{border-color:var(--green-pop);background:rgba(74,106,46,.05);box-shadow:0 0 0 3px rgba(74,106,46,.08)}
+  .plan-opt-name{font-family:'Playfair Display',serif;font-weight:600;font-size:.9rem;color:var(--text-dark)}
+  .plan-opt-price{font-family:'Playfair Display',serif;font-weight:700;font-size:.95rem;color:var(--green-pop)}
+  .plan-radio{width:18px;height:18px;border-radius:50%;border:2px solid rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .plan-opt.selected .plan-radio{border-color:var(--green-pop)}
+  .plan-opt.selected .plan-radio::after{content:'';width:9px;height:9px;border-radius:50%;background:var(--green-pop)}
 
-  .btn-add-property {
-    padding:14px; border:2px dashed rgba(0,0,0,0.1); border-radius:var(--radius-md);
-    background:transparent; cursor:pointer; font-family:inherit; font-size:0.88rem;
-    color:var(--green-pop); font-weight:600; transition:all 0.3s; width:100%; margin-bottom:24px;
-  }
-  .btn-add-property:hover { background:rgba(74,106,46,0.03); border-color:var(--green-pop); }
+  /* Billing toggle */
+  .billing-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .billing-row span{font-size:.8rem}.billing-row .active-lbl{font-weight:600;color:var(--text-dark)}.billing-row .inactive-lbl{font-weight:400;color:var(--text-mid);opacity:.6}
+  .toggle-sw{position:relative;width:40px;height:22px;cursor:pointer}.toggle-sw input{display:none}
+  .toggle-tr{position:absolute;inset:0;background:var(--border);border-radius:100px;transition:background .3s}
+  .toggle-th{position:absolute;top:2px;left:2px;width:18px;height:18px;background:var(--white);border-radius:50%;transition:transform .3s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  .toggle-sw input:checked~.toggle-tr{background:var(--green-pop)}.toggle-sw input:checked~.toggle-th{transform:translateX(18px)}
+  .save-tag{font-size:.68rem;font-weight:700;background:rgba(74,106,46,.1);color:var(--green-pop);padding:2px 8px;border-radius:100px}
 
-  /* Plan selection per property */
-  .plan-selector { margin-top:16px; }
-  .plan-selector-label { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-mid); margin-bottom:10px; }
+  /* Payment */
+  .pay-tabs{display:flex;gap:8px;margin-bottom:24px}
+  .pay-tab{flex:1;padding:10px;border:1.5px solid rgba(0,0,0,.08);border-radius:var(--radius-md);background:var(--white);cursor:pointer;text-align:center;font-size:.78rem;font-weight:500;font-family:inherit;color:var(--text-mid);transition:all .3s}
+  .pay-tab:hover{border-color:var(--green-pop)}.pay-tab.active{border-color:var(--green-pop);background:rgba(74,106,46,.04);color:var(--green-pop);font-weight:600}
+  .pay-form{display:none}.pay-form.active{display:block;animation:fadeUp .3s ease both}
+  .card-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .card-visual{background:linear-gradient(135deg,var(--bg-main) 0%,var(--accent) 100%);border-radius:var(--radius-md);padding:20px;margin-bottom:20px;color:var(--text-light);position:relative;overflow:hidden}
+  .card-visual::after{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.06)}
+  .card-visual-number{font-size:1.1rem;font-weight:500;letter-spacing:3px;margin-bottom:12px;font-family:'DM Sans',monospace}
+  .card-visual-row{display:flex;justify-content:space-between;font-size:.72rem;opacity:.8}
+  .upi-options{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+  .upi-option{display:flex;align-items:center;gap:10px;padding:12px;border:1.5px solid rgba(0,0,0,.08);border-radius:var(--radius-md);cursor:pointer;transition:all .3s}
+  .upi-option:hover{border-color:var(--green-pop)}.upi-option.selected{border-color:var(--green-pop);background:rgba(74,106,46,.04)}
+  .upi-option-icon{width:32px;height:32px;border-radius:6px;background:var(--bg-light);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.65rem;color:var(--text-mid)}
+  .bank-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+  .bank-option{padding:12px;border:1.5px solid rgba(0,0,0,.08);border-radius:var(--radius-md);cursor:pointer;transition:all .3s;background:var(--white);text-align:center;font-size:.78rem;font-weight:500;color:var(--text-mid)}
+  .bank-option:hover{border-color:var(--green-pop)}.bank-option.selected{border-color:var(--green-pop);background:rgba(74,106,46,.04);color:var(--green-pop);font-weight:600}
+  .secure-badge{display:flex;align-items:center;gap:6px;justify-content:center;font-size:.72rem;color:var(--text-mid);margin-top:16px;opacity:.7}
+  .secure-badge svg{width:12px;height:12px}
 
-  .billing-toggle-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
-  .billing-toggle-row span { font-size:0.82rem; }
-  .billing-toggle-row .active-label { font-weight:600; color:var(--text-dark); }
-  .billing-toggle-row .inactive-label { font-weight:400; color:var(--text-mid); opacity:0.6; }
-  .save-tag { font-size:0.7rem; font-weight:700; background:rgba(74,106,46,0.1); color:var(--green-pop); padding:2px 8px; border-radius:100px; }
+  /* Review */
+  .review-section{margin-bottom:20px}
+  .review-section h4{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-mid);margin-bottom:8px}
+  .review-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:.85rem}
+  .review-row:last-child{border-bottom:none}
+  .review-label{color:var(--text-mid)}.review-value{font-weight:600;color:var(--text-dark)}
+  .review-plan-badge{display:inline-block;padding:2px 8px;border-radius:var(--radius-pill);background:rgba(74,106,46,.1);color:var(--green-pop);font-size:.72rem;font-weight:600;text-transform:uppercase}
+  .review-total{font-size:1.1rem;font-weight:700;color:var(--green-pop)}
+  .review-block{background:rgba(0,0,0,.02);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px}
+  .review-block h5{font-size:.82rem;font-weight:600;margin-bottom:4px}
 
-  .toggle-switch { position:relative; width:44px; height:24px; cursor:pointer; }
-  .toggle-switch input { display:none; }
-  .toggle-track { position:absolute; inset:0; background:var(--border); border-radius:100px; transition:background 0.3s; }
-  .toggle-thumb { position:absolute; top:2px; left:2px; width:20px; height:20px; background:var(--white); border-radius:50%; transition:transform 0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
-  .toggle-switch input:checked ~ .toggle-track { background:var(--green-pop); }
-  .toggle-switch input:checked ~ .toggle-thumb { transform:translateX(20px); }
+  .payment-success{text-align:center;padding:40px 20px}
+  .payment-success .success-icon{width:72px;height:72px;border-radius:50%;margin:0 auto 20px;background:rgba(74,106,46,.1);display:flex;align-items:center;justify-content:center}
+  .payment-success .success-icon svg{width:36px;height:36px;stroke:var(--green-pop);fill:none;stroke-width:2.5}
+  .payment-success h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--text-dark);margin-bottom:8px}
+  .payment-success p{font-size:.88rem;color:var(--text-mid);line-height:1.6}
+  .txn-id{font-size:.75rem;color:var(--text-mid);margin-top:14px;padding:8px 14px;background:rgba(0,0,0,.03);border-radius:var(--radius-sm);display:inline-block}
 
-  .plan-options { display:flex; flex-direction:column; gap:10px; }
-  .plan-opt {
-    border:1.5px solid rgba(0,0,0,0.08); border-radius:var(--radius-md);
-    padding:16px 18px; cursor:pointer; transition:all 0.3s;
-    display:flex; justify-content:space-between; align-items:center;
-    position:relative;
-  }
-  .plan-opt:hover { border-color:var(--green-pop); background:rgba(74,106,46,0.02); }
-  .plan-opt.selected { border-color:var(--green-pop); background:rgba(74,106,46,0.05); box-shadow:0 0 0 3px rgba(74,106,46,0.08); }
-  .plan-opt-left { display:flex; flex-direction:column; gap:2px; }
-  .plan-opt-name { font-family:'Playfair Display',serif; font-weight:600; font-size:0.95rem; color:var(--text-dark); }
-  .plan-opt-desc { font-size:0.75rem; color:var(--text-mid); }
-  .plan-opt-right { display:flex; align-items:center; gap:12px; }
-  .plan-opt-price { font-family:'Playfair Display',serif; font-weight:700; font-size:1rem; color:var(--green-pop); white-space:nowrap; }
-  .plan-radio {
-    width:20px; height:20px; border-radius:50%; border:2px solid rgba(0,0,0,0.12);
-    display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.3s;
-  }
-  .plan-opt.selected .plan-radio { border-color:var(--green-pop); }
-  .plan-opt.selected .plan-radio::after { content:''; width:10px; height:10px; border-radius:50%; background:var(--green-pop); }
-
-  /* Recommended badge */
-  .plan-recommended {
-    position:absolute; top:-10px; right:16px;
-    padding:3px 12px; border-radius:var(--radius-pill);
-    background:var(--green-pop); color:var(--white);
-    font-size:0.68rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:0.06em;
-  }
-
-  /* Review summary */
-  .review-section { margin-bottom:24px; }
-  .review-section h4 { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-mid); margin-bottom:10px; }
-  .review-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.04); font-size:0.88rem; }
-  .review-row:last-child { border-bottom:none; }
-  .review-label { color:var(--text-mid); }
-  .review-value { font-weight:600; color:var(--text-dark); }
-  .review-plan-badge {
-    display:inline-block; padding:3px 10px; border-radius:var(--radius-pill);
-    background:rgba(74,106,46,0.1); color:var(--green-pop); font-size:0.75rem;
-    font-weight:600; text-transform:uppercase; letter-spacing:0.05em;
-  }
-  .review-total { font-size:1.1rem; font-weight:700; color:var(--green-pop); }
-  .review-property-block { background:rgba(0,0,0,0.02); border-radius:var(--radius-sm); padding:14px; margin-bottom:10px; }
-  .review-property-block h5 { font-size:0.85rem; font-weight:600; margin-bottom:6px; }
-
-  /* ── Payment styles (Step 3) ── */
-  .pay-tabs { display:flex; gap:8px; margin-bottom:28px; }
-  .pay-tab {
-    flex:1; padding:12px 16px; border:1.5px solid rgba(0,0,0,0.08);
-    border-radius:var(--radius-md); background:var(--white); cursor:pointer;
-    text-align:center; font-size:0.82rem; font-weight:500; font-family:inherit;
-    color:var(--text-mid); transition:all 0.3s; display:flex; flex-direction:column;
-    align-items:center; gap:6px;
-  }
-  .pay-tab:hover { border-color:var(--green-pop); }
-  .pay-tab.active { border-color:var(--green-pop); background:rgba(74,106,46,0.04); color:var(--green-pop); font-weight:600; box-shadow:0 0 0 3px rgba(74,106,46,0.08); }
-  .pay-tab svg { width:22px; height:22px; }
-
-  .pay-form { display:none; }
-  .pay-form.active { display:block; animation:fadeUp 0.3s ease both; }
-
-  .card-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-
-  .card-visual {
-    background:linear-gradient(135deg, var(--bg-main) 0%, var(--accent) 100%);
-    border-radius:var(--radius-md); padding:24px; margin-bottom:24px;
-    color:var(--text-light); position:relative; overflow:hidden;
-  }
-  .card-visual::after {
-    content:''; position:absolute; top:-30px; right:-30px;
-    width:120px; height:120px; border-radius:50%;
-    background:rgba(255,255,255,0.06);
-  }
-  .card-visual-logo { font-size:0.7rem; font-weight:600; opacity:0.7; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:20px; }
-  .card-visual-number { font-size:1.2rem; font-weight:500; letter-spacing:3px; margin-bottom:16px; font-family:'DM Sans',monospace; }
-  .card-visual-row { display:flex; justify-content:space-between; font-size:0.75rem; opacity:0.8; }
-
-  .upi-options { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
-  .upi-option {
-    display:flex; align-items:center; gap:12px; padding:14px 16px;
-    border:1.5px solid rgba(0,0,0,0.08); border-radius:var(--radius-md);
-    cursor:pointer; transition:all 0.3s; background:var(--white);
-  }
-  .upi-option:hover { border-color:var(--green-pop); }
-  .upi-option.selected { border-color:var(--green-pop); background:rgba(74,106,46,0.04); }
-  .upi-option-icon { width:36px; height:36px; border-radius:8px; background:var(--bg-light); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.7rem; color:var(--text-mid); }
-  .upi-option-name { font-weight:600; font-size:0.88rem; color:var(--text-dark); }
-
-  .bank-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
-  .bank-option {
-    padding:14px; border:1.5px solid rgba(0,0,0,0.08); border-radius:var(--radius-md);
-    cursor:pointer; transition:all 0.3s; background:var(--white);
-    text-align:center; font-size:0.82rem; font-weight:500; color:var(--text-mid);
-  }
-  .bank-option:hover { border-color:var(--green-pop); color:var(--green-pop); }
-  .bank-option.selected { border-color:var(--green-pop); background:rgba(74,106,46,0.04); color:var(--green-pop); font-weight:600; }
-
-  .secure-badge {
-    display:flex; align-items:center; gap:8px; justify-content:center;
-    font-size:0.75rem; color:var(--text-mid); margin-top:20px; opacity:0.7;
-  }
-  .secure-badge svg { width:14px; height:14px; }
-
-  /* Order summary inside step 4 */
-  .order-summary-inline {
-    background:rgba(0,0,0,0.02); border-radius:var(--radius-md);
-    padding:20px; margin-bottom:20px;
-  }
-  .order-item { padding:10px 0; border-bottom:1px solid rgba(0,0,0,0.04); }
-  .order-item:last-child { border-bottom:none; }
-  .order-item-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
-  .order-item-city { font-weight:600; font-size:0.88rem; color:var(--text-dark); }
-  .order-item-price { font-weight:700; font-size:0.88rem; color:var(--green-pop); }
-  .order-item-plan {
-    display:inline-block; padding:2px 10px; border-radius:var(--radius-pill);
-    background:rgba(74,106,46,0.1); color:var(--green-pop); font-size:0.72rem;
-    font-weight:600; text-transform:uppercase; letter-spacing:0.04em;
-  }
-  .order-item-billing { font-size:0.78rem; color:var(--text-mid); margin-top:2px; }
-  .order-divider { height:1.5px; background:rgba(0,0,0,0.08); margin:12px 0; }
-  .order-total { display:flex; justify-content:space-between; align-items:center; padding-top:8px; }
-  .order-total-label { font-weight:600; font-size:0.95rem; color:var(--text-dark); }
-  .order-total-amount { font-family:'Playfair Display',serif; font-weight:700; font-size:1.3rem; color:var(--green-pop); }
-
-  /* Payment success */
-  .payment-success { text-align:center; padding:40px 20px; }
-  .payment-success .success-icon {
-    width:72px; height:72px; border-radius:50%; margin:0 auto 20px;
-    background:rgba(74,106,46,0.1); display:flex; align-items:center; justify-content:center;
-  }
-  .payment-success .success-icon svg { width:36px; height:36px; stroke:var(--green-pop); fill:none; stroke-width:2.5; }
-  .payment-success h2 { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--text-dark); margin-bottom:8px; }
-  .payment-success p { font-size:0.9rem; color:var(--text-mid); line-height:1.6; }
-  .payment-success .txn-id { font-size:0.78rem; color:var(--text-mid); margin-top:16px; padding:10px 16px; background:rgba(0,0,0,0.03); border-radius:var(--radius-sm); display:inline-block; }
-
-  /* Buttons */
-  .btn-back {
-    background:none; border:none; color:var(--text-mid); font-size:0.85rem;
-    font-weight:500; cursor:pointer; padding:8px 0; font-family:inherit;
-    display:flex; align-items:center; gap:6px; margin-bottom:16px; transition:color 0.3s;
-  }
-  .btn-back:hover { color:var(--text-dark); }
-
-  .onboard-card {
-    background:var(--bg-cream); border-radius:var(--radius-lg); padding:48px 40px;
-    max-width:680px; margin:0 auto; box-shadow:0 20px 60px rgba(0,0,0,0.15);
-  }
-  .onboard-heading { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; color:var(--text-dark); margin-bottom:6px; }
-  .onboard-sub { font-size:0.88rem; color:var(--text-mid); margin-bottom:28px; }
-
-  @media(max-width:600px) {
-    .onboard-card { padding:32px 20px; margin:0 12px; }
-    .property-fields { grid-template-columns:1fr; }
-    .progress-line { width:24px; }
-    .plan-opt { flex-direction:column; align-items:flex-start; gap:8px; }
-    .plan-opt-right { width:100%; justify-content:space-between; }
-    .card-row { grid-template-columns:1fr; }
-    .bank-grid { grid-template-columns:1fr; }
-    .pay-tabs { flex-wrap:wrap; }
-    .progress-label { font-size:0.58rem; }
+  @media(max-width:600px){
+    .onboard-card{padding:28px 18px;margin:0 10px}.svc-grid{grid-template-columns:1fr}
+    .item-fields{grid-template-columns:1fr}.card-row{grid-template-columns:1fr}
+    .bank-grid{grid-template-columns:1fr 1fr}.progress-line{width:20px}.progress-label{font-size:.55rem}
+    .pay-tabs{flex-wrap:wrap}
   }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-logo"><a href="propnri-saas-site.html"><img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:80px;width:auto;display:block;"></a></div>
-  <ul class="nav-links">
-    <li><a href="propnri-saas-site.html">Home</a></li>
-    <li><a href="home-management.html">Services</a></li>
-    <li><a href="propnri-saas-site.html#pricing">Pricing</a></li>
-    <li><a href="propnri-saas-site.html#how">How It Works</a></li>
-    <li><a href="#">Contact</a></li>
-  </ul>
-  <div class="nav-actions" id="navActions">
-    <a href="login.html" class="btn-outline">Log in</a>
-    <a href="signup.html" class="btn-primary">Get Started</a>
-  </div>
-</nav>
+<nav></nav>
+<script src="nav.js"></script>
 
 <main class="auth-page" style="min-height:100vh;padding-top:140px;padding-bottom:60px;">
   <div class="onboard-card">
 
-    <!-- Progress — 4 Steps -->
+    <!-- Progress — 5 Steps -->
     <div class="onboard-progress">
-      <div class="progress-step-wrap">
-        <div class="progress-dot active" data-step="1">1</div>
-        <div class="progress-label">Properties</div>
-      </div>
+      <div class="progress-step-wrap"><div class="progress-dot active" data-step="1">1</div><div class="progress-label">Services</div></div>
       <div class="progress-line" id="line1"></div>
-      <div class="progress-step-wrap">
-        <div class="progress-dot" data-step="2">2</div>
-        <div class="progress-label">Plans</div>
-      </div>
+      <div class="progress-step-wrap"><div class="progress-dot" data-step="2">2</div><div class="progress-label">Details</div></div>
       <div class="progress-line" id="line2"></div>
-      <div class="progress-step-wrap">
-        <div class="progress-dot" data-step="3">3</div>
-        <div class="progress-label">Payment</div>
-      </div>
+      <div class="progress-step-wrap"><div class="progress-dot" data-step="3">3</div><div class="progress-label">Plans</div></div>
       <div class="progress-line" id="line3"></div>
-      <div class="progress-step-wrap">
-        <div class="progress-dot" data-step="4">4</div>
-        <div class="progress-label">Confirm</div>
-      </div>
+      <div class="progress-step-wrap"><div class="progress-dot" data-step="4">4</div><div class="progress-label">Payment</div></div>
+      <div class="progress-line" id="line4"></div>
+      <div class="progress-step-wrap"><div class="progress-dot" data-step="5">5</div><div class="progress-label">Confirm</div></div>
     </div>
 
-    <!-- ═══ STEP 1: Add Properties ═══ -->
+    <!-- STEP 1: Select Services -->
     <div class="onboard-step active" id="step1">
-      <h1 class="onboard-heading" id="welcomeHeading">Add Your Properties</h1>
-      <p class="onboard-sub">Tell us about the properties you'd like us to manage. You can always add more later.</p>
-
-      <div id="propertiesList"></div>
-
-      <button type="button" class="btn-add-property" onclick="addProperty()">+ Add Another Property</button>
-      <div class="form-error" id="propError" style="text-align:center;margin-bottom:16px;">Please enter at least one property with a city name</div>
-
-      <button type="button" class="btn-auth" onclick="validateStep1()">Continue — Select Plans →</button>
-    </div>
-
-    <!-- ═══ STEP 2: Select Plan Per Property ═══ -->
-    <div class="onboard-step" id="step2">
-      <button type="button" class="btn-back" onclick="goToStep(1)">← Back to Properties</button>
-      <h1 class="onboard-heading">Choose Plans</h1>
-      <p class="onboard-sub">Select a subscription plan for each property. Toggle to annual billing to save 15%.</p>
-
-      <div id="planSelections"></div>
-
-      <div class="form-error" id="planError" style="text-align:center;margin-bottom:16px;">Please select a plan for each property</div>
-      <button type="button" class="btn-auth" onclick="validateStep2()">Continue — Payment →</button>
-    </div>
-
-    <!-- ═══ STEP 3: Payment ═══ -->
-    <div class="onboard-step" id="step3">
-      <button type="button" class="btn-back" onclick="goToStep(2)">← Back to Plans</button>
-      <h1 class="onboard-heading">Payment Method</h1>
-      <p class="onboard-sub">Choose your preferred payment method to complete your subscription.</p>
-
-      <!-- Payment Tabs -->
-      <div class="pay-tabs">
-        <button class="pay-tab active" data-method="card" onclick="switchMethod('card')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          Card
-        </button>
-        <button class="pay-tab" data-method="upi" onclick="switchMethod('upi')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          UPI
-        </button>
-        <button class="pay-tab" data-method="netbanking" onclick="switchMethod('netbanking')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          Net Banking
-        </button>
+      <h1 class="onboard-heading" id="welcomeHeading">Choose Your Services</h1>
+      <p class="onboard-sub">Select the service categories you need. Bundle 2+ to save 20% on add-ons!</p>
+      <div class="svc-grid">
+        <div class="svc-check cat-home" data-svc="home" onclick="toggleService('home',this)">
+          <div class="svc-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <h3>Home Management</h3>
+          <p>Property, tenants, rent, maintenance</p>
+          <span class="svc-badge">From ₹4,999/mo</span>
+        </div>
+        <div class="svc-check cat-vehicle" data-svc="vehicle" onclick="toggleService('vehicle',this)">
+          <div class="svc-icon"><svg viewBox="0 0 24 24"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 5h3v6h-2"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          <h3>Vehicle Management</h3>
+          <p>Insurance, servicing, parking, RTO</p>
+          <span class="svc-badge">From ₹1,999/mo</span>
+        </div>
+        <div class="svc-check cat-parental" data-svc="parental" onclick="toggleService('parental',this)">
+          <div class="svc-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+          <h3>Parental Care</h3>
+          <p>Health, doctors, medicine, emergency</p>
+          <span class="svc-badge">From ₹4,999/mo</span>
+        </div>
+        <div class="svc-check cat-legal" data-svc="legal" onclick="toggleService('legal',this)">
+          <div class="svc-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+          <h3>Legal & Documentation</h3>
+          <p>POA, tax, court, government docs</p>
+          <span class="svc-badge">From ₹2,999/mo</span>
+        </div>
       </div>
+      <div class="form-error" id="svcError" style="text-align:center;margin-bottom:14px">Please select at least one service category</div>
+      <button type="button" class="btn-auth" onclick="validateStep1()">Continue — Add Details →</button>
+    </div>
 
-      <!-- Card Form -->
+    <!-- STEP 2: Service Details -->
+    <div class="onboard-step" id="step2">
+      <button type="button" class="btn-back" onclick="goToStep(1)">← Back to Services</button>
+      <h1 class="onboard-heading">Add Your Details</h1>
+      <p class="onboard-sub">Tell us about what you need managed. You can always update these later.</p>
+      <div id="detailsForms"></div>
+      <div class="form-error" id="detailError" style="text-align:center;margin-bottom:14px">Please fill in required details</div>
+      <button type="button" class="btn-auth" onclick="validateStep2()">Continue — Select Plans →</button>
+    </div>
+
+    <!-- STEP 3: Plans -->
+    <div class="onboard-step" id="step3">
+      <button type="button" class="btn-back" onclick="goToStep(2)">← Back to Details</button>
+      <h1 class="onboard-heading">Choose Plans</h1>
+      <p class="onboard-sub">Select a plan for each service. Bundle discount applied automatically!</p>
+      <div id="planSelections"></div>
+      <div class="form-error" id="planError" style="text-align:center;margin-bottom:14px">Please select a plan for each service</div>
+      <button type="button" class="btn-auth" onclick="validateStep3()">Continue — Payment →</button>
+    </div>
+
+    <!-- STEP 4: Payment -->
+    <div class="onboard-step" id="step4">
+      <button type="button" class="btn-back" onclick="goToStep(3)">← Back to Plans</button>
+      <h1 class="onboard-heading">Payment Method</h1>
+      <p class="onboard-sub">Choose your preferred payment method.</p>
+      <div class="pay-tabs">
+        <button class="pay-tab active" data-method="card" onclick="switchMethod('card')">💳 Card</button>
+        <button class="pay-tab" data-method="upi" onclick="switchMethod('upi')">📱 UPI</button>
+        <button class="pay-tab" data-method="netbanking" onclick="switchMethod('netbanking')">🏦 Net Banking</button>
+      </div>
       <div class="pay-form active" id="form-card">
         <div class="card-visual">
-          <div class="card-visual-logo">NRI Bridge India</div>
+          <div style="font-size:.68rem;font-weight:600;opacity:.7;letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px">NRI Bridge India</div>
           <div class="card-visual-number" id="cardPreview">**** **** **** ****</div>
-          <div class="card-visual-row">
-            <span id="namePreview">CARD HOLDER</span>
-            <span id="expiryPreview">MM/YY</span>
-          </div>
+          <div class="card-visual-row"><span id="namePreview">CARD HOLDER</span><span id="expiryPreview">MM/YY</span></div>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Card Number</label>
-          <input type="text" class="form-input" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" autocomplete="cc-number">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Name on Card</label>
-          <input type="text" class="form-input" id="cardName" placeholder="Full name as on card" autocomplete="cc-name">
-        </div>
+        <div class="form-group"><label class="form-label">Card Number</label><input type="text" class="form-input" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19"></div>
+        <div class="form-group"><label class="form-label">Name on Card</label><input type="text" class="form-input" id="cardName" placeholder="Full name as on card"></div>
         <div class="card-row">
-          <div class="form-group">
-            <label class="form-label">Expiry</label>
-            <input type="text" class="form-input" id="cardExpiry" placeholder="MM/YY" maxlength="5" autocomplete="cc-exp">
-          </div>
-          <div class="form-group">
-            <label class="form-label">CVV</label>
-            <input type="text" class="form-input" id="cardCvv" placeholder="123" maxlength="4" autocomplete="cc-csc">
-          </div>
+          <div class="form-group"><label class="form-label">Expiry</label><input type="text" class="form-input" id="cardExpiry" placeholder="MM/YY" maxlength="5"></div>
+          <div class="form-group"><label class="form-label">CVV</label><input type="text" class="form-input" id="cardCvv" placeholder="123" maxlength="4"></div>
         </div>
       </div>
-
-      <!-- UPI Form -->
       <div class="pay-form" id="form-upi">
         <div class="upi-options">
-          <div class="upi-option" onclick="selectUpi(this)">
-            <div class="upi-option-icon">G</div>
-            <span class="upi-option-name">Google Pay</span>
-          </div>
-          <div class="upi-option" onclick="selectUpi(this)">
-            <div class="upi-option-icon">P</div>
-            <span class="upi-option-name">PhonePe</span>
-          </div>
-          <div class="upi-option" onclick="selectUpi(this)">
-            <div class="upi-option-icon">PT</div>
-            <span class="upi-option-name">Paytm</span>
-          </div>
+          <div class="upi-option" onclick="selectUpi(this)"><div class="upi-option-icon">G</div><span style="font-weight:600;font-size:.85rem">Google Pay</span></div>
+          <div class="upi-option" onclick="selectUpi(this)"><div class="upi-option-icon">P</div><span style="font-weight:600;font-size:.85rem">PhonePe</span></div>
+          <div class="upi-option" onclick="selectUpi(this)"><div class="upi-option-icon">PT</div><span style="font-weight:600;font-size:.85rem">Paytm</span></div>
         </div>
-        <div class="form-group">
-          <label class="form-label">UPI ID</label>
-          <input type="text" class="form-input" id="upiId" placeholder="yourname@upi">
-        </div>
+        <div class="form-group"><label class="form-label">UPI ID</label><input type="text" class="form-input" id="upiId" placeholder="yourname@upi"></div>
       </div>
-
-      <!-- Net Banking Form -->
       <div class="pay-form" id="form-netbanking">
         <div class="bank-grid">
-          <div class="bank-option" onclick="selectBank(this)">SBI</div>
-          <div class="bank-option" onclick="selectBank(this)">HDFC</div>
-          <div class="bank-option" onclick="selectBank(this)">ICICI</div>
-          <div class="bank-option" onclick="selectBank(this)">Axis</div>
-          <div class="bank-option" onclick="selectBank(this)">Kotak</div>
-          <div class="bank-option" onclick="selectBank(this)">PNB</div>
+          <div class="bank-option" onclick="selectBank(this)">SBI</div><div class="bank-option" onclick="selectBank(this)">HDFC</div>
+          <div class="bank-option" onclick="selectBank(this)">ICICI</div><div class="bank-option" onclick="selectBank(this)">Axis</div>
+          <div class="bank-option" onclick="selectBank(this)">Kotak</div><div class="bank-option" onclick="selectBank(this)">PNB</div>
         </div>
       </div>
-
-      <div class="secure-badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Secured with 256-bit SSL encryption
-      </div>
-
-      <button type="button" class="btn-auth" style="margin-top:24px;" onclick="validateStep3()">Review & Confirm →</button>
+      <div class="secure-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Secured with 256-bit SSL encryption</div>
+      <button type="button" class="btn-auth" style="margin-top:20px" onclick="validateStep4()">Review & Confirm →</button>
     </div>
 
-    <!-- ═══ STEP 4: Review & Confirm ═══ -->
-    <div class="onboard-step" id="step4">
-      <button type="button" class="btn-back" onclick="goToStep(3)">← Back to Payment</button>
+    <!-- STEP 5: Review & Confirm -->
+    <div class="onboard-step" id="step5">
+      <button type="button" class="btn-back" onclick="goToStep(4)">← Back to Payment</button>
       <h1 class="onboard-heading">Review & Confirm</h1>
-      <p class="onboard-sub">Verify your setup and subscription before completing payment.</p>
-
+      <p class="onboard-sub">Verify your setup before completing payment.</p>
+      <div class="review-section"><h4>Account</h4><div class="review-row"><span class="review-label">Name</span><span class="review-value" id="revName"></span></div><div class="review-row"><span class="review-label">Email</span><span class="review-value" id="revEmail"></span></div></div>
+      <div class="review-section"><h4>Services & Plans</h4><div id="revServices"></div></div>
+      <div class="review-section"><h4>Payment</h4><div class="review-row"><span class="review-label">Method</span><span class="review-value" id="revPayMethod"></span></div></div>
       <div class="review-section">
-        <h4>Account</h4>
-        <div class="review-row"><span class="review-label">Name</span><span class="review-value" id="revName"></span></div>
-        <div class="review-row"><span class="review-label">Email</span><span class="review-value" id="revEmail"></span></div>
+        <div id="revDiscounts"></div>
+        <div class="review-row" style="border-top:2px solid rgba(0,0,0,.08);padding-top:12px"><span class="review-label" style="font-weight:600">Total Due Today</span><span class="review-total" id="revTotal"></span></div>
+        <div style="font-size:.7rem;color:var(--text-mid);margin-top:6px;line-height:1.5" id="revNote"></div>
       </div>
-
-      <div class="review-section">
-        <h4>Properties & Plans</h4>
-        <div id="revProperties"></div>
-      </div>
-
-      <div class="review-section">
-        <h4>Payment Method</h4>
-        <div class="review-row"><span class="review-label">Method</span><span class="review-value" id="revPayMethod"></span></div>
-      </div>
-
-      <div class="review-section">
-        <div class="review-row" style="border-top:2px solid rgba(0,0,0,0.08);padding-top:14px;">
-          <span class="review-label" style="font-weight:600;">Total Due Today</span>
-          <span class="review-total" id="revTotal"></span>
-        </div>
-        <div style="font-size:0.72rem;color:var(--text-mid);margin-top:8px;line-height:1.5;" id="revNote"></div>
-      </div>
-
       <button type="button" class="btn-auth" id="confirmBtn" onclick="confirmAndPay()">Confirm & Pay</button>
     </div>
 
-    <!-- ═══ SUCCESS ═══ -->
+    <!-- SUCCESS -->
     <div class="onboard-step" id="stepSuccess">
       <div class="payment-success">
         <div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
@@ -442,456 +264,333 @@
   </div>
 </main>
 
+<footer></footer>
+<script src="footer.js"></script>
+
 <script>
-(function() {
+(function(){
   'use strict';
+  var session = JSON.parse(localStorage.getItem('nri_session')||'null');
+  if(!session){window.location.href='login.html';return}
+  document.getElementById('welcomeHeading').textContent='Welcome, '+session.name.split(' ')[0]+'!';
 
-  // Check session
-  var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
-  if (!session) {
-    window.location.href = 'login.html';
-    return;
-  }
-
-  // Update nav
-  var navActions = document.getElementById('navActions');
-  navActions.innerHTML =
-    '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;">Hi, ' + session.name.split(' ')[0] + '</span>' +
-    '<button class="btn-outline" onclick="localStorage.removeItem(\'nri_session\');location.href=\'login.html\';">Log out</button>';
-
-  // Personalize heading
-  document.getElementById('welcomeHeading').textContent = 'Welcome, ' + session.name.split(' ')[0] + '!';
-
-  // ── State ──
-  var properties = [];
-  var currentStep = 1;
+  // State
+  var selectedServices = [];
+  var serviceDetails = {home:{properties:[]},vehicle:{vehicles:[]},parental:{members:[]},legal:{cases:[]}};
+  var servicePlans = {};
+  var serviceBilling = {};
   var selectedPayMethod = 'card';
+  var currentStep = 1;
+  var counters = {home:0,vehicle:0,parental:0,legal:0};
 
-  // Plan definitions
-  var PLANS = {
-    bronze: { name: 'Bronze', tag: 'Peace of Mind', monthly: 4999, desc: 'Monthly inspection, photo/video reports, WhatsApp updates, emergency alerts' },
-    silver: { name: 'Silver', tag: 'Care & Maintenance', monthly: 9999, desc: 'Bronze + maintenance coordination, vendor mgmt, 1 free cleaning, priority complaints' },
-    platinum: { name: 'Platinum', tag: 'Full Property Management', monthly: 0, desc: '10% of monthly rent + one-time 1 month rent after tenant onboarding', isPercentage: true }
+  var PLAN_PRICES = {
+    home:{starter:4999,standard:9999,premium:'10% of rent'},
+    vehicle:{starter:1999,standard:3999,premium:6999},
+    parental:{starter:4999,standard:8999,premium:14999},
+    legal:{starter:2999,standard:5999,premium:9999}
   };
+  var PLAN_NAMES = {starter:'Starter',standard:'Standard',premium:'Premium'};
+  var SVC_NAMES = {home:'Home Management',vehicle:'Vehicle Management',parental:'Parental Care',legal:'Legal & Documentation'};
 
-  // ── Step 1: Properties ──
-  var propCounter = 0;
-
-  // Read plan param from URL
+  // Pre-select from URL
   var urlParams = new URLSearchParams(window.location.search);
-  var preselectedPlan = urlParams.get('plan') || '';
+  var preCat = urlParams.get('category');
+  var prePlan = urlParams.get('plan');
 
-  function addPropertyFn() {
-    propCounter++;
-    var idx = propCounter;
-    properties.push({ id: idx, city: '', type: 'apartment', plan: '', billing: 'monthly', rent: '' });
-
-    var div = document.createElement('div');
-    div.className = 'property-card';
-    div.id = 'prop-' + idx;
-    div.innerHTML =
-      '<div class="property-header">' +
-        '<h3>Property ' + propCounter + '</h3>' +
-        (propCounter > 1 ? '<button type="button" class="btn-remove-prop" onclick="removeProperty(' + idx + ')">Remove</button>' : '') +
-      '</div>' +
-      '<div class="property-fields">' +
-        '<div class="form-group">' +
-          '<label class="form-label">City</label>' +
-          '<input type="text" class="form-input prop-city" data-id="' + idx + '" placeholder="e.g. Mumbai, Bangalore">' +
-        '</div>' +
-        '<div class="form-group">' +
-          '<label class="form-label">Property Type</label>' +
-          '<select class="form-input prop-type" data-id="' + idx + '">' +
-            '<option value="apartment">Apartment</option>' +
-            '<option value="house">Independent House</option>' +
-            '<option value="villa">Villa</option>' +
-            '<option value="commercial">Commercial</option>' +
-            '<option value="plot">Plot / Land</option>' +
-          '</select>' +
-        '</div>' +
-        '<div class="form-group">' +
-          '<label class="form-label">Monthly Rent (&#8377;)</label>' +
-          '<input type="number" class="form-input prop-rent" data-id="' + idx + '" placeholder="e.g. 25000">' +
-        '</div>' +
-        '<div class="form-group">' +
-          '<label class="form-label">Bedrooms</label>' +
-          '<select class="form-input prop-bedrooms" data-id="' + idx + '">' +
-            '<option value="">N/A</option>' +
-            '<option value="1">1 BHK</option>' +
-            '<option value="2">2 BHK</option>' +
-            '<option value="3">3 BHK</option>' +
-            '<option value="4">4 BHK</option>' +
-            '<option value="5+">5+ BHK</option>' +
-          '</select>' +
-        '</div>' +
-      '</div>';
-    document.getElementById('propertiesList').appendChild(div);
+  if(preCat && SVC_NAMES[preCat]){
+    selectedServices.push(preCat);
+    document.querySelector('.svc-check[data-svc="'+preCat+'"]').classList.add('selected');
+    if(prePlan) servicePlans[preCat] = prePlan;
   }
 
-  window.addProperty = addPropertyFn;
-
-  window.removeProperty = function(id) {
-    var el = document.getElementById('prop-' + id);
-    if (el) el.remove();
-    properties = properties.filter(function(p) { return p.id !== id; });
+  // Step 1: Toggle services
+  window.toggleService = function(svc,el){
+    var idx = selectedServices.indexOf(svc);
+    if(idx===-1){selectedServices.push(svc);el.classList.add('selected')}
+    else{selectedServices.splice(idx,1);el.classList.remove('selected')}
+    document.getElementById('svcError').classList.remove('visible');
   };
 
-  // Initialize with one property
-  addPropertyFn();
-
-
-  // ── Navigation ──
-  window.goToStep = function(step) {
-    document.querySelectorAll('.onboard-step').forEach(function(el) { el.classList.remove('active'); });
-    document.getElementById('step' + step).classList.add('active');
-    currentStep = step;
-
-    document.querySelectorAll('.progress-dot').forEach(function(dot, i) {
-      dot.classList.remove('active', 'done');
-      if (i + 1 < step) dot.classList.add('done');
-      if (i + 1 === step) dot.classList.add('active');
-    });
-    var line1 = document.getElementById('line1');
-    var line2 = document.getElementById('line2');
-    var line3 = document.getElementById('line3');
-    line1.classList.toggle('done', step > 1);
-    line2.classList.toggle('done', step > 2);
-    line3.classList.toggle('done', step > 3);
-
-    if (step === 2) buildPlanSelectors();
-    if (step === 4) buildReview();
-  };
-
-
-
-  window.validateStep1 = function() {
-    var valid = true;
-    properties = [];
-    document.querySelectorAll('#propertiesList .property-card').forEach(function(card) {
-      var cityEl = card.querySelector('.prop-city');
-      var typeEl = card.querySelector('.prop-type');
-      var rentEl = card.querySelector('.prop-rent');
-      var bedroomsEl = card.querySelector('.prop-bedrooms');
-      var id = parseInt(cityEl.getAttribute('data-id'));
-
-      if (!cityEl.value.trim()) {
-        cityEl.classList.add('error');
-        valid = false;
-      } else {
-        cityEl.classList.remove('error');
-        properties.push({
-          id: id,
-          city: cityEl.value.trim(),
-          type: typeEl.value,
-          rent: rentEl.value ? parseInt(rentEl.value) : 0,
-          bedrooms: bedroomsEl.value,
-          plan: preselectedPlan || '',
-          billing: 'monthly'
-        });
-      }
-    });
-
-    if (!valid || properties.length === 0) {
-      document.getElementById('propError').classList.add('visible');
-      return;
-    }
-    document.getElementById('propError').classList.remove('visible');
+  window.validateStep1 = function(){
+    if(!selectedServices.length){document.getElementById('svcError').classList.add('visible');return}
+    document.getElementById('svcError').classList.remove('visible');
+    buildDetailForms();
     goToStep(2);
   };
 
-  // ── Step 2: Plan selection per property ──
-  function buildPlanSelectors() {
-    var container = document.getElementById('planSelections');
-    container.innerHTML = '';
-
-    properties.forEach(function(prop, idx) {
-      var div = document.createElement('div');
-      div.className = 'property-card';
-      div.id = 'plansel-' + prop.id;
-
-      var billingId = 'billing-' + prop.id;
-      var isAnnual = prop.billing === 'annual';
-
-      var bronzePrice = isAnnual ? Math.round(4999 * 12 * 0.85) : 4999;
-      var silverPrice = isAnnual ? Math.round(9999 * 12 * 0.85) : 9999;
-      var bronzeLabel = isAnnual ? '\u20B9' + bronzePrice.toLocaleString('en-IN') + '/yr' : '\u20B94,999/mo';
-      var silverLabel = isAnnual ? '\u20B9' + silverPrice.toLocaleString('en-IN') + '/yr' : '\u20B99,999/mo';
-
-      div.innerHTML =
-        '<div class="property-header">' +
-          '<h3>' + prop.city + ' — ' + capitalize(prop.type) + '</h3>' +
-        '</div>' +
-        '<div class="plan-selector">' +
-          '<div class="billing-toggle-row">' +
-            '<span class="' + (!isAnnual ? 'active-label' : 'inactive-label') + '" id="mLbl-' + prop.id + '">Monthly</span>' +
-            '<label class="toggle-switch">' +
-              '<input type="checkbox" id="' + billingId + '" ' + (isAnnual ? 'checked' : '') + ' onchange="toggleBilling(' + prop.id + ')">' +
-              '<span class="toggle-track"></span>' +
-              '<span class="toggle-thumb"></span>' +
-            '</label>' +
-            '<span class="' + (isAnnual ? 'active-label' : 'inactive-label') + '" id="aLbl-' + prop.id + '">Annual</span>' +
-            '<span class="save-tag">Save 15%</span>' +
-          '</div>' +
-          '<div class="plan-options" id="plans-' + prop.id + '">' +
-            buildPlanOption(prop.id, 'bronze', 'Bronze', 'Peace of Mind', bronzeLabel, prop.plan === 'bronze', false) +
-            buildPlanOption(prop.id, 'silver', 'Silver', 'Care & Maintenance', silverLabel, prop.plan === 'silver', true) +
-            buildPlanOption(prop.id, 'platinum', 'Platinum', 'Full Property Management',
-              prop.rent ? '10% = \u20B9' + Math.round(prop.rent * 0.1).toLocaleString('en-IN') + '/mo' : '10% of rent/mo',
-              prop.plan === 'platinum', false) +
-          '</div>' +
-          (prop.plan === 'platinum' && prop.rent ? '<div style="font-size:0.75rem;color:var(--text-mid);margin-top:8px;padding-left:4px;">+ One-time: \u20B9' + prop.rent.toLocaleString('en-IN') + ' (1 month rent after tenant onboarding)</div>' : '') +
-        '</div>';
-
-      container.appendChild(div);
+  // Step 2: Detail forms
+  function buildDetailForms(){
+    var c = document.getElementById('detailsForms');
+    c.innerHTML = '';
+    selectedServices.forEach(function(svc){
+      if(svc==='home') c.innerHTML += buildHomeForm();
+      else if(svc==='vehicle') c.innerHTML += buildVehicleForm();
+      else if(svc==='parental') c.innerHTML += buildParentalForm();
+      else if(svc==='legal') c.innerHTML += buildLegalForm();
+    });
+    // Init items
+    selectedServices.forEach(function(svc){
+      if(!serviceDetails[svc] || getItems(svc).length===0) addItem(svc);
     });
   }
 
-  function buildPlanOption(propId, planKey, name, tag, price, selected, isRecommended) {
-    return '<div class="plan-opt' + (selected ? ' selected' : '') + '" data-plan="' + planKey + '" onclick="selectPlan(' + propId + ',\'' + planKey + '\')">' +
-      (isRecommended ? '<span class="plan-recommended">Recommended</span>' : '') +
-      '<div class="plan-opt-left">' +
-        '<span class="plan-opt-name">' + name + ' — "' + tag + '"</span>' +
-        '<span class="plan-opt-desc">' + PLANS[planKey].desc + '</span>' +
-      '</div>' +
-      '<div class="plan-opt-right">' +
-        '<span class="plan-opt-price">' + price + '</span>' +
-        '<div class="plan-radio"></div>' +
-      '</div>' +
-    '</div>';
+  function getItems(svc){
+    if(svc==='home') return serviceDetails.home.properties;
+    if(svc==='vehicle') return serviceDetails.vehicle.vehicles;
+    if(svc==='parental') return serviceDetails.parental.members;
+    return serviceDetails.legal.cases;
   }
 
-  window.selectPlan = function(propId, planKey) {
-    var prop = properties.find(function(p) { return p.id === propId; });
-    if (prop) prop.plan = planKey;
+  function buildHomeForm(){return '<div class="detail-section" id="detail-home"><h3>🏠 Home Management</h3><div id="homeItems"></div><button type="button" class="btn-add-item" onclick="addItem(\'home\')">+ Add Property</button></div>'}
+  function buildVehicleForm(){return '<div class="detail-section" id="detail-vehicle"><h3>🚗 Vehicle Management</h3><div id="vehicleItems"></div><button type="button" class="btn-add-item" onclick="addItem(\'vehicle\')">+ Add Vehicle</button></div>'}
+  function buildParentalForm(){return '<div class="detail-section" id="detail-parental"><h3>❤️ Parental Care</h3><div id="parentalItems"></div><button type="button" class="btn-add-item" onclick="addItem(\'parental\')">+ Add Family Member</button></div>'}
+  function buildLegalForm(){return '<div class="detail-section" id="detail-legal"><h3>📄 Legal & Documentation</h3><div id="legalItems"></div><button type="button" class="btn-add-item" onclick="addItem(\'legal\')">+ Add Case / Document</button></div>'}
 
-    var container = document.getElementById('plans-' + propId);
-    container.querySelectorAll('.plan-opt').forEach(function(el) {
-      el.classList.toggle('selected', el.getAttribute('data-plan') === planKey);
+  window.addItem = function(svc){
+    counters[svc]++;
+    var id = counters[svc];
+    var items = getItems(svc);
+    items.push({id:id});
+    var container = document.getElementById(svc+'Items');
+    var div = document.createElement('div');
+    div.className='item-card';div.id=svc+'-item-'+id;
+    if(svc==='home'){
+      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'home\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="home" data-id="'+id+'" data-field="city" placeholder="e.g. Mumbai"></div><div class="form-group"><label class="form-label">Property Type</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="type"><option value="apartment">Apartment</option><option value="house">Independent House</option><option value="villa">Villa</option><option value="commercial">Commercial</option></select></div><div class="form-group"><label class="form-label">Monthly Rent (₹)</label><input type="number" class="form-input" data-svc="home" data-id="'+id+'" data-field="rent" placeholder="e.g. 25000"></div><div class="form-group"><label class="form-label">Bedrooms</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="bhk"><option value="">N/A</option><option value="1">1 BHK</option><option value="2">2 BHK</option><option value="3">3 BHK</option><option value="4+">4+ BHK</option></select></div></div>';
+    } else if(svc==='vehicle'){
+      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'vehicle\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Registration No.</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="reg" placeholder="e.g. MH02AB1234"></div><div class="form-group"><label class="form-label">Vehicle Type</label><select class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="type"><option value="car">Car</option><option value="suv">SUV</option><option value="bike">Bike</option><option value="scooter">Scooter</option></select></div><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="city" placeholder="e.g. Delhi"></div><div class="form-group"><label class="form-label">Make/Model</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="model" placeholder="e.g. Honda City"></div></div>';
+    } else if(svc==='parental'){
+      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'parental\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" data-svc="parental" data-id="'+id+'" data-field="name" placeholder="Parent\'s name"></div><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="parental" data-id="'+id+'" data-field="city" placeholder="e.g. Pune"></div><div class="form-group"><label class="form-label">Age</label><input type="number" class="form-input" data-svc="parental" data-id="'+id+'" data-field="age" placeholder="e.g. 68"></div><div class="form-group"><label class="form-label">Health Notes</label><input type="text" class="form-input" data-svc="parental" data-id="'+id+'" data-field="health" placeholder="e.g. Diabetes, BP"></div></div>';
+    } else{
+      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'legal\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Case/Document Type</label><select class="form-input" data-svc="legal" data-id="'+id+'" data-field="type"><option value="poa">Power of Attorney</option><option value="property-reg">Property Registration</option><option value="will">Will / Succession</option><option value="tax">Tax Filing</option><option value="court">Court Case</option><option value="govt-doc">Government Document</option></select></div><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="legal" data-id="'+id+'" data-field="city" placeholder="e.g. Chennai"></div><div class="form-group" style="grid-column:span 2"><label class="form-label">Description</label><input type="text" class="form-input" data-svc="legal" data-id="'+id+'" data-field="desc" placeholder="Brief description"></div></div>';
+    }
+    container.appendChild(div);
+  };
+
+  window.removeItem = function(svc,id){
+    var el = document.getElementById(svc+'-item-'+id);
+    if(el)el.remove();
+    var items = getItems(svc);
+    var idx = items.findIndex(function(i){return i.id===id});
+    if(idx!==-1)items.splice(idx,1);
+  };
+
+  function collectDetails(){
+    selectedServices.forEach(function(svc){
+      var items = getItems(svc);
+      items.forEach(function(item){
+        document.querySelectorAll('[data-svc="'+svc+'"][data-id="'+item.id+'"]').forEach(function(el){
+          item[el.dataset.field] = el.value;
+        });
+      });
     });
+  }
 
-    // Show platinum note
-    var card = document.getElementById('plansel-' + propId);
-    var existingNote = card.querySelector('.platinum-note');
-    if (existingNote) existingNote.remove();
-    if (planKey === 'platinum' && prop.rent) {
-      var note = document.createElement('div');
-      note.className = 'platinum-note';
-      note.style.cssText = 'font-size:0.75rem;color:var(--text-mid);margin-top:8px;padding-left:4px;';
-      note.textContent = '+ One-time: \u20B9' + prop.rent.toLocaleString('en-IN') + ' (1 month rent after tenant onboarding)';
-      card.querySelector('.plan-selector').appendChild(note);
-    }
-
-    document.getElementById('planError').classList.remove('visible');
-  };
-
-  window.toggleBilling = function(propId) {
-    var prop = properties.find(function(p) { return p.id === propId; });
-    var checkbox = document.getElementById('billing-' + propId);
-    var isAnnual = checkbox.checked;
-    prop.billing = isAnnual ? 'annual' : 'monthly';
-
-    var mLbl = document.getElementById('mLbl-' + propId);
-    var aLbl = document.getElementById('aLbl-' + propId);
-    mLbl.className = isAnnual ? 'inactive-label' : 'active-label';
-    aLbl.className = isAnnual ? 'active-label' : 'inactive-label';
-
-    var bronzePrice = isAnnual ? Math.round(4999 * 12 * 0.85) : 4999;
-    var silverPrice = isAnnual ? Math.round(9999 * 12 * 0.85) : 9999;
-    var bronzeLabel = isAnnual ? '\u20B9' + bronzePrice.toLocaleString('en-IN') + '/yr' : '\u20B94,999/mo';
-    var silverLabel = isAnnual ? '\u20B9' + silverPrice.toLocaleString('en-IN') + '/yr' : '\u20B99,999/mo';
-
-    var container = document.getElementById('plans-' + propId);
-    var opts = container.querySelectorAll('.plan-opt');
-    opts[0].querySelector('.plan-opt-price').textContent = bronzeLabel;
-    opts[1].querySelector('.plan-opt-price').textContent = silverLabel;
-  };
-
-  window.validateStep2 = function() {
-    var allSelected = properties.every(function(p) { return p.plan; });
-    if (!allSelected) {
-      document.getElementById('planError').classList.add('visible');
-      return;
-    }
-    document.getElementById('planError').classList.remove('visible');
+  window.validateStep2 = function(){
+    collectDetails();
+    var valid = true;
+    selectedServices.forEach(function(svc){
+      if(getItems(svc).length===0)valid=false;
+    });
+    if(!valid){document.getElementById('detailError').classList.add('visible');return}
+    document.getElementById('detailError').classList.remove('visible');
     goToStep(3);
   };
 
-  // ── Step 3: Payment Method ──
-  window.switchMethod = function(method) {
-    selectedPayMethod = method;
-    document.querySelectorAll('.pay-tab').forEach(function(t) { t.classList.toggle('active', t.getAttribute('data-method') === method); });
-    document.querySelectorAll('.pay-form').forEach(function(f) { f.classList.remove('active'); });
-    document.getElementById('form-' + method).classList.add('active');
+  // Step 3: Plans
+  function buildPlanSelectors(){
+    var c = document.getElementById('planSelections');
+    c.innerHTML='';
+    var hasDiscount = selectedServices.length > 1;
+
+    selectedServices.forEach(function(svc,svcIdx){
+      var isAddon = hasDiscount && svcIdx > 0;
+      var billing = serviceBilling[svc]||'monthly';
+      var prices = PLAN_PRICES[svc];
+      var sec = document.createElement('div');
+      sec.className='plan-section';
+      var discountHtml = isAddon ? '<div class="discount-note">🎉 20% add-on discount applied!</div>' : '';
+      var billingId = 'bill-'+svc;
+
+      sec.innerHTML='<h3>'+SVC_NAMES[svc]+'</h3><p class="plan-sub">'+getItems(svc).length+' item(s) added</p>'+discountHtml+
+        '<div class="billing-row"><span class="'+(billing==='monthly'?'active-lbl':'inactive-lbl')+'" id="mL-'+svc+'">Monthly</span>'+
+        '<label class="toggle-sw"><input type="checkbox" id="'+billingId+'" '+(billing==='annual'?'checked':'')+' onchange="toggleBilling(\''+svc+'\')"><span class="toggle-tr"></span><span class="toggle-th"></span></label>'+
+        '<span class="'+(billing==='annual'?'active-lbl':'inactive-lbl')+'" id="aL-'+svc+'">Annual</span><span class="save-tag">Save 15%</span></div>'+
+        '<div class="plan-options" id="opts-'+svc+'"></div>';
+      c.appendChild(sec);
+
+      renderPlanOptions(svc,isAddon);
+    });
+  }
+
+  function renderPlanOptions(svc,isAddon){
+    var container = document.getElementById('opts-'+svc);
+    if(!container)return;
+    container.innerHTML='';
+    var prices = PLAN_PRICES[svc];
+    var billing = serviceBilling[svc]||'monthly';
+    var currentPlan = servicePlans[svc]||'';
+
+    ['starter','standard','premium'].forEach(function(tier){
+      var basePrice = prices[tier];
+      var label = '';
+      if(typeof basePrice==='string'){
+        label = basePrice;
+      } else {
+        var price = basePrice;
+        if(isAddon) price = Math.round(price*0.8);
+        if(billing==='annual') price = Math.round(price*12*0.85);
+        label = '\u20B9'+price.toLocaleString('en-IN')+(billing==='annual'?'/yr':'/mo');
+        if(isAddon && typeof basePrice==='number') label += ' (20% off)';
+      }
+      var opt = document.createElement('div');
+      opt.className='plan-opt'+(currentPlan===tier?' selected':'');
+      opt.setAttribute('data-plan',tier);
+      opt.onclick=function(){selectPlan(svc,tier)};
+      opt.innerHTML='<div><span class="plan-opt-name">'+PLAN_NAMES[tier]+'</span></div><div style="display:flex;align-items:center;gap:10px"><span class="plan-opt-price">'+label+'</span><div class="plan-radio"></div></div>';
+      container.appendChild(opt);
+    });
+  }
+
+  window.selectPlan = function(svc,tier){
+    servicePlans[svc]=tier;
+    document.querySelectorAll('#opts-'+svc+' .plan-opt').forEach(function(el){
+      el.classList.toggle('selected',el.dataset.plan===tier);
+    });
+    document.getElementById('planError').classList.remove('visible');
   };
 
-  // Card form live preview
-  setTimeout(function() {
-    var cardNum = document.getElementById('cardNumber');
-    var cardNameEl = document.getElementById('cardName');
-    var cardExp = document.getElementById('cardExpiry');
-
-    if (cardNum) {
-      cardNum.addEventListener('input', function() {
-        var v = this.value.replace(/\D/g, '').substring(0, 16);
-        var formatted = v.replace(/(.{4})/g, '$1 ').trim();
-        this.value = formatted;
-        document.getElementById('cardPreview').textContent = formatted || '**** **** **** ****';
-      });
-    }
-    if (cardNameEl) {
-      cardNameEl.addEventListener('input', function() {
-        document.getElementById('namePreview').textContent = this.value.toUpperCase() || 'CARD HOLDER';
-      });
-    }
-    if (cardExp) {
-      cardExp.addEventListener('input', function() {
-        var v = this.value.replace(/\D/g, '').substring(0, 4);
-        if (v.length >= 3) v = v.substring(0, 2) + '/' + v.substring(2);
-        this.value = v;
-        document.getElementById('expiryPreview').textContent = v || 'MM/YY';
-      });
-    }
-  }, 100);
-
-  // UPI selection
-  window.selectUpi = function(el) {
-    document.querySelectorAll('.upi-option').forEach(function(o) { o.classList.remove('selected'); });
-    el.classList.add('selected');
+  window.toggleBilling = function(svc){
+    var cb = document.getElementById('bill-'+svc);
+    serviceBilling[svc]=cb.checked?'annual':'monthly';
+    var mL=document.getElementById('mL-'+svc);
+    var aL=document.getElementById('aL-'+svc);
+    mL.className=cb.checked?'inactive-lbl':'active-lbl';
+    aL.className=cb.checked?'active-lbl':'inactive-lbl';
+    var isAddon = selectedServices.length>1 && selectedServices.indexOf(svc)>0;
+    renderPlanOptions(svc,isAddon);
   };
 
-  // Bank selection
-  window.selectBank = function(el) {
-    document.querySelectorAll('.bank-option').forEach(function(o) { o.classList.remove('selected'); });
-    el.classList.add('selected');
-  };
-
-  window.validateStep3 = function() {
-    // Payment method is always selected (card is default), just proceed
+  window.validateStep3 = function(){
+    var allSelected = selectedServices.every(function(s){return servicePlans[s]});
+    if(!allSelected){document.getElementById('planError').classList.add('visible');return}
+    document.getElementById('planError').classList.remove('visible');
     goToStep(4);
   };
 
-  // ── Step 4: Review & Confirm ──
-  function buildReview() {
-    document.getElementById('revName').textContent = session.name;
-    document.getElementById('revEmail').textContent = session.email;
+  // Step 4: Payment
+  window.switchMethod = function(m){
+    selectedPayMethod=m;
+    document.querySelectorAll('.pay-tab').forEach(function(t){t.classList.toggle('active',t.dataset.method===m)});
+    document.querySelectorAll('.pay-form').forEach(function(f){f.classList.remove('active')});
+    document.getElementById('form-'+m).classList.add('active');
+  };
+  window.selectUpi = function(el){document.querySelectorAll('.upi-option').forEach(function(o){o.classList.remove('selected')});el.classList.add('selected')};
+  window.selectBank = function(el){document.querySelectorAll('.bank-option').forEach(function(o){o.classList.remove('selected')});el.classList.add('selected')};
 
-    // Payment method display
-    var methodNames = { card: 'Credit/Debit Card', upi: 'UPI', netbanking: 'Net Banking' };
-    document.getElementById('revPayMethod').textContent = methodNames[selectedPayMethod] || 'Card';
+  // Card preview
+  setTimeout(function(){
+    var cn=document.getElementById('cardNumber'),cne=document.getElementById('cardName'),ce=document.getElementById('cardExpiry');
+    if(cn)cn.addEventListener('input',function(){var v=this.value.replace(/\D/g,'').substring(0,16);var f=v.replace(/(.{4})/g,'$1 ').trim();this.value=f;document.getElementById('cardPreview').textContent=f||'**** **** **** ****'});
+    if(cne)cne.addEventListener('input',function(){document.getElementById('namePreview').textContent=this.value.toUpperCase()||'CARD HOLDER'});
+    if(ce)ce.addEventListener('input',function(){var v=this.value.replace(/\D/g,'').substring(0,4);if(v.length>=3)v=v.substring(0,2)+'/'+v.substring(2);this.value=v;document.getElementById('expiryPreview').textContent=v||'MM/YY'});
+  },100);
 
-    var propHtml = '';
-    var totalMonthly = 0;
-    var hasOneTime = false;
-    var oneTimeTotal = 0;
+  window.validateStep4 = function(){goToStep(5)};
 
-    properties.forEach(function(p) {
-      var plan = PLANS[p.plan];
-      var priceStr = '';
-      var monthlyAmount = 0;
+  // Step 5: Review
+  function buildReview(){
+    document.getElementById('revName').textContent=session.name;
+    document.getElementById('revEmail').textContent=session.email;
+    var methods={card:'Credit/Debit Card',upi:'UPI',netbanking:'Net Banking'};
+    document.getElementById('revPayMethod').textContent=methods[selectedPayMethod]||'Card';
 
-      if (p.plan === 'platinum') {
-        monthlyAmount = p.rent ? Math.round(p.rent * 0.1) : 0;
-        priceStr = p.rent
-          ? '10% = \u20B9' + monthlyAmount.toLocaleString('en-IN') + '/mo'
-          : '10% of monthly rent';
-        if (p.rent) {
-          priceStr += ' + \u20B9' + p.rent.toLocaleString('en-IN') + ' one-time';
-          hasOneTime = true;
-          oneTimeTotal += p.rent;
-        }
+    var html='';var total=0;
+    var hasDiscount = selectedServices.length>1;
+
+    selectedServices.forEach(function(svc,svcIdx){
+      var plan=servicePlans[svc];var billing=serviceBilling[svc]||'monthly';
+      var prices=PLAN_PRICES[svc];var basePrice=prices[plan];
+      var isAddon=hasDiscount&&svcIdx>0;
+      var amount=0;var priceStr='';
+
+      if(typeof basePrice==='string'){
+        priceStr=basePrice;
+        var items=getItems(svc);
+        items.forEach(function(item){
+          if(item.rent){amount+=Math.round(parseInt(item.rent)*0.1)}
+        });
       } else {
-        monthlyAmount = plan.monthly;
-        if (p.billing === 'annual') {
-          var annualTotal = Math.round(plan.monthly * 12 * 0.85);
-          monthlyAmount = Math.round(annualTotal / 12);
-          priceStr = '\u20B9' + annualTotal.toLocaleString('en-IN') + '/yr (saves 15%)';
-        } else {
-          priceStr = '\u20B9' + plan.monthly.toLocaleString('en-IN') + '/mo';
-        }
+        amount=basePrice;
+        if(isAddon)amount=Math.round(amount*0.8);
+        if(billing==='annual'){amount=Math.round(amount*12*0.85);priceStr='\u20B9'+amount.toLocaleString('en-IN')+'/yr'}
+        else{priceStr='\u20B9'+amount.toLocaleString('en-IN')+'/mo'}
+        if(isAddon)priceStr+=' (20% add-on discount)';
       }
+      total+=amount;
 
-      totalMonthly += monthlyAmount;
-
-      propHtml +=
-        '<div class="review-property-block">' +
-          '<h5>' + p.city + ' — ' + capitalize(p.type) + '</h5>' +
-          '<div class="review-row"><span class="review-label">Plan</span><span class="review-plan-badge">' + plan.name + '</span></div>' +
-          '<div class="review-row"><span class="review-label">Billing</span><span class="review-value">' + capitalize(p.billing) + '</span></div>' +
-          '<div class="review-row"><span class="review-label">Price</span><span class="review-value">' + priceStr + '</span></div>' +
-        '</div>';
+      html+='<div class="review-block"><h5>'+SVC_NAMES[svc]+'</h5>'+
+        '<div class="review-row"><span class="review-label">Plan</span><span class="review-plan-badge">'+PLAN_NAMES[plan]+'</span></div>'+
+        '<div class="review-row"><span class="review-label">Billing</span><span class="review-value">'+(billing==='annual'?'Annual':'Monthly')+'</span></div>'+
+        '<div class="review-row"><span class="review-label">Price</span><span class="review-value">'+priceStr+'</span></div>'+
+        '<div class="review-row"><span class="review-label">Items</span><span class="review-value">'+getItems(svc).length+'</span></div></div>';
     });
 
-    document.getElementById('revProperties').innerHTML = propHtml;
-    document.getElementById('revTotal').textContent = '\u20B9' + totalMonthly.toLocaleString('en-IN') + '/mo';
+    document.getElementById('revServices').innerHTML=html;
 
-    var noteText = 'You can cancel or change plans anytime from your dashboard.';
-    if (hasOneTime) {
-      noteText += ' Platinum one-time fee (\u20B9' + oneTimeTotal.toLocaleString('en-IN') + ') will be charged after successful tenant onboarding.';
-    }
-    document.getElementById('revNote').textContent = noteText;
+    var discountHtml='';
+    if(hasDiscount){discountHtml='<div class="review-row"><span class="review-label" style="color:var(--green-pop)">Add-on bundle discount (20%)</span><span class="review-value" style="color:var(--green-pop)">Applied ✓</span></div>'}
+    var hasAnnual=selectedServices.some(function(s){return(serviceBilling[s]||'monthly')==='annual'});
+    if(hasAnnual){discountHtml+='<div class="review-row"><span class="review-label" style="color:var(--green-pop)">Annual billing discount (15%)</span><span class="review-value" style="color:var(--green-pop)">Applied ✓</span></div>'}
+    document.getElementById('revDiscounts').innerHTML=discountHtml;
+
+    document.getElementById('revTotal').textContent='\u20B9'+total.toLocaleString('en-IN');
+    document.getElementById('revNote').textContent='You can cancel or change plans anytime from your dashboard.';
   }
 
-  window.confirmAndPay = function() {
-    var btn = document.getElementById('confirmBtn');
-    btn.disabled = true;
-    btn.textContent = 'Processing Payment\u2026';
-
-    // Simulate payment processing
-    setTimeout(function() {
-      // Save to user record — per-user isolation
-      var users = JSON.parse(localStorage.getItem('nri_users') || '[]');
-      var userIdx = users.findIndex(function(u) { return u.email === session.email; });
-      if (userIdx !== -1) {
-        // Merge with existing properties (don't overwrite other users' data)
-        var orderData = properties.map(function(p) {
-          return { city: p.city, type: p.type, rent: p.rent, bedrooms: p.bedrooms, plan: p.plan, billing: p.billing };
-        });
-        users[userIdx].properties = (users[userIdx].properties || []).concat(orderData);
-        users[userIdx].paymentDate = new Date().toISOString();
-        localStorage.setItem('nri_users', JSON.stringify(users));
+  window.confirmAndPay = function(){
+    var btn=document.getElementById('confirmBtn');
+    btn.disabled=true;btn.textContent='Processing Payment\u2026';
+    setTimeout(function(){
+      var users=JSON.parse(localStorage.getItem('nri_users')||'[]');
+      var userIdx=users.findIndex(function(u){return u.email===session.email});
+      if(userIdx!==-1){
+        users[userIdx].services=selectedServices;
+        users[userIdx].serviceDetails=serviceDetails;
+        users[userIdx].servicePlans=servicePlans;
+        users[userIdx].paymentDate=new Date().toISOString();
+        localStorage.setItem('nri_users',JSON.stringify(users));
       }
-
-      // Update session
-      session.onboarded = true;
-      localStorage.setItem('nri_session', JSON.stringify(session));
-
-      // Clean up any old order data
+      session.onboarded=true;
+      localStorage.setItem('nri_session',JSON.stringify(session));
       localStorage.removeItem('nri_order');
-
-      // Generate transaction ID
-      var txnId = 'NBI' + Date.now().toString().slice(-8) + Math.random().toString(36).slice(2, 6).toUpperCase();
-
-      // Show success
-      document.querySelectorAll('.onboard-step').forEach(function(el) { el.classList.remove('active'); });
+      var txnId='NBI'+Date.now().toString().slice(-8)+Math.random().toString(36).slice(2,6).toUpperCase();
+      document.querySelectorAll('.onboard-step').forEach(function(el){el.classList.remove('active')});
       document.getElementById('stepSuccess').classList.add('active');
-
-      // Update progress to all done
-      document.querySelectorAll('.progress-dot').forEach(function(dot) {
-        dot.classList.remove('active');
-        dot.classList.add('done');
-      });
-      document.querySelectorAll('.progress-line').forEach(function(line) {
-        line.classList.add('done');
-      });
-
-      document.getElementById('successMsg').textContent =
-        'Thank you, ' + session.name.split(' ')[0] + '! Your subscription is now active. Our team will reach out within 24 hours to begin onboarding your properties.';
-      document.getElementById('successTxn').textContent = 'Transaction ID: ' + txnId;
-
-      // Redirect after delay
-      setTimeout(function() {
-        window.location.href = 'propnri-saas-site.html';
-      }, 4000);
-    }, 2000);
+      document.querySelectorAll('.progress-dot').forEach(function(d){d.classList.remove('active');d.classList.add('done')});
+      document.querySelectorAll('.progress-line').forEach(function(l){l.classList.add('done')});
+      document.getElementById('successMsg').textContent='Thank you, '+session.name.split(' ')[0]+'! Your subscription is now active. Our team will reach out within 24 hours.';
+      document.getElementById('successTxn').textContent='Transaction ID: '+txnId;
+      setTimeout(function(){window.location.href='propnri-saas-site.html'},4000);
+    },2000);
   };
 
-  // ── Helpers ──
-  function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
+  // Navigation
+  window.goToStep = function(step){
+    collectDetails();
+    document.querySelectorAll('.onboard-step').forEach(function(el){el.classList.remove('active')});
+    document.getElementById('step'+step).classList.add('active');
+    currentStep=step;
+    document.querySelectorAll('.progress-dot').forEach(function(d,i){
+      d.classList.remove('active','done');
+      if(i+1<step)d.classList.add('done');
+      if(i+1===step)d.classList.add('active');
+    });
+    for(var i=1;i<=4;i++){var line=document.getElementById('line'+i);if(line)line.classList.toggle('done',step>i)}
+    if(step===2)buildDetailForms();
+    if(step===3)buildPlanSelectors();
+    if(step===5)buildReview();
+  };
 })();
 </script>
-
 </body>
 </html>

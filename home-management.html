@@ -46,20 +46,8 @@
 <body>
 
 <!-- NAV -->
-<nav>
-  <div class="nav-logo"><a href="propnri-saas-site.html"><img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:80px;width:auto;display:block;"></a></div>
-  <ul class="nav-links">
-    <li><a href="propnri-saas-site.html">Home</a></li>
-    <li><a href="home-management.html" class="active">Services</a></li>
-    <li><a href="propnri-saas-site.html#pricing">Pricing</a></li>
-    <li><a href="propnri-saas-site.html#how">How It Works</a></li>
-    <li><a href="#">Contact</a></li>
-  </ul>
-  <div class="nav-actions" id="navActions">
-    <a href="login.html" class="btn-outline">Log in</a>
-    <a href="signup.html" class="btn-primary">Get Started</a>
-  </div>
-</nav>
+<nav></nav>
+<script src="nav.js"></script>
 
 <!-- HERO -->
 <section class="service-hero section-pad">
@@ -168,47 +156,8 @@
 </section>
 
 <!-- FOOTER -->
-<footer>
-  <div class="footer-top">
-    <div class="footer-brand">
-      <div class="nav-logo"><img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:80px;width:auto;display:block;"></div>
-      <p>End-to-end property management for Non-Resident Indians. Managing your assets in India so you can focus on your life abroad.</p>
-    </div>
-    <div class="footer-cols">
-      <div class="footer-col">
-        <h4>Services</h4>
-        <ul>
-          <li><a href="home-management.html">All Services</a></li>
-          <li><a href="service-tenant-acquisition.html">Tenant Acquisition</a></li>
-          <li><a href="service-rent-collection.html">Rent Collection</a></li>
-          <li><a href="service-property-maintenance.html">Maintenance</a></li>
-          <li><a href="service-property-inspection.html">Inspections</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Company</h4>
-        <ul>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Cities We Cover</a></li>
-          <li><a href="#">Blog</a></li>
-          <li><a href="#">Careers</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Resources</h4>
-        <ul>
-          <li><a href="#">NRI Tax Guide</a></li>
-          <li><a href="#">RERA Compliance</a></li>
-          <li><a href="#">FAQs</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Terms of Service</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="footer-bottom">&copy; 2026 NRI Bridge India. All rights reserved. Registered in India.</div>
-</footer>
+<footer></footer>
+<script src="footer.js"></script>
 
 <script>
   const observer = new IntersectionObserver((entries) => {
@@ -227,16 +176,6 @@
     observer.observe(el);
   });
 
-  // Session-aware nav
-  (function() {
-    var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
-    if (session) {
-      var navActions = document.getElementById('navActions');
-      navActions.innerHTML =
-        '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;">Hi, ' + session.name.split(' ')[0] + '</span>' +
-        '<button class="btn-outline" onclick="localStorage.removeItem(\'nri_session\');location.reload();">Log out</button>';
-    }
-  })();
 </script>
 
 </body>
