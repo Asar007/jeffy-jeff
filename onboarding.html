@@ -355,7 +355,7 @@
     var div = document.createElement('div');
     div.className='item-card';div.id=svc+'-item-'+id;
     if(svc==='home'){
-      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'home\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="home" data-id="'+id+'" data-field="city" placeholder="e.g. Mumbai"></div><div class="form-group"><label class="form-label">Property Type</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="type"><option value="apartment">Apartment</option><option value="house">Independent House</option><option value="villa">Villa</option><option value="commercial">Commercial</option></select></div><div class="form-group"><label class="form-label">Monthly Rent (₹)</label><input type="number" class="form-input" data-svc="home" data-id="'+id+'" data-field="rent" placeholder="e.g. 25000"></div><div class="form-group"><label class="form-label">Bedrooms</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="bhk"><option value="">N/A</option><option value="1">1 BHK</option><option value="2">2 BHK</option><option value="3">3 BHK</option><option value="4+">4+ BHK</option></select></div></div>';
+      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'home\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Property Type</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="type"><option value="apartment">Apartment</option><option value="house">Independent House</option><option value="villa">Villa</option><option value="commercial">Commercial</option></select></div><div class="form-group"><label class="form-label">Status</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="status"><option value="vacant-tenant">Vacant - Need Tenant</option><option value="tenanted">Tenanted - Need Management</option><option value="maint-only">Maintenance Only (No Tenant)</option></select></div><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="home" data-id="'+id+'" data-field="city" placeholder="e.g. Mumbai"></div><div class="form-group"><label class="form-label">Monthly Rent (₹)</label><input type="number" class="form-input" data-svc="home" data-id="'+id+'" data-field="rent" placeholder="e.g. 25000"></div></div>';
     } else if(svc==='vehicle'){
       div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'vehicle\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Registration No.</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="reg" placeholder="e.g. MH02AB1234"></div><div class="form-group"><label class="form-label">Vehicle Type</label><select class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="type"><option value="car">Car</option><option value="suv">SUV</option><option value="bike">Bike</option><option value="scooter">Scooter</option></select></div><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="city" placeholder="e.g. Delhi"></div><div class="form-group"><label class="form-label">Make/Model</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="model" placeholder="e.g. Honda City"></div></div>';
     } else if(svc==='parental'){
@@ -430,7 +430,21 @@
     var billing = serviceBilling[svc]||'monthly';
     var currentPlan = servicePlans[svc]||'';
 
-    ['starter','standard','premium'].forEach(function(tier){
+    var tiers = ['starter','standard','premium'];
+    var items = null;
+    if(svc==='home'){
+      items = getItems('home');
+      var allMaintOnly = items.length > 0 && items.every(function(item){return item.status === 'maint-only'});
+      if(allMaintOnly) {
+        tiers = ['starter','standard'];
+        if(currentPlan==='premium') {
+          currentPlan='';
+          servicePlans[svc]='';
+        }
+      }
+    }
+
+    tiers.forEach(function(tier){
       var basePrice = prices[tier];
       var label = '';
       if(typeof basePrice==='string'){
@@ -449,6 +463,16 @@
       opt.innerHTML='<div><span class="plan-opt-name">'+PLAN_NAMES[tier]+'</span></div><div style="display:flex;align-items:center;gap:10px"><span class="plan-opt-price">'+label+'</span><div class="plan-radio"></div></div>';
       container.appendChild(opt);
     });
+
+    if(svc === 'home' && items && items.length > 0 && items.every(function(item){return item.status === 'maint-only'})){
+      var msg = document.createElement('div');
+      msg.style.fontSize = '0.75rem';
+      msg.style.color = 'var(--text-mid)';
+      msg.style.marginTop = '8px';
+      msg.style.textAlign = 'center';
+      msg.textContent = '* Premium tier requires Tenant Management services, which is not applicable for Maintenance-only properties.';
+      container.appendChild(msg);
+    }
   }
 
   window.selectPlan = function(svc,tier){
