@@ -99,6 +99,8 @@
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script>
 (function() {
   'use strict';
@@ -137,13 +139,16 @@
     });
   });
 
-  function showError(inputEl, errorId) {
+  function showError(inputEl, errorId, msg) {
     inputEl.classList.add('error');
     var el = document.getElementById(errorId);
-    if (el) el.classList.add('visible');
+    if (el) {
+      if (msg) el.textContent = msg;
+      el.classList.add('visible');
+    }
   }
 
-  form.addEventListener('submit', function(e) {
+  form.addEventListener('submit', async function(e) {
     e.preventDefault();
     var name = document.getElementById('fullName');
     var email = document.getElementById('email');
@@ -160,15 +165,6 @@
     if (!country.value) { showError(country, 'countryError'); valid = false; }
     if (passwordInput.value.length < 6) { showError(passwordInput, 'passwordError'); valid = false; }
 
-    // Check duplicate email
-    var users = JSON.parse(localStorage.getItem('nri_users') || '[]');
-    if (users.find(function(u) { return u.email === email.value.trim(); })) {
-      var emailErr = document.getElementById('emailError');
-      emailErr.textContent = 'Account exists. Try signing in.';
-      showError(email, 'emailError');
-      valid = false;
-    }
-
     if (!valid) return;
 
     var btn = document.getElementById('submitBtn');
@@ -176,40 +172,55 @@
     btn.textContent = 'Creating Account\u2026';
 
     var prefix = document.getElementById('phonePrefix').value.replace('-CA', '');
-    var userData = {
-      name: name.value.trim(),
-      email: email.value.trim(),
-      phone: prefix + ' ' + phone.value.trim(),
-      country: country.value,
-      password: passwordInput.value,
-      properties: [],
-      createdAt: new Date().toISOString()
-    };
+    var formattedPhone = prefix + ' ' + phone.value.trim();
 
-    // Save to localStorage
-    users.push(userData);
-    localStorage.setItem('nri_users', JSON.stringify(users));
-    // Don't set session yet — user needs to login
-    // localStorage.setItem('nri_session', ...);
+    // Supabase SignUp
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: email.value.trim(),
+      password: passwordInput.value,
+      options: {
+        data: {
+          full_name: name.value.trim(),
+          phone: formattedPhone,
+          country: country.value
+        }
+      }
+    });
+
+    if (error) {
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+      showError(email, 'emailError', error.message);
+      return;
+    }
 
     // Preserve plan param if present
     var urlParams = new URLSearchParams(window.location.search);
     var planParam = urlParams.get('plan');
     var loginUrl = 'login.html' + (planParam ? '?plan=' + planParam : '');
 
-    setTimeout(function() {
-      var card = document.getElementById('signupCard');
-      card.innerHTML =
-        '<div class="auth-success">' +
-          '<div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>' +
-          '<h3>Account Created!</h3>' +
-          '<p>Welcome, ' + userData.name.split(' ')[0] + '! Redirecting to login\u2026</p>' +
-        '</div>';
+    var card = document.getElementById('signupCard');
+    card.innerHTML =
+      '<div class="auth-success">' +
+        '<div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+        '<h3>Account Created!</h3>' +
+        '<p>Welcome, ' + name.value.trim().split(' ')[0] + '! Please check your email to verify your account, or log in.</p>' +
+      '</div>';
 
-      setTimeout(function() {
-        window.location.href = loginUrl;
-      }, 1500);
-    }, 600);
+    setTimeout(function() {
+      window.location.href = loginUrl;
+    }, 2500);
+  });
+
+  // Google Auth integration
+  document.getElementById('googleBtn').addEventListener('click', async function() {
+    const { error } = await supabaseClient.auth.signInWithOAuth({ 
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/propnri-saas-site.html'
+      }
+    });
+    if (error) console.error("Error logging in with Google:", error.message);
   });
 
 })();

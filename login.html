@@ -87,6 +87,8 @@
   </main>
 
   <!-- ═══ JAVASCRIPT ═══ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
   <script>
     // ── Toggle password visibility ──
     const toggleBtn = document.querySelector('.toggle-password');
@@ -131,7 +133,7 @@
       return valid;
     }
 
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
 
       if (!validate()) return;
@@ -139,55 +141,58 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'Signing in\u2026';
 
-      // Local auth: check against localStorage users
       var email = emailInput.value.trim();
       var password = passwordInput.value;
-      var users = JSON.parse(localStorage.getItem('nri_users') || '[]');
-      var user = users.find(function(u) { return u.email === email && u.password === password; });
+
+      // Supabase SignIn
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+        passwordInput.classList.add('error');
+        // Show inline error
+        var existingErr = document.getElementById('loginError');
+        if (!existingErr) {
+          var errDiv = document.createElement('div');
+          errDiv.id = 'loginError';
+          errDiv.style.cssText = 'color:#dc3545;font-size:0.82rem;text-align:center;margin-bottom:16px;';
+          errDiv.textContent = error.message;
+          submitBtn.parentNode.insertBefore(errDiv, submitBtn);
+        } else {
+          existingErr.textContent = error.message;
+        }
+        return;
+      }
+
+      // Login Successful
+      var user = data.user;
+      var name = user.user_metadata?.full_name || 'User';
+
+      var card = document.querySelector('.auth-card');
+      card.innerHTML =
+        '<div class="auth-success">' +
+          '<div class="success-icon">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' +
+          '</div>' +
+          '<h3>Welcome Back, ' + name.split(' ')[0] + '!</h3>' +
+          '<p>Signed in successfully. Redirecting\u2026</p>' +
+        '</div>';
+
+      // Check if a plan was selected before login
+      var urlParams = new URLSearchParams(window.location.search);
+      var planParam = urlParams.get('plan');
 
       setTimeout(function() {
-        if (user) {
-          // Store logged-in session
-          localStorage.setItem('nri_session', JSON.stringify({ email: user.email, name: user.name }));
-
-          var card = document.querySelector('.auth-card');
-          card.innerHTML =
-            '<div class="auth-success">' +
-              '<div class="success-icon">' +
-                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' +
-              '</div>' +
-              '<h3>Welcome Back, ' + (user.name || 'User') + '!</h3>' +
-              '<p>Signed in successfully. Redirecting\u2026</p>' +
-            '</div>';
-
-          // Check if a plan was selected before login
-          var urlParams = new URLSearchParams(window.location.search);
-          var planParam = urlParams.get('plan');
-
-          setTimeout(function() {
-            if (planParam) {
-              // User came from a pricing CTA — send them to onboarding with plan pre-selected
-              window.location.href = 'onboarding.html?plan=' + planParam;
-            } else {
-              // Normal login — always go to homepage
-              window.location.href = 'propnri-saas-site.html';
-            }
-          }, 2000);
+        if (planParam) {
+          window.location.href = 'onboarding.html?plan=' + planParam;
         } else {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Sign In';
-          passwordInput.classList.add('error');
-          // Show inline error
-          var existingErr = document.getElementById('loginError');
-          if (!existingErr) {
-            var errDiv = document.createElement('div');
-            errDiv.id = 'loginError';
-            errDiv.style.cssText = 'color:#dc3545;font-size:0.82rem;text-align:center;margin-bottom:16px;';
-            errDiv.textContent = 'Invalid email or password. Don\u2019t have an account? Sign up first.';
-            submitBtn.parentNode.insertBefore(errDiv, submitBtn);
-          }
+          window.location.href = 'propnri-saas-site.html';
         }
-      }, 600);
+      }, 2000);
     });
 
     // ── Clear error state on input ──
@@ -201,6 +206,18 @@
       var err = document.getElementById('loginError');
       if (err) err.remove();
     });
+
+    // Google Auth integration
+    document.getElementById('googleBtn').addEventListener('click', async function() {
+      const { error } = await supabaseClient.auth.signInWithOAuth({ 
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/propnri-saas-site.html'
+        }
+      });
+      if (error) console.error("Error logging in with Google:", error.message);
+    });
+
   </script>
 
 </body>
