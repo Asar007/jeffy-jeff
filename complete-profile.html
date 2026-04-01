@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complete Profile — NRI Bridge India</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav></nav>
+<script src="nav.js"></script>
+
+<main class="auth-page">
+  <div class="auth-card" id="completeProfileCard">
+
+    <div class="auth-logo">
+      <img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India">
+    </div>
+
+    <h1 class="auth-heading">Almost There!</h1>
+    <p class="auth-subheading">We just need a couple more details to complete your account setup.</p>
+
+    <form id="completeProfileForm" novalidate>
+
+      <div class="form-group">
+        <label class="form-label" for="phone">Phone Number</label>
+        <div class="phone-input-group">
+          <select class="phone-prefix" id="phonePrefix">
+            <option value="+1">+1 (US)</option>
+            <option value="+44">+44 (UK)</option>
+            <option value="+971">+971 (UAE)</option>
+            <option value="+65">+65 (SG)</option>
+            <option value="+1-CA">+1 (CA)</option>
+            <option value="+61">+61 (AU)</option>
+            <option value="+91" selected>+91 (IN)</option>
+          </select>
+          <input type="tel" id="phone" class="form-input" placeholder="Phone number" required>
+        </div>
+        <div class="form-error" id="phoneError">Please enter your phone number</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="country">Country of Residence</label>
+        <select id="country" class="form-input" required>
+          <option value="" disabled selected>Select your country</option>
+          <option value="USA">USA</option>
+          <option value="UK">UK</option>
+          <option value="UAE">UAE</option>
+          <option value="Singapore">Singapore</option>
+          <option value="Canada">Canada</option>
+          <option value="Australia">Australia</option>
+          <option value="India">India</option>
+          <option value="Germany">Germany</option>
+          <option value="New Zealand">New Zealand</option>
+          <option value="Malaysia">Malaysia</option>
+        </select>
+        <div class="form-error" id="countryError">Please select your country</div>
+      </div>
+
+      <button type="submit" class="btn-auth" id="submitBtn">Complete Setup</button>
+    </form>
+
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  var form = document.getElementById('completeProfileForm');
+  var phone = document.getElementById('phone');
+  var country = document.getElementById('country');
+  var btn = document.getElementById('submitBtn');
+
+  // Clear errors on input
+  document.querySelectorAll('.form-input').forEach(function(el) {
+    el.addEventListener('input', function() {
+      this.classList.remove('error');
+      var err = this.closest('.form-group') && this.closest('.form-group').querySelector('.form-error');
+      if (err) err.classList.remove('visible');
+    });
+  });
+
+  function showError(inputEl, errorId, msg) {
+    inputEl.classList.add('error');
+    var el = document.getElementById(errorId);
+    if (el) {
+      if (msg) el.textContent = msg;
+      el.classList.add('visible');
+    }
+  }
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var valid = true;
+
+    document.querySelectorAll('.form-error').forEach(function(el) { el.classList.remove('visible'); });
+    document.querySelectorAll('.form-input').forEach(function(el) { el.classList.remove('error'); });
+
+    if (!phone.value.trim()) { showError(phone, 'phoneError'); valid = false; }
+    if (!country.value) { showError(country, 'countryError'); valid = false; }
+
+    if (!valid) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Saving Details...';
+
+    var prefix = document.getElementById('phonePrefix').value.replace('-CA', '');
+    var formattedPhone = prefix + ' ' + phone.value.trim();
+
+    // Update Supabase profile data
+    const { data, error } = await window.supabaseClient.auth.updateUser({
+      data: {
+        phone: formattedPhone,
+        country: country.value
+      }
+    });
+
+    if (error) {
+      btn.disabled = false;
+      btn.textContent = 'Complete Setup';
+      alert('Error updating profile: ' + error.message);
+      return;
+    }
+
+    // Success! Redirect.
+    var card = document.getElementById('completeProfileCard');
+    card.innerHTML =
+      '<div class="auth-success">' +
+        '<div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+        '<h3>Profile Complete!</h3>' +
+        '<p>Taking you to the site...</p>' +
+      '</div>';
+
+    // Preserve plan param if present
+    var urlParams = new URLSearchParams(window.location.search);
+    var planParam = urlParams.get('plan');
+    var redirectUrl = 'propnri-saas-site.html' + (planParam ? '?plan=' + planParam : '');
+
+    setTimeout(function() {
+      window.location.href = redirectUrl;
+    }, 1500);
+  });
+
+})();
+</script>
+
+</body>
+</html>

@@ -10,3 +10,37 @@ if (!SUPABASE_URL || SUPABASE_URL === "YOUR_SUPABASE_URL") {
 }
 
 window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Sync Supabase Auth state with existing UI logic
+window.supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+    if (session && session.user) {
+      const meta = session.user.user_metadata || {};
+      const name = meta.full_name || session.user.email;
+      
+      localStorage.setItem('nri_session', JSON.stringify({ name: name, email: session.user.email }));
+      
+      // Check if this is a login missing phone or country (e.g. from Google OAuth)
+      const currentPath = window.location.pathname.split('/').pop() || '';
+      if ((!meta.phone || !meta.country) && currentPath !== 'complete-profile.html') {
+          window.location.href = 'complete-profile.html' + window.location.search;
+          return;
+      }
+      
+      // Update the navigation UI immediately to fix the lag (no page refresh required)
+      var navActions = document.getElementById('navActions');
+      if (navActions) {
+        navActions.innerHTML =
+          '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;margin-right:12px;">Hi, ' + name.split(' ')[0] + '</span>' +
+          '<a href="account.html" class="btn-outline" style="border-color: rgba(255,255,255,0.4); color: white;">My Account</a>';
+      }
+      
+      // If we just came back from an OAuth redirect, cleanly remove the bulky URL hash
+      if (window.location.hash.includes('access_token=')) {
+        window.history.replaceState(null, null, window.location.pathname + window.location.search);
+      }
+    }
+  } else if (event === 'SIGNED_OUT') {
+    localStorage.removeItem('nri_session');
+  }
+});
