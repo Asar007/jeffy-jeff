@@ -207,12 +207,15 @@
       if (err) err.remove();
     });
 
-    // Google Auth integration
     document.getElementById('googleBtn').addEventListener('click', async function() {
+      let basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+      if (!basePath.endsWith('/')) basePath += '/';
+      const redirectPath = window.location.origin + basePath + 'propnri-saas-site.html';
+      
       const { error } = await supabaseClient.auth.signInWithOAuth({ 
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/propnri-saas-site.html'
+          redirectTo: redirectPath
         }
       });
       if (error) console.error("Error logging in with Google:", error.message);
