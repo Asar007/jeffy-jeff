@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account — NRI Bridge India</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .dashboard-container {
+      max-width: 800px;
+      margin: 120px auto 60px;
+      padding: 0 20px;
+    }
+    .profile-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--bg-highlight);
+      color: var(--green-pop);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: 'Playfair Display', serif;
+    }
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .profile-info h1 {
+      font-family: 'Playfair Display', serif;
+      margin-bottom: 4px;
+      color: var(--text-dark);
+    }
+    .profile-info p {
+      color: var(--text-mid);
+      font-size: 0.95rem;
+    }
+    .profile-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .detail-item {
+      background: var(--bg-main);
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+    }
+    .detail-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-mid);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .detail-value {
+      font-size: 1.05rem;
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+    .dashboard-actions {
+      display: flex;
+      gap: 16px;
+    }
+    .loading-state {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--text-mid);
+    }
+    
+    @media (max-width: 600px) {
+      .profile-details {
+        grid-template-columns: 1fr;
+      }
+      .profile-header {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav></nav>
+  <script src="nav.js"></script>
+
+  <main class="dashboard-container">
+    <div class="profile-card" id="profileCard">
+      <div class="loading-state">
+        <p>Loading your profile...</p>
+      </div>
+    </div>
+  </main>
+
+  <footer></footer>
+  <script src="footer.js"></script>
+
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Check for user session
+      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+      
+      if (error || !user) {
+        // Not logged in, redirect to login
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Populate user info
+      const meta = user.user_metadata || {};
+      const fullName = meta.full_name || user.email;
+      const initials = fullName.charAt(0).toUpperCase();
+      const phone = meta.phone || 'Not provided';
+      const country = meta.country || 'Not specified';
+      const avatarUrl = meta.avatar_url;
+
+      const profileCard = document.getElementById('profileCard');
+      
+      profileCard.innerHTML = `
+        <div class="profile-header">
+          <div class="profile-avatar">
+            ${avatarUrl ? `<img src="${avatarUrl}" alt="${fullName}">` : initials}
+          </div>
+          <div class="profile-info">
+            <h1>${fullName}</h1>
+            <p>NRI Bridge India Member</p>
+          </div>
+        </div>
+        
+        <h3 style="margin-bottom: 16px; font-size: 1.1rem;">Personal Information</h3>
+        <div class="profile-details">
+          <div class="detail-item">
+            <div class="detail-label">Email Address</div>
+            <div class="detail-value">${user.email}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Phone Number</div>
+            <div class="detail-value">${phone}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Country of Residence</div>
+            <div class="detail-value">${country}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Account Created</div>
+            <div class="detail-value">${new Date(user.created_at).toLocaleDateString()}</div>
+          </div>
+        </div>
+
+        <div class="dashboard-actions">
+          <button class="btn-primary" onclick="alert('Manage Subscriptions feature coming soon!')">Manage Services</button>
+          <button class="btn-outline" id="logoutBtn" style="color: #dc3545; border-color: rgba(220, 53, 69, 0.3);">Sign Out</button>
+        </div>
+      `;
+
+      // Handle Logout
+      document.getElementById('logoutBtn').addEventListener('click', async function() {
+        await window.supabaseClient.auth.signOut();
+        localStorage.removeItem('nri_session');
+        window.location.href = 'login.html';
+      });
+    });
+  </script>
+</body>
+</html>

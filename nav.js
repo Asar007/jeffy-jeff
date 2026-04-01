@@ -46,8 +46,8 @@
     var navActions = document.getElementById('navActions');
     if (navActions) {
       navActions.innerHTML =
-        '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;">Hi, ' + session.name.split(' ')[0] + '</span>' +
-        '<button class="btn-outline" onclick="localStorage.removeItem(\'nri_session\');location.reload();">Log out</button>';
+        '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;margin-right:12px;">Hi, ' + session.name.split(' ')[0] + '</span>' +
+        '<a href="account.html" class="btn-outline" style="border-color: rgba(255,255,255,0.4); color: white;">My Account</a>';
     }
   }
 })();
