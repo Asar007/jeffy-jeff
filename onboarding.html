@@ -154,7 +154,7 @@
           <div class="svc-icon"><svg viewBox="0 0 24 24"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 5h3v6h-2"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
           <h3>Vehicle Management</h3>
           <p>Insurance, servicing, parking, RTO</p>
-          <span class="svc-badge">From ₹1,999/mo</span>
+          <span class="svc-badge">From ₹1,499/mo</span>
         </div>
         <div class="svc-check cat-parental" data-svc="parental" onclick="toggleService('parental',this)">
           <div class="svc-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
@@ -285,11 +285,18 @@
 
   var PLAN_PRICES = {
     home:{starter:4999,standard:9999,premium:'10% of rent'},
-    vehicle:{starter:1999,standard:3999,premium:6999},
+    vehicle:{starter:1499,standard:2999,premium:5499},
     parental:{starter:4999,standard:8999,premium:14999},
     legal:{starter:2999,standard:5999,premium:9999}
   };
-  var PLAN_NAMES = {starter:'Starter',standard:'Standard',premium:'Premium'};
+  function getPlanName(svc, tier) {
+    if (svc === 'vehicle') {
+      var vn = {starter:'Guardian',standard:'Command',premium:'Concierge'};
+      return vn[tier];
+    }
+    var nn = {starter:'Starter',standard:'Standard',premium:'Premium'};
+    return nn[tier];
+  }
   var SVC_NAMES = {home:'Home Management',vehicle:'Vehicle Management',parental:'Parental Care',legal:'Legal & Documentation'};
 
   // Pre-select from URL
@@ -505,7 +512,7 @@
       opt.className='plan-opt'+(currentPlan===tier?' selected':'');
       opt.setAttribute('data-plan',tier);
       opt.onclick=function(){selectItemPlan(planKey,tier)};
-      opt.innerHTML='<div><span class="plan-opt-name">'+PLAN_NAMES[tier]+'</span></div><div style="display:flex;align-items:center;gap:10px"><span class="plan-opt-price">'+label+'</span><div class="plan-radio"></div></div>';
+      opt.innerHTML='<div><span class="plan-opt-name">'+getPlanName(svc, tier)+'</span></div><div style="display:flex;align-items:center;gap:10px"><span class="plan-opt-price">'+label+'</span><div class="plan-radio"></div></div>';
       container.appendChild(opt);
     });
 
@@ -629,7 +636,7 @@
       total+=amount;
 
       html+='<div class="review-block"><h5>'+title+'</h5>'+
-        '<div class="review-row"><span class="review-label">Plan</span><span class="review-plan-badge">'+PLAN_NAMES[plan]+'</span></div>'+
+        '<div class="review-row"><span class="review-label">Plan</span><span class="review-plan-badge">'+getPlanName(svc, plan)+'</span></div>'+
         '<div class="review-row"><span class="review-label">Billing</span><span class="review-value">'+(billing==='annual'?'Annual':'Monthly')+'</span></div>'+
         '<div class="review-row"><span class="review-label">Price</span><span class="review-value">'+priceStr+'</span></div></div>';
     });

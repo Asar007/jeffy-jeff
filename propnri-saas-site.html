@@ -48,28 +48,11 @@
   .landing-service-card p { font-size:0.82rem; line-height:1.55; color:var(--text-mid); margin-bottom:14px; }
   .landing-service-card .learn-more { font-size:0.8rem; font-weight:600; color:var(--green-pop); }
 
-  /* Bundle card */
-  .bundle-highlight {
-    margin-top:40px; max-width:760px; margin-left:auto; margin-right:auto;
-    background:linear-gradient(135deg, var(--bg-main) 0%, var(--accent) 100%);
-    border-radius:var(--radius-lg); padding:36px 40px; display:flex;
-    align-items:center; justify-content:space-between; gap:24px; color:var(--text-light);
-  }
-  .bundle-highlight h3 { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; margin-bottom:6px; }
-  .bundle-highlight p { font-size:0.88rem; opacity:0.85; max-width:380px; line-height:1.55; }
-  .bundle-price-box { text-align:center; flex-shrink:0; }
-  .bundle-price-box .amount { font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; display:block; }
-  .bundle-price-box .period { font-size:0.75rem; opacity:0.7; display:block; margin-bottom:12px; }
-  .bundle-price-box .btn-hero { background:var(--bg-cream); color:var(--text-dark); font-size:0.82rem; }
-  .bundle-price-box .btn-hero:hover { background:var(--white); }
-
   @media(max-width:900px) {
     .landing-services-grid { grid-template-columns:repeat(2,1fr); }
   }
   @media(max-width:600px) {
     .landing-services-grid { grid-template-columns:1fr; }
-    .bundle-highlight { flex-direction:column; text-align:center; padding:28px 24px; }
-    .bundle-highlight p { max-width:100%; }
     .pricing-service-tabs { gap:4px; }
     .pricing-service-tab { padding:8px 14px; font-size:0.75rem; }
   }
@@ -133,7 +116,30 @@
   </div>
 </div>
 
-<!-- ALL SERVICES — 4 Card Grid -->
+<!-- NRI PAIN POINTS -->
+<div class="stats-ribbon" style="background:var(--bg-cream);padding:28px 32px;">
+  <div class="stat-item" style="max-width:200px;">
+    <div class="stat-num" style="color:var(--green-pop);font-size:1.6rem;">62%</div>
+    <div class="stat-label" style="color:var(--text-mid);font-size:0.68rem;line-height:1.5;">of NRI property owners say maintenance is their biggest stress</div>
+  </div>
+  <div class="stat-item" style="max-width:200px;">
+    <div class="stat-num" style="color:var(--green-pop);font-size:1.6rem;">₹3.2L</div>
+    <div class="stat-label" style="color:var(--text-mid);font-size:0.68rem;line-height:1.5;">average annual loss from unmanaged vacant properties</div>
+  </div>
+  <div class="stat-item" style="max-width:200px;">
+    <div class="stat-num" style="color:var(--green-pop);font-size:1.6rem;">78%</div>
+    <div class="stat-label" style="color:var(--text-mid);font-size:0.68rem;line-height:1.5;">of NRIs worry about their parents' medical emergencies</div>
+  </div>
+  <div class="stat-item" style="max-width:200px;">
+    <div class="stat-num" style="color:var(--green-pop);font-size:1.6rem;">4 in 10</div>
+    <div class="stat-label" style="color:var(--text-mid);font-size:0.68rem;line-height:1.5;">vehicles parked idle develop battery or tyre issues within 3 months</div>
+  </div>
+  <div class="stat-item" style="max-width:200px;">
+    <div class="stat-num" style="color:var(--green-pop);font-size:1.6rem;">53%</div>
+    <div class="stat-label" style="color:var(--text-mid);font-size:0.68rem;line-height:1.5;">of NRIs miss critical legal deadlines due to timezone gaps</div>
+  </div>
+</div>
+
 <section class="services section-pad" id="services">
   <div class="section-tag">Our Services</div>
   <h2 class="section-title">Everything Your Life in India Needs</h2>
@@ -218,10 +224,10 @@
 
   <!-- Service Category Tabs -->
   <div class="pricing-service-tabs">
-    <button class="pricing-service-tab active" data-category="home" onclick="switchPricingCategory('home')">🏠 Home</button>
-    <button class="pricing-service-tab" data-category="vehicle" onclick="switchPricingCategory('vehicle')">🚗 Vehicle</button>
-    <button class="pricing-service-tab" data-category="parental" onclick="switchPricingCategory('parental')">❤️ Parental</button>
-    <button class="pricing-service-tab" data-category="legal" onclick="switchPricingCategory('legal')">📄 Legal</button>
+    <button class="pricing-service-tab active" data-category="home" onclick="switchPricingCategory('home')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home</button>
+    <button class="pricing-service-tab" data-category="vehicle" onclick="switchPricingCategory('vehicle')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2M7 17v2m10-2v2"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg> Vehicle</button>
+    <button class="pricing-service-tab" data-category="parental" onclick="switchPricingCategory('parental')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Parental</button>
+    <button class="pricing-service-tab" data-category="legal" onclick="switchPricingCategory('legal')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Legal</button>
   </div>
 
   <!-- Billing Toggle -->
@@ -239,17 +245,12 @@
   <!-- Pricing cards — data driven via JS -->
   <div class="pricing-grid" id="pricingGrid"></div>
 
-  <!-- NRI Complete Bundle -->
-  <div class="bundle-highlight">
-    <div>
-      <h3>NRI Complete Bundle</h3>
-      <p>All 4 service categories at Premium tier. Maximum coverage, maximum savings. One subscription for everything.</p>
-    </div>
-    <div class="bundle-price-box">
-      <span class="amount">₹29,999</span>
-      <span class="period">per month / all services</span>
-      <a href="signup.html?plan=complete" class="btn-hero">Get NRI Complete</a>
-    </div>
+  <!-- Custom Quote CTA -->
+  <div class="quote-builder" style="text-align:center;padding:44px 40px;">
+    <div class="section-tag" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.15);">Customise</div>
+    <h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:8px;">Need a Custom Solution?</h3>
+    <p style="font-size:0.9rem;opacity:0.7;max-width:480px;margin:0 auto 24px;line-height:1.6;">Pick exactly the services you need across property, vehicle, parental care, and legal — and get a personalised quotation within 24 hours.</p>
+    <a href="quote-builder.html" class="btn-hero" style="background:var(--bg-cream);color:var(--text-dark);">Build Your Custom Quote →</a>
   </div>
 </section>
 
@@ -410,9 +411,9 @@
       premium: { name: 'Premium', tag: 'Full Management', customPrice: '10% of rent', features: ['Everything in Standard', 'Full tenant management', 'Background verification', 'Rent collection & transfers', 'Monthly financial report', 'Move-in / move-out handling'], note: 'One-time: 1 month rent after tenant onboarding' }
     },
     vehicle: {
-      starter: { name: 'Starter', tag: 'Basic Care', monthly: 1999, features: ['Insurance renewal tracking', 'Annual servicing coordination', 'PUC certificate renewal', 'Secure parking arrangement', 'Monthly vehicle health update'] },
-      standard: { name: 'Standard', tag: 'Complete Care', monthly: 3999, features: ['Everything in Starter', 'Bi-annual servicing', 'Battery & tyre checks', 'Engine start schedule', 'Priority roadside support'], note: 'Parts & repair costs billed separately' },
-      premium: { name: 'Premium', tag: 'Full Vehicle Management', monthly: 6999, features: ['Everything in Standard', 'Selling assistance', 'Registration & transfer', 'Accident claim support', 'Dedicated vehicle manager', 'RC/NOC/Hypothecation handling'] }
+      starter: { name: 'Guardian', tag: 'For the car that sits while you\'re away', monthly: 1499, features: ['Monthly health check \u2014 battery, tyres, fluids with photo report', '1 pickup & drop per month (service centre runs)', 'Document expiry tracker \u2014 PUC, insurance, registration alerts', 'Idle car care \u2014 engine warm-up runs once a week', 'WhatsApp updates after every visit'] },
+      standard: { name: 'Command', tag: 'Full control from 10,000 km away', monthly: 2999, features: ['Everything in Guardian, plus \u2014', '2 scheduled services/year included (oil, filters, basic parts)', '3 pickups & drops per month', 'Pre-arrival prep + post-departure check', 'Document renewal execution \u2014 we handle it, send you scans', '24\u00d77 emergency coordination \u2014 breakdown, towing, repair shop', 'Dedicated service manager, video call on request'] },
+      premium: { name: 'Concierge', tag: 'Your personal fleet manager in Chennai', monthly: 5499, features: ['Everything in Command, plus \u2014', 'Unlimited pickups & drops', 'Annual comprehensive service fully covered (parts at cost)', 'Chauffeur-on-call during India visits (up to 10 hrs/month)', 'Insurance claim assistance & negotiation', 'Car wash & detailing \u2014 bi-monthly', 'Priority same-day response on all requests', 'Monthly video health report \u2014 walk-around of the car'] }
     },
     parental: {
       starter: { name: 'Starter', tag: 'Well-Being Check', monthly: 4999, features: ['Weekly phone check-ins', 'Monthly health vitals report', 'Medicine ordering reminders', 'Emergency helpline access', 'Family update emails'] },
@@ -542,6 +543,8 @@
     this.removeEventListener('mousemove', tiltCard);
     this.removeEventListener('mouseleave', resetCard);
   }
+
+
 </script>
 </body>
 </html>
