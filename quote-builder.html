@@ -74,6 +74,49 @@
     .qb-summary-col .qb-summary{position:static}
     .qb-fields{grid-template-columns:1fr}
   }
+  /* ── Quotation Success Modal ── */
+  .qb-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);z-index:9999;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity 0.4s ease}
+  .qb-modal-overlay.show{display:flex;opacity:1}
+  .qb-modal{background:var(--white);border-radius:var(--radius-lg);max-width:560px;width:92%;max-height:90vh;overflow-y:auto;transform:translateY(40px) scale(0.95);opacity:0;transition:all 0.5s cubic-bezier(0.16,1,0.3,1);box-shadow:0 32px 80px rgba(0,0,0,0.25)}
+  .qb-modal-overlay.show .qb-modal{transform:translateY(0) scale(1);opacity:1}
+  .qb-modal-success{text-align:center;padding:48px 32px 28px;background:linear-gradient(135deg,#2d2f22 0%,#3a3c2c 50%,#3d5a28 100%);border-radius:var(--radius-lg) var(--radius-lg) 0 0;color:var(--text-light);position:relative;overflow:hidden}
+  .qb-check-circle{width:80px;height:80px;border-radius:50%;border:3px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;position:relative}
+  .qb-check-circle svg{width:36px;height:36px;stroke:var(--bg-cream);stroke-dasharray:50;stroke-dashoffset:50;animation:qbDrawCheck 0.6s 0.4s ease forwards}
+  .qb-check-circle::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:3px solid var(--bg-cream);animation:qbCirclePop 0.5s 0.2s ease forwards;opacity:0}
+  @keyframes qbDrawCheck{to{stroke-dashoffset:0}}
+  @keyframes qbCirclePop{0%{opacity:0;transform:scale(0.5)}60%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+  .qb-modal-success h3{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:6px;opacity:0;animation:qbFadeUp 0.5s 0.6s ease forwards}
+  .qb-modal-success .qb-quote-num{font-size:0.82rem;opacity:0;background:rgba(255,255,255,0.1);display:inline-block;padding:4px 16px;border-radius:var(--radius-pill);margin-top:8px;letter-spacing:0.04em;animation:qbFadeUp 0.5s 0.75s ease forwards}
+  @keyframes qbFadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .qb-receipt{padding:28px 28px 24px}
+  .qb-receipt-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1.5px solid rgba(0,0,0,0.06);margin-bottom:16px}
+  .qb-receipt-header h4{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--text-dark)}
+  .qb-receipt-header .qb-receipt-date{font-size:0.72rem;color:var(--text-mid)}
+  .qb-receipt-cat{margin-bottom:14px}
+  .qb-receipt-cat-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--green-pop);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .qb-receipt-cat-title::after{content:'';flex:1;height:1px;background:rgba(74,106,46,0.15)}
+  .qb-receipt-item{padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.03)}
+  .qb-receipt-item:last-child{border-bottom:none}
+  .qb-receipt-item-label{font-size:0.82rem;font-weight:600;color:var(--text-dark);margin-bottom:2px}
+  .qb-receipt-item-svcs{font-size:0.72rem;color:var(--text-mid);line-height:1.5}
+  .qb-receipt-addons{padding-top:10px;border-top:1px solid rgba(0,0,0,0.06);margin-top:6px}
+  .qb-receipt-addons-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-mid);margin-bottom:4px}
+  .qb-receipt-addons-list{font-size:0.78rem;color:var(--text-dark)}
+  .qb-receipt-footer{display:flex;justify-content:space-between;align-items:center;padding-top:16px;margin-top:16px;border-top:2px solid var(--green-pop)}
+  .qb-receipt-footer span:first-child{font-size:0.85rem;font-weight:700;color:var(--text-dark)}
+  .qb-receipt-footer span:last-child{font-size:0.85rem;font-weight:700;color:var(--green-pop)}
+  .qb-modal-actions{display:flex;gap:10px;padding:0 28px 28px}
+  .qb-modal-actions button,.qb-modal-actions a{flex:1;padding:12px;border-radius:var(--radius-md);font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:all 0.3s;border:none}
+  .qb-modal-btn-primary{background:var(--green-pop);color:var(--white)}
+  .qb-modal-btn-primary:hover{background:#3d5a22}
+  .qb-modal-btn-secondary{background:transparent;border:1.5px solid rgba(0,0,0,0.1) !important;color:var(--text-dark)}
+  .qb-modal-btn-secondary:hover{border-color:var(--green-pop) !important;color:var(--green-pop)}
+  .qb-modal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-light);font-size:1.1rem;transition:all 0.25s}
+  .qb-modal-close:hover{background:rgba(255,255,255,0.2)}
+  /* Confetti */
+  .qb-confetti{position:absolute;width:8px;height:8px;border-radius:2px;opacity:0}
+  .qb-confetti.pop{animation:qbConfettiFall 1.5s ease forwards}
+  @keyframes qbConfettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}40%{opacity:1}100%{opacity:0;transform:translateY(120px) rotate(720deg) scale(0.3)}}
 </style>
 </head>
 <body>
@@ -96,13 +139,32 @@
         <div class="qb-sum-count"><span>Services Selected</span><span id="qbSumCount">0</span></div>
         <div id="qbSumAddons" style="margin-top:10px"></div>
         <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px">
-          <a href="signup.html" id="qbRequestQuote" class="btn-hero" style="text-align:center;width:100%">Request Quote</a>
-          <a href="#" id="qbWhatsApp" class="qb-whatsapp" target="_blank" rel="noopener">💬 Discuss on WhatsApp</a>
+          <button id="qbRequestQuote" class="btn-hero" style="text-align:center;width:100%;border:none;cursor:pointer;font-family:inherit" onclick="submitQuotation()">Request Quote</button>
+          <a href="#" id="qbWhatsApp" class="qb-whatsapp" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Discuss on WhatsApp</a>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<!-- Quotation Success Modal -->
+<div class="qb-modal-overlay" id="qbModal">
+  <div class="qb-modal">
+    <div class="qb-modal-success" id="qbModalSuccess">
+      <button class="qb-modal-close" onclick="closeQuotationModal()">&times;</button>
+      <div class="qb-check-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"/></svg>
+      </div>
+      <h3>Custom Quotation Submitted!</h3>
+      <div class="qb-quote-num" id="qbQuoteNum">NBI-QT-000000</div>
+    </div>
+    <div class="qb-receipt" id="qbReceipt"></div>
+    <div class="qb-modal-actions">
+      <button class="qb-modal-btn-secondary" onclick="closeQuotationModal()">Close</button>
+      <button class="qb-modal-btn-primary" onclick="printReceipt()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Save Quotation</button>
+    </div>
+  </div>
+</div>
 
 <footer></footer>
 <script src="footer.js"></script>
@@ -289,7 +351,7 @@ window.addItem=function(cat){
       svcsHtml+='<div class="qb-svc-group"><div class="qb-svc-group-title">'+(ICONS[GRP_ICONS[g.gIcon]]||'')+' '+g.title+'</div>';
       g.services.forEach(function(s){
         var uid=cat+'-'+id+'-'+s.id;
-        svcsHtml+='<div class="qb-svc-row" onclick="var cb=this.querySelector(\'input\');if(event.target!==cb){cb.checked=!cb.checked;cb.dispatchEvent(new Event(\'change\'))}"><input type="checkbox" id="'+uid+'" data-cat="'+cat+'" data-id="'+id+'" data-svc="'+s.id+'" onchange="toggleSvc(this);this.closest(\'\'.qb-svc-row\'\').classList.toggle(\'checked\',this.checked)"><label for="'+uid+'">'+s.name+'<span class="svc-desc">'+s.desc+'</span></label></div>';
+        svcsHtml+='<div class="qb-svc-row" onclick="var cb=this.querySelector(\x27input\x27);if(event.target!==cb){cb.checked=!cb.checked;cb.dispatchEvent(new Event(\x27change\x27))}"><input type="checkbox" id="'+uid+'" data-cat="'+cat+'" data-id="'+id+'" data-svc="'+s.id+'" onchange="toggleSvc(this);this.parentNode.classList.toggle(\x27checked\x27,this.checked)"><label for="'+uid+'">'+s.name+'<span class="svc-desc">'+s.desc+'</span></label></div>';
       });
       svcsHtml+='</div>';
     });
@@ -297,7 +359,7 @@ window.addItem=function(cat){
     svcsHtml+='<div class="qb-svc-section-title">Select Services for this '+c.itemLabel+'</div>';
     c.services.forEach(function(s){
       var uid=cat+'-'+id+'-'+s.id;
-      svcsHtml+='<div class="qb-svc-row" onclick="var cb=this.querySelector(\'input\');if(event.target!==cb){cb.checked=!cb.checked;cb.dispatchEvent(new Event(\'change\'))}"><input type="checkbox" id="'+uid+'" data-cat="'+cat+'" data-id="'+id+'" data-svc="'+s.id+'" onchange="toggleSvc(this);this.closest(\'\'.qb-svc-row\'\').classList.toggle(\'checked\',this.checked)"><label for="'+uid+'">'+s.name+'<span class="svc-desc">'+s.desc+'</span></label></div>';
+      svcsHtml+='<div class="qb-svc-row" onclick="var cb=this.querySelector(\x27input\x27);if(event.target!==cb){cb.checked=!cb.checked;cb.dispatchEvent(new Event(\x27change\x27))}"><input type="checkbox" id="'+uid+'" data-cat="'+cat+'" data-id="'+id+'" data-svc="'+s.id+'" onchange="toggleSvc(this);this.parentNode.classList.toggle(\x27checked\x27,this.checked)"><label for="'+uid+'">'+s.name+'<span class="svc-desc">'+s.desc+'</span></label></div>';
     });
   }
   svcsHtml+='</div>';
@@ -423,21 +485,6 @@ function updateSummary(){
 }
 
 function updateLinks(){
-  var params=[];
-  for(var cat in state.items){
-    state.items[cat].forEach(function(item,i){
-      if(cat==='legal'||item.services.length>0){
-        var prefix=cat+i;
-        for(var k in item.data){if(item.data[k])params.push(prefix+'_'+k+'='+encodeURIComponent(item.data[k]))}
-        if(cat!=='legal')params.push(prefix+'_svcs='+encodeURIComponent(item.services.join(',')));
-      }
-    });
-  }
-  if(state.addons.length>0)params.push('addons='+encodeURIComponent(state.addons.join(',')));
-  var qs=params.length?'?'+params.join('&'):'';
-  var session=JSON.parse(localStorage.getItem('nri_session')||'null');
-  document.getElementById('qbRequestQuote').href=(session?'onboarding.html':'signup.html')+qs;
-
   var msg="Hi NRI Bridge India! I'd like a quote for:\n\n";
   for(var cat in state.items){
     state.items[cat].forEach(function(item){
@@ -450,6 +497,153 @@ function updateLinks(){
   if(state.addons.length>0)msg+='\nAdd-ons: '+state.addons.join(', ');
   document.getElementById('qbWhatsApp').href='https://wa.me/91XXXXXXXXXX?text='+encodeURIComponent(msg);
 }
+
+// ── Quotation Modal ──
+function generateQuoteNumber(){
+  var d=new Date();
+  var yr=String(d.getFullYear()).slice(2);
+  var mn=String(d.getMonth()+1).padStart(2,'0');
+  var rand=String(Math.floor(Math.random()*9000)+1000);
+  return 'NBI-QT-'+yr+mn+'-'+rand;
+}
+
+function spawnConfetti(container){
+  var colors=['#4a6a2e','#8ba85e','#f2efe5','#d4c9a8','#3d3f2e','#6b8c42'];
+  for(var i=0;i<24;i++){
+    var el=document.createElement('div');
+    el.className='qb-confetti';
+    el.style.background=colors[Math.floor(Math.random()*colors.length)];
+    el.style.left=Math.random()*100+'%';
+    el.style.top=Math.random()*60+'%';
+    el.style.width=(4+Math.random()*8)+'px';
+    el.style.height=(4+Math.random()*6)+'px';
+    el.style.borderRadius=Math.random()>0.5?'50%':'2px';
+    el.style.animationDelay=(Math.random()*0.5)+'s';
+    el.style.animationDuration=(1+Math.random()*1)+'s';
+    container.appendChild(el);
+    setTimeout(function(e){e.classList.add('pop')},10,el);
+  }
+}
+
+function buildReceiptHTML(){
+  var now=new Date();
+  var dateStr=now.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+' • '+now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  var catLabels={home:'Home Management',vehicle:'Vehicle Management',parental:'Parental Care',legal:'Legal & Documentation'};
+  var html='<div class="qb-receipt-header"><h4>Itemised Quotation</h4><span class="qb-receipt-date">'+dateStr+'</span></div>';
+  var totalSvcs=0;
+
+  for(var cat in state.items){
+    var catItems=state.items[cat].filter(function(item){return cat==='legal'||item.services.length>0});
+    if(catItems.length===0)continue;
+    html+='<div class="qb-receipt-cat"><div class="qb-receipt-cat-title">'+catLabels[cat]+'</div>';
+    catItems.forEach(function(item){
+      var label=getItemLabel(cat,item);
+      var svcs='';
+      if(cat==='legal'){
+        svcs=item.data.type||'Legal Service';
+        if(item.data.desc)svcs+=' — '+item.data.desc;
+        totalSvcs++;
+      } else {
+        svcs=item.services.map(function(s){return getSvcName(cat,s)}).join(' • ');
+        totalSvcs+=item.services.length;
+      }
+      html+='<div class="qb-receipt-item"><div class="qb-receipt-item-label">'+label+'</div><div class="qb-receipt-item-svcs">'+svcs+'</div></div>';
+    });
+    html+='</div>';
+  }
+
+  if(state.addons.length>0){
+    html+='<div class="qb-receipt-addons"><div class="qb-receipt-addons-title">Add-on Requests</div><div class="qb-receipt-addons-list">'+state.addons.join(' • ')+'</div></div>';
+  }
+
+  html+='<div class="qb-receipt-footer"><span>Total Services</span><span>'+totalSvcs+' service'+(totalSvcs!==1?'s':'')+(state.addons.length>0?' + '+state.addons.length+' add-on'+(state.addons.length>1?'s':''):'')+' requested</span></div>';
+  html+='<div style="text-align:center;padding-top:14px;font-size:0.72rem;color:var(--text-mid);line-height:1.5;opacity:0.7;">Our team will review your requirements and share a detailed pricing quotation via email within 24 hours.</div>';
+  return html;
+}
+
+window.submitQuotation=function(){
+  // Validate: at least 1 service selected
+  var totalSvcs=0;
+  for(var cat in state.items){
+    state.items[cat].forEach(function(item){totalSvcs+=cat==='legal'?1:item.services.length});
+  }
+  if(totalSvcs===0){
+    alert('Please add at least one item and select services before requesting a quote.');
+    return;
+  }
+
+  var quoteNum=generateQuoteNumber();
+  document.getElementById('qbQuoteNum').textContent=quoteNum;
+  document.getElementById('qbReceipt').innerHTML=buildReceiptHTML();
+
+  // Reset animations by re-cloning the success section
+  var successEl=document.getElementById('qbModalSuccess');
+  var clone=successEl.cloneNode(true);
+  successEl.parentNode.replaceChild(clone,successEl);
+
+  var overlay=document.getElementById('qbModal');
+  overlay.style.display='flex';
+  // Force reflow then add class for animation
+  void overlay.offsetHeight;
+  overlay.classList.add('show');
+
+  // Confetti burst
+  setTimeout(function(){
+    spawnConfetti(clone);
+  },300);
+
+  // Save to localStorage for reference
+  var history=JSON.parse(localStorage.getItem('nbi_quotes')||'[]');
+  history.unshift({id:quoteNum,date:new Date().toISOString(),services:totalSvcs,addons:state.addons.length});
+  if(history.length>20)history=history.slice(0,20);
+  localStorage.setItem('nbi_quotes',JSON.stringify(history));
+};
+
+window.closeQuotationModal=function(){
+  var overlay=document.getElementById('qbModal');
+  overlay.classList.remove('show');
+  setTimeout(function(){overlay.style.display='none'},400);
+};
+
+window.printReceipt=function(){
+  var receiptContent=document.getElementById('qbReceipt').innerHTML;
+  var quoteNum=document.getElementById('qbQuoteNum').textContent;
+  var win=window.open('','_blank','width=600,height=800');
+  win.document.write('<!DOCTYPE html><html><head><title>'+quoteNum+' — NRI Bridge India</title>');
+  win.document.write('<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">');
+  win.document.write('<style>');
+  win.document.write('*{margin:0;padding:0;box-sizing:border-box}body{font-family:"DM Sans",sans-serif;color:#2d2d1e;padding:40px;max-width:600px;margin:0 auto}');
+  win.document.write('.header{text-align:center;padding-bottom:24px;border-bottom:2px solid #4a6a2e;margin-bottom:24px}');
+  win.document.write('.header h2{font-family:"Playfair Display",serif;font-size:1.4rem;color:#4a6a2e;margin-bottom:4px}');
+  win.document.write('.header .qnum{font-size:0.82rem;color:#666;margin-bottom:4px}');
+  win.document.write('.header .date{font-size:0.72rem;color:#999}');
+  win.document.write('.qb-receipt-header{display:none}');
+  win.document.write('.qb-receipt-cat{margin-bottom:16px}');
+  win.document.write('.qb-receipt-cat-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#4a6a2e;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(74,106,46,0.15)}');
+  win.document.write('.qb-receipt-item{padding:6px 0;border-bottom:1px solid #eee}');
+  win.document.write('.qb-receipt-item:last-child{border-bottom:none}');
+  win.document.write('.qb-receipt-item-label{font-size:0.82rem;font-weight:600;margin-bottom:2px}');
+  win.document.write('.qb-receipt-item-svcs{font-size:0.72rem;color:#777;line-height:1.5}');
+  win.document.write('.qb-receipt-addons{padding-top:12px;border-top:1px solid #ddd;margin-top:8px}');
+  win.document.write('.qb-receipt-addons-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:4px}');
+  win.document.write('.qb-receipt-addons-list{font-size:0.78rem}');
+  win.document.write('.qb-receipt-footer{display:flex;justify-content:space-between;padding-top:16px;margin-top:16px;border-top:2px solid #4a6a2e;font-weight:700;font-size:0.85rem}');
+  win.document.write('.qb-receipt-footer span:last-child{color:#4a6a2e}');
+  win.document.write('.footer{text-align:center;margin-top:32px;padding-top:16px;border-top:1px solid #eee;font-size:0.72rem;color:#999}');
+  win.document.write('@media print{body{padding:20px}.no-print{display:none}}');
+  win.document.write('</style></head><body>');
+  win.document.write('<div class="header"><h2>NRI Bridge India</h2><div class="qnum">Quotation '+quoteNum+'</div><div class="date">'+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})+'</div></div>');
+  win.document.write(receiptContent);
+  win.document.write('<div class="footer">This is an auto-generated quotation request. Our team will share final pricing within 24 hours.<br>NRI Bridge India • nribridgeindia.com</div>');
+  win.document.write('<div class="no-print" style="text-align:center;margin-top:24px"><button onclick="window.print()" style="padding:10px 32px;background:#4a6a2e;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:0.85rem">Print / Save as PDF</button></div>');
+  win.document.write('</body></html>');
+  win.document.close();
+};
+
+// Close modal on overlay click
+document.getElementById('qbModal').addEventListener('click',function(e){
+  if(e.target===this)closeQuotationModal();
+});
 
 init();
 updateSummary();
