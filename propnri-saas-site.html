@@ -74,6 +74,10 @@
     .pricing-service-tab { padding:8px 14px; font-size:0.75rem; }
   }
 </style>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 </head>
 <body>
 
@@ -83,11 +87,11 @@
 <!-- HERO -->
 <section class="hero">
   <img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:120px;width:auto;margin-bottom:16px;">
-  <div class="hero-badge"><span class="dot"></span> Trusted by 5,000+ NRIs worldwide</div>
-  <h1>Manage your <em>Indian</em><br><strong>life</strong> from anywhere</h1>
-  <p>Properties, vehicles, parental care, legal documentation — everything your life in India needs, handled by our on-ground teams across 28 cities while you focus on your life abroad.</p>
+  <div class="hero-badge"><span class="dot"></span> Trusted by 1,000+ NRIs</div>
+  <h1>We bridge the <em>distance</em>,<br>you feel the <strong>difference</strong></h1>
+  <p>At NRI Bridge India, we manage your properties, vehicles, legal documents, parental care, investments, and trip planning — everything your Indian life needs, all in one place. Wherever you are in the world, we keep your India running seamless.</p>
   <div class="hero-ctas">
-    <a href="signup.html" class="btn-hero">Start Free Consultation</a>
+    <a href="signup.html" class="btn-hero">Get Started — Create Account</a>
     <a href="#how" class="btn-ghost">See How It Works →</a>
   </div>
 </section>
@@ -105,7 +109,7 @@
   </div>
 </div>
 
-<!-- STATS -->
+<!-- FACTS -->
 <div class="stats-ribbon">
   <div class="stat-item">
     <div class="stat-num">5,200+</div>
@@ -376,7 +380,7 @@
   <h2>Your life in India deserves<br>better management</h2>
   <p>Join thousands of NRIs who manage their Indian properties, vehicles, family care, and legal needs stress-free from anywhere in the world.</p>
   <div class="cta-btns">
-    <a href="signup.html" class="btn-hero">Get Started Free</a>
+    <a href="signup.html" class="btn-hero">Get Started — Create Account</a>
     <a href="#pricing" class="btn-ghost">View Plans & Pricing →</a>
   </div>
 </section>
@@ -470,7 +474,7 @@
         '<div class="card-period">' + periodDisplay + '</div>' +
         '<ul class="card-features">' + featuresHtml + '</ul>' +
         (plan.note ? '<div class="card-' + (tier === 'premium' ? 'earnings' : 'note') + '"><strong>' + plan.note.split('.')[0] + '</strong>' + (plan.note.indexOf('.') > -1 ? plan.note.slice(plan.note.indexOf('.')) : '') + '</div>' : '') +
-        '<a href="#" class="btn-card ' + (isFeatured ? 'btn-card-featured' : 'btn-card-default') + '" data-plan="' + tier + '" onclick="handlePlanClick(event,\'' + tier + '\')">' + (isFeatured ? 'Start Free Trial' : 'Get Started') + '</a>';
+        '<a href="#" class="btn-card ' + (isFeatured ? 'btn-card-featured' : 'btn-card-default') + '" data-plan="' + tier + '" onclick="handlePlanClick(event,\'' + tier + '\')">Get Started</a>';
 
       grid.appendChild(card);
 

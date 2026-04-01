@@ -41,13 +41,59 @@
   }
 
   // Session-aware nav update
-  var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
-  if (session) {
+  function updateNavForUser(user) {
     var navActions = document.getElementById('navActions');
-    if (navActions) {
+    if (!navActions) return;
+    if (user) {
+      var name = user.user_metadata?.full_name || user.name || user.email || 'User';
       navActions.innerHTML =
         '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;margin-right:12px;">Hi, ' + session.name.split(' ')[0] + '</span>' +
         '<a href="account.html" class="btn-outline" style="border-color: rgba(255,255,255,0.4); color: white;">My Account</a>';
+        '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;margin-right:12px;">Hi, ' + name.split(' ')[0] + '</span>' +
+        '<a href="onboarding.html" class="btn-ghost" style="padding: 6px 12px; margin-right: 8px;">Dashboard</a>' + 
+        '<button class="btn-outline" onclick="window.nriLogout()">Log out</button>';
+    } else {
+      navActions.innerHTML =
+        '<a href="login.html" class="btn-outline">Log in</a>' +
+        '<a href="signup.html" class="btn-primary">Get Started</a>';
     }
+  }
+
+  window.nriLogout = async function() {
+    if (window.supabaseClient) {
+      await window.supabaseClient.auth.signOut();
+    }
+    localStorage.removeItem('nri_session');
+    window.location.reload();
+  };
+
+  if (window.supabaseClient) {
+    window.supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      if (session && session.user) {
+        localStorage.setItem('nri_session', JSON.stringify({ name: session.user.user_metadata?.full_name || session.user.email || 'User' }));
+        updateNavForUser(session.user);
+        
+        // Clean up hash from URL
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+           window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      } else {
+         updateNavForUser(null);
+      }
+    });
+
+    window.supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        localStorage.setItem('nri_session', JSON.stringify({ name: session.user.user_metadata?.full_name || session.user.email || 'User' }));
+        updateNavForUser(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('nri_session');
+        updateNavForUser(null);
+      }
+    });
+  } else {
+    // Fallback if supabase not loaded
+    var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
+    updateNavForUser(session);
   }
 })();
