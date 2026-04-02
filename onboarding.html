@@ -267,6 +267,8 @@
 <footer></footer>
 <script src="footer.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="invoice-generator.js"></script>
 <script>
 (function(){
   'use strict';
@@ -367,13 +369,13 @@
     var div = document.createElement('div');
     div.className='item-card';div.id=svc+'-item-'+id;
     if(svc==='home'){
-      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'home\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Property Type</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="type"><option value="apartment">Apartment</option><option value="house">Independent House</option><option value="villa">Villa</option><option value="commercial">Commercial</option></select></div><div class="form-group"><label class="form-label">Status</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="status"><option value="vacant-tenant">Vacant - Need Tenant</option><option value="tenanted">Tenanted - Need Management</option><option value="maint-only">Maintenance Only (No Tenant)</option></select></div><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="home" data-id="'+id+'" data-field="city" placeholder="e.g. Mumbai"></div><div class="form-group"><label class="form-label">Monthly Rent (₹)</label><input type="number" class="form-input" data-svc="home" data-id="'+id+'" data-field="rent" placeholder="e.g. 25000"></div></div>';
+      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'home\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Property Type</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="type"><option value="apartment">Apartment</option><option value="house">Independent House</option><option value="villa">Villa</option><option value="commercial">Commercial</option></select></div><div class="form-group"><label class="form-label">Status</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="status"><option value="vacant-tenant">Vacant - Need Tenant</option><option value="tenanted">Tenanted - Need Management</option><option value="maint-only">Maintenance Only (No Tenant)</option></select></div><div class="form-group"><label class="form-label">City</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="city"><option value="">Select City</option><option value="Chennai">Chennai</option><option value="Coimbatore">Coimbatore</option><option value="Kanyakumari">Kanyakumari</option></select></div><div class="form-group"><label class="form-label">Monthly Rent (₹)</label><input type="number" class="form-input" data-svc="home" data-id="'+id+'" data-field="rent" placeholder="e.g. 25000"></div></div>';
     } else if(svc==='vehicle'){
-      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'vehicle\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Registration No.</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="reg" placeholder="e.g. MH02AB1234"></div><div class="form-group"><label class="form-label">Vehicle Type</label><select class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="type"><option value="car">Car</option><option value="suv">SUV</option><option value="bike">Bike</option><option value="scooter">Scooter</option></select></div><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="city" placeholder="e.g. Delhi"></div><div class="form-group"><label class="form-label">Make/Model</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="model" placeholder="e.g. Honda City"></div></div>';
+      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'vehicle\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Registration No.</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="reg" placeholder="e.g. MH02AB1234"></div><div class="form-group"><label class="form-label">Vehicle Type</label><select class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="type"><option value="car">Car</option><option value="suv">SUV</option><option value="bike">Bike</option><option value="scooter">Scooter</option></select></div><div class="form-group"><label class="form-label">City</label><select class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="city"><option value="">Select City</option><option value="Chennai">Chennai</option><option value="Coimbatore">Coimbatore</option><option value="Kanyakumari">Kanyakumari</option></select></div><div class="form-group"><label class="form-label">Make/Model</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="model" placeholder="e.g. Honda City"></div></div>';
     } else if(svc==='parental'){
-      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'parental\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" data-svc="parental" data-id="'+id+'" data-field="name" placeholder="Parent\'s name"></div><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="parental" data-id="'+id+'" data-field="city" placeholder="e.g. Pune"></div><div class="form-group"><label class="form-label">Age</label><input type="number" class="form-input" data-svc="parental" data-id="'+id+'" data-field="age" placeholder="e.g. 68"></div><div class="form-group"><label class="form-label">Health Notes</label><input type="text" class="form-input" data-svc="parental" data-id="'+id+'" data-field="health" placeholder="e.g. Diabetes, BP"></div></div>';
+      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'parental\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" data-svc="parental" data-id="'+id+'" data-field="name" placeholder="Parent\'s name"></div><div class="form-group"><label class="form-label">City</label><select class="form-input" data-svc="parental" data-id="'+id+'" data-field="city"><option value="">Select City</option><option value="Chennai">Chennai</option><option value="Coimbatore">Coimbatore</option><option value="Kanyakumari">Kanyakumari</option></select></div><div class="form-group"><label class="form-label">Age</label><input type="number" class="form-input" data-svc="parental" data-id="'+id+'" data-field="age" placeholder="e.g. 68"></div><div class="form-group"><label class="form-label">Health Notes</label><input type="text" class="form-input" data-svc="parental" data-id="'+id+'" data-field="health" placeholder="e.g. Diabetes, BP"></div></div>';
     } else{
-      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'legal\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Case/Document Type</label><select class="form-input" data-svc="legal" data-id="'+id+'" data-field="type"><option value="poa">Power of Attorney</option><option value="property-reg">Property Registration</option><option value="will">Will / Succession</option><option value="tax">Tax Filing</option><option value="court">Court Case</option><option value="govt-doc">Government Document</option></select></div><div class="form-group"><label class="form-label">City</label><input type="text" class="form-input" data-svc="legal" data-id="'+id+'" data-field="city" placeholder="e.g. Chennai"></div><div class="form-group" style="grid-column:span 2"><label class="form-label">Description</label><input type="text" class="form-input" data-svc="legal" data-id="'+id+'" data-field="desc" placeholder="Brief description"></div></div>';
+      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'legal\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Case/Document Type</label><select class="form-input" data-svc="legal" data-id="'+id+'" data-field="type"><option value="poa">Power of Attorney</option><option value="property-reg">Property Registration</option><option value="will">Will / Succession</option><option value="tax">Tax Filing</option><option value="court">Court Case</option><option value="govt-doc">Government Document</option></select></div><div class="form-group"><label class="form-label">City</label><select class="form-input" data-svc="legal" data-id="'+id+'" data-field="city"><option value="">Select City</option><option value="Chennai">Chennai</option><option value="Coimbatore">Coimbatore</option><option value="Kanyakumari">Kanyakumari</option></select></div><div class="form-group" style="grid-column:span 2"><label class="form-label">Description</label><input type="text" class="form-input" data-svc="legal" data-id="'+id+'" data-field="desc" placeholder="Brief description"></div></div>';
     }
     return div;
   }
@@ -671,14 +673,61 @@
       localStorage.setItem('nri_session',JSON.stringify(session));
       localStorage.removeItem('nri_order');
       var txnId='NBI'+Date.now().toString().slice(-8)+Math.random().toString(36).slice(2,6).toUpperCase();
+      
+      // Generate Invoice Data
+      var invItems = [];
+      var hasDiscount = selectedServices.length > 1;
+      var allKeys = getAllPlanKeys();
+      
+      allKeys.forEach(function(entry){
+        var svc = entry.svc;
+        var plan = servicePlans[entry.key];
+        var billing = serviceBilling[entry.key]||'monthly';
+        var basePrice = PLAN_PRICES[svc][plan];
+        var isAddon = hasDiscount && selectedServices.indexOf(svc) > 0;
+        
+        var title = '';
+        if(svc==='parental'){
+          var names = entry.pair.members.map(function(m){return m.name||'Member'}).join(' & ');
+          title = 'Parental Care: ' + names;
+        } else {
+          title = getItemLabel(svc, entry.item);
+        }
+        title += ' (' + getPlanName(svc, plan) + ' - ' + (billing==='annual'?'Annual':'Monthly') + ')';
+        
+        var amount = 0;
+        if(typeof basePrice==='string'){
+          if(svc==='home' && entry.item && entry.item.rent) amount = Math.round(parseInt(entry.item.rent)*0.1);
+        } else {
+          amount = basePrice;
+          if(isAddon) amount = Math.round(amount*0.8);
+          if(billing==='annual') amount = Math.round(amount*12*0.85);
+        }
+        
+        invItems.push({ description: title, qty: 1, price: amount });
+      });
+      
+      localStorage.setItem('nri_invoice', JSON.stringify({
+        txnId: txnId,
+        date: new Date().toISOString(),
+        method: selectedPayMethod,
+        items: invItems
+      }));
+
       document.querySelectorAll('.onboard-step').forEach(function(el){el.classList.remove('active')});
       document.getElementById('stepSuccess').classList.add('active');
       document.querySelectorAll('.progress-dot').forEach(function(d){d.classList.remove('active');d.classList.add('done')});
       document.querySelectorAll('.progress-line').forEach(function(l){l.classList.add('done')});
-      document.getElementById('successMsg').textContent='Thank you, '+session.name.split(' ')[0]+'! Your subscription is now active. Our team will reach out within 24 hours.';
-      document.getElementById('successTxn').textContent='Transaction ID: '+txnId;
-      setTimeout(function(){window.location.href='propnri-saas-site.html'},4000);
-    },2000);
+      
+      document.getElementById('successMsg').textContent='Thank you, '+session.name.split(' ')[0]+'! Your subscription is now active. Your invoice will download automatically.';
+      document.getElementById('successTxn').innerHTML='Transaction ID: '+txnId+'<br><br><button class="btn-outline" style="color:var(--text-dark);border-color:var(--border);" onclick="downloadInvoice(JSON.parse(localStorage.getItem(\'nri_invoice\')), JSON.parse(localStorage.getItem(\'nri_session\')))">Download Invoice Again</button>';
+      
+      // Auto-download invoice
+      setTimeout(function() {
+        if(window.downloadInvoice) window.downloadInvoice(JSON.parse(localStorage.getItem('nri_invoice')), session);
+      }, 500);
+      
+    },1500);
   };
 
   // Navigation

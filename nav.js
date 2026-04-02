@@ -27,7 +27,7 @@
       '</li>' +
       '<li><a href="propnri-saas-site.html#pricing">Pricing</a></li>' +
       '<li><a href="propnri-saas-site.html#how">How It Works</a></li>' +
-      '<li><a href="#">Contact</a></li>' +
+      '<li><a href="contact.html">Contact</a></li>' +
     '</ul>' +
     '<div class="nav-actions" id="navActions">' +
       '<a href="login.html" class="btn-outline">Log in</a>' +

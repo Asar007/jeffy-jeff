@@ -25,7 +25,7 @@
             '<li><a href="#">Cities We Cover</a></li>' +
             '<li><a href="#">Blog</a></li>' +
             '<li><a href="#">Careers</a></li>' +
-            '<li><a href="#">Contact</a></li>' +
+            '<li><a href="contact.html">Contact</a></li>' +
           '</ul>' +
         '</div>' +
         '<div class="footer-col">' +

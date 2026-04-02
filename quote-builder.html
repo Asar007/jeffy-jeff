@@ -3,120 +3,250 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Custom Quote Builder — NRI Bridge India</title>
-<meta name="description" content="Build a custom service quote for your Indian property, vehicle, parental care, or legal needs. Select exactly the services you need and request a personalized quotation.">
+<title>Custom Service Request — NRI Bridge India</title>
+<meta name="description" content="Need a service that's not listed? Tell us what you need and our team will get back to you within 24 hours with a tailored solution.">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
-  .qb-page{display:grid;grid-template-columns:1fr 320px;gap:32px;max-width:1140px;margin:0 auto;align-items:start}
-  .qb-accordion{margin-bottom:16px;border-radius:var(--radius-lg);overflow:hidden;border:1.5px solid rgba(0,0,0,0.06);background:var(--white)}
-  .qb-acc-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;cursor:pointer;transition:background 0.3s;user-select:none}
-  .qb-acc-header:hover{background:rgba(74,106,46,0.03)}
-  .qb-acc-header.open{background:rgba(74,106,46,0.04);border-bottom:1px solid rgba(0,0,0,0.06)}
-  .qb-acc-left{display:flex;align-items:center;gap:14px}
-  .qb-acc-icon{width:36px;height:36px;border-radius:10px;background:rgba(74,106,46,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .qb-acc-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;color:var(--text-dark)}
-  .qb-acc-count{font-size:0.72rem;font-weight:600;color:var(--green-pop);background:rgba(74,106,46,0.1);padding:2px 10px;border-radius:var(--radius-pill)}
-  .qb-acc-arrow{font-size:0.7rem;color:var(--text-mid);transition:transform 0.3s}
-  .qb-acc-header.open .qb-acc-arrow{transform:rotate(180deg)}
-  .qb-acc-body{max-height:0;overflow:hidden;transition:max-height 0.4s ease}
-  .qb-acc-body.open{max-height:8000px}
-  .qb-acc-inner{padding:20px 24px}
-  .qb-add-btn{width:100%;padding:12px;border:2px dashed rgba(74,106,46,0.25);border-radius:var(--radius-md);background:transparent;cursor:pointer;font-family:inherit;font-size:0.85rem;color:var(--green-pop);font-weight:600;transition:all 0.3s}
-  .qb-add-btn:hover{background:rgba(74,106,46,0.04);border-color:var(--green-pop)}
-  .qb-item{background:var(--bg-cream);border-radius:var(--radius-md);padding:20px;margin-bottom:16px;border:1px solid rgba(0,0,0,0.06)}
-  .qb-item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-  .qb-item-title{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:600;color:var(--text-dark)}
-  .qb-item-remove{padding:4px 12px;border:1px solid rgba(220,53,69,0.3);border-radius:var(--radius-sm);background:transparent;cursor:pointer;color:#dc3545;font-size:0.72rem;font-weight:500;font-family:inherit;transition:all 0.3s}
-  .qb-item-remove:hover{background:rgba(220,53,69,0.06)}
-  .qb-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-  .qb-field label{display:block;font-size:0.78rem;font-weight:600;color:var(--text-mid);margin-bottom:4px}
-  .qb-field input,.qb-field select,.qb-field textarea{width:100%;padding:10px 12px;border:1.5px solid rgba(0,0,0,0.1);border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;color:var(--text-dark);background:var(--white);transition:border-color 0.3s}
-  .qb-field input:focus,.qb-field select:focus,.qb-field textarea:focus{outline:none;border-color:var(--green-pop);box-shadow:0 0 0 3px rgba(74,106,46,0.08)}
-  .qb-field textarea{resize:vertical;min-height:60px}
-  .qb-svc-section{border-top:1px solid rgba(0,0,0,0.06);padding-top:14px}
-  .qb-svc-section-title{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-mid);margin-bottom:12px}
-  .qb-svc-group{margin-bottom:16px}
-  .qb-svc-group-title{font-size:0.78rem;font-weight:600;color:var(--green-pop);margin-bottom:8px;display:flex;align-items:center;gap:6px}
-  .qb-svc-row{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;margin-bottom:6px;background:var(--white);border:1.5px solid rgba(0,0,0,0.06);border-radius:var(--radius-md);cursor:pointer;transition:all 0.25s}
-  .qb-svc-row:hover{border-color:rgba(74,106,46,0.25);background:rgba(74,106,46,0.02);box-shadow:0 2px 8px rgba(74,106,46,0.06)}
-  .qb-svc-row.checked{border-color:var(--green-pop);background:rgba(74,106,46,0.04)}
-  .qb-svc-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--green-pop);cursor:pointer;flex-shrink:0;margin-top:2px}
-  .qb-svc-row label{font-size:0.82rem;color:var(--text-dark);cursor:pointer;line-height:1.4;font-weight:500}
-  .qb-svc-row .svc-desc{font-size:0.72rem;color:var(--text-mid);display:block;margin-top:2px;font-weight:400}
-  /* Summary sidebar */
-  .qb-summary-col .qb-summary{position:sticky;top:100px;background:linear-gradient(135deg,#2d2f22 0%,#3a3c2c 50%,#3d5a28 100%);border-radius:var(--radius-lg);padding:28px;color:var(--text-light)}
-  .qb-summary-col .qb-summary h4{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.1)}
-  .qb-sum-items{min-height:40px;margin-bottom:14px}
-  .qb-sum-item{padding:6px 0;font-size:0.8rem;border-bottom:1px solid rgba(255,255,255,0.05)}
-  .qb-sum-item-label{font-weight:600;margin-bottom:2px}
-  .qb-sum-item-svcs{font-size:0.72rem;opacity:0.65;line-height:1.5}
-  .qb-sum-empty{text-align:center;padding:20px 0;font-size:0.82rem;opacity:0.4;font-style:italic}
-  .qb-sum-count{display:flex;justify-content:space-between;padding-top:14px;margin-top:6px;border-top:1.5px solid rgba(255,255,255,0.15);font-size:0.95rem;font-weight:700}
-  /* Addons in main column */
-  .qb-addons-section{background:var(--white);border-radius:var(--radius-lg);padding:24px;border:1.5px solid rgba(0,0,0,0.06);margin-top:8px}
-  .qb-addons-section h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;margin-bottom:14px;color:var(--text-dark)}
-  .qb-addon-chips-light{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-  .qb-addon-chip-light{padding:7px 16px;border:1.5px solid rgba(0,0,0,0.1);border-radius:var(--radius-pill);background:transparent;color:var(--text-mid);font-family:inherit;font-size:0.78rem;cursor:pointer;transition:all 0.25s}
-  .qb-addon-chip-light:hover{border-color:var(--green-pop);color:var(--green-pop)}
-  .qb-addon-chip-light.selected{background:rgba(74,106,46,0.1);border-color:var(--green-pop);color:var(--green-pop);font-weight:600}
-  .qb-addon-input-light{display:flex;gap:8px}
-  .qb-addon-input-light input{flex:1;padding:8px 14px;border:1.5px solid rgba(0,0,0,0.1);border-radius:var(--radius-pill);font-family:inherit;font-size:0.8rem;color:var(--text-dark);background:var(--bg-cream)}
-  .qb-addon-input-light input:focus{outline:none;border-color:var(--green-pop)}
-  .qb-addon-input-light button{width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(0,0,0,0.1);background:var(--bg-cream);color:var(--green-pop);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:all 0.25s}
-  .qb-addon-input-light button:hover{background:var(--green-pop);color:var(--white);border-color:var(--green-pop)}
-  .qb-addon-tags-light{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-  .qb-addon-tag-light{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(74,106,46,0.1);border:1px solid rgba(74,106,46,0.25);border-radius:var(--radius-pill);font-size:0.72rem;color:var(--green-pop)}
-  .qb-addon-tag-light button{background:none;border:none;color:var(--green-pop);cursor:pointer;font-size:0.85rem;padding:0;line-height:1;opacity:0.6}
-  .qb-addon-tag-light button:hover{opacity:1}
-  @media(max-width:900px){
-    .qb-page{grid-template-columns:1fr}
-    .qb-summary-col .qb-summary{position:static}
-    .qb-fields{grid-template-columns:1fr}
+  .csr-page { max-width:760px; margin:0 auto; }
+
+  /* Request card */
+  .csr-card {
+    background:var(--white); border-radius:var(--radius-lg);
+    padding:44px 40px; border:1.5px solid rgba(0,0,0,0.06);
+    box-shadow:0 8px 40px rgba(0,0,0,0.04);
   }
-  /* ── Quotation Success Modal ── */
-  .qb-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);z-index:9999;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity 0.4s ease}
-  .qb-modal-overlay.show{display:flex;opacity:1}
-  .qb-modal{background:var(--white);border-radius:var(--radius-lg);max-width:560px;width:92%;max-height:90vh;overflow-y:auto;transform:translateY(40px) scale(0.95);opacity:0;transition:all 0.5s cubic-bezier(0.16,1,0.3,1);box-shadow:0 32px 80px rgba(0,0,0,0.25)}
-  .qb-modal-overlay.show .qb-modal{transform:translateY(0) scale(1);opacity:1}
-  .qb-modal-success{text-align:center;padding:48px 32px 28px;background:linear-gradient(135deg,#2d2f22 0%,#3a3c2c 50%,#3d5a28 100%);border-radius:var(--radius-lg) var(--radius-lg) 0 0;color:var(--text-light);position:relative;overflow:hidden}
-  .qb-check-circle{width:80px;height:80px;border-radius:50%;border:3px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;position:relative}
-  .qb-check-circle svg{width:36px;height:36px;stroke:var(--bg-cream);stroke-dasharray:50;stroke-dashoffset:50;animation:qbDrawCheck 0.6s 0.4s ease forwards}
-  .qb-check-circle::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:3px solid var(--bg-cream);animation:qbCirclePop 0.5s 0.2s ease forwards;opacity:0}
-  @keyframes qbDrawCheck{to{stroke-dashoffset:0}}
-  @keyframes qbCirclePop{0%{opacity:0;transform:scale(0.5)}60%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
-  .qb-modal-success h3{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:6px;opacity:0;animation:qbFadeUp 0.5s 0.6s ease forwards}
-  .qb-modal-success .qb-quote-num{font-size:0.82rem;opacity:0;background:rgba(255,255,255,0.1);display:inline-block;padding:4px 16px;border-radius:var(--radius-pill);margin-top:8px;letter-spacing:0.04em;animation:qbFadeUp 0.5s 0.75s ease forwards}
-  @keyframes qbFadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-  .qb-receipt{padding:28px 28px 24px}
-  .qb-receipt-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1.5px solid rgba(0,0,0,0.06);margin-bottom:16px}
-  .qb-receipt-header h4{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--text-dark)}
-  .qb-receipt-header .qb-receipt-date{font-size:0.72rem;color:var(--text-mid)}
-  .qb-receipt-cat{margin-bottom:14px}
-  .qb-receipt-cat-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--green-pop);margin-bottom:6px;display:flex;align-items:center;gap:6px}
-  .qb-receipt-cat-title::after{content:'';flex:1;height:1px;background:rgba(74,106,46,0.15)}
-  .qb-receipt-item{padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.03)}
-  .qb-receipt-item:last-child{border-bottom:none}
-  .qb-receipt-item-label{font-size:0.82rem;font-weight:600;color:var(--text-dark);margin-bottom:2px}
-  .qb-receipt-item-svcs{font-size:0.72rem;color:var(--text-mid);line-height:1.5}
-  .qb-receipt-addons{padding-top:10px;border-top:1px solid rgba(0,0,0,0.06);margin-top:6px}
-  .qb-receipt-addons-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-mid);margin-bottom:4px}
-  .qb-receipt-addons-list{font-size:0.78rem;color:var(--text-dark)}
-  .qb-receipt-footer{display:flex;justify-content:space-between;align-items:center;padding-top:16px;margin-top:16px;border-top:2px solid var(--green-pop)}
-  .qb-receipt-footer span:first-child{font-size:0.85rem;font-weight:700;color:var(--text-dark)}
-  .qb-receipt-footer span:last-child{font-size:0.85rem;font-weight:700;color:var(--green-pop)}
-  .qb-modal-actions{display:flex;gap:10px;padding:0 28px 28px}
-  .qb-modal-actions button,.qb-modal-actions a{flex:1;padding:12px;border-radius:var(--radius-md);font-family:inherit;font-size:0.82rem;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;transition:all 0.3s;border:none}
-  .qb-modal-btn-primary{background:var(--green-pop);color:var(--white)}
-  .qb-modal-btn-primary:hover{background:#3d5a22}
-  .qb-modal-btn-secondary{background:transparent;border:1.5px solid rgba(0,0,0,0.1) !important;color:var(--text-dark)}
-  .qb-modal-btn-secondary:hover{border-color:var(--green-pop) !important;color:var(--green-pop)}
-  .qb-modal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-light);font-size:1.1rem;transition:all 0.25s}
-  .qb-modal-close:hover{background:rgba(255,255,255,0.2)}
+  .csr-card-header { margin-bottom:32px; }
+  .csr-card-header h2 {
+    font-family:'Playfair Display',serif; font-size:1.5rem;
+    font-weight:600; color:var(--text-dark); margin-bottom:6px;
+  }
+  .csr-card-header p {
+    font-size:0.88rem; color:var(--text-mid); opacity:0.75; line-height:1.6;
+  }
+
+  /* Form */
+  .csr-form { display:flex; flex-direction:column; gap:20px; }
+  .csr-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .csr-field label {
+    display:block; font-size:0.8rem; font-weight:600;
+    color:var(--text-mid); margin-bottom:6px; letter-spacing:0.02em;
+  }
+  .csr-field label .req { color:#dc3545; margin-left:2px; }
+  .csr-field input,
+  .csr-field select,
+  .csr-field textarea {
+    width:100%; padding:13px 16px;
+    border:1.5px solid rgba(0,0,0,0.1); border-radius:var(--radius-sm);
+    font-family:inherit; font-size:0.88rem; color:var(--text-dark);
+    background:var(--bg-cream); transition:all 0.3s;
+  }
+  .csr-field input:focus,
+  .csr-field select:focus,
+  .csr-field textarea:focus {
+    outline:none; border-color:var(--green-pop);
+    background:var(--white); box-shadow:0 0 0 3px rgba(74,106,46,0.1);
+  }
+  .csr-field input::placeholder,
+  .csr-field textarea::placeholder { color:var(--text-muted); opacity:0.5; }
+  .csr-field textarea { resize:vertical; min-height:160px; line-height:1.65; }
+  .csr-field .helper {
+    font-size:0.72rem; color:var(--text-mid); opacity:0.55;
+    margin-top:6px; line-height:1.5;
+  }
+
+  /* Category chips */
+  .csr-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .csr-chip {
+    padding:8px 18px; border:1.5px solid rgba(0,0,0,0.1);
+    border-radius:var(--radius-pill); background:transparent;
+    color:var(--text-mid); font-family:inherit; font-size:0.82rem;
+    cursor:pointer; transition:all 0.25s; font-weight:500;
+  }
+  .csr-chip:hover { border-color:var(--green-pop); color:var(--green-pop); }
+  .csr-chip.selected {
+    background:rgba(74,106,46,0.1); border-color:var(--green-pop);
+    color:var(--green-pop); font-weight:600;
+  }
+
+  /* Urgency */
+  .csr-urgency { display:flex; gap:10px; }
+  .csr-urgency-opt {
+    flex:1; padding:12px; border:1.5px solid rgba(0,0,0,0.1);
+    border-radius:var(--radius-md); background:transparent;
+    cursor:pointer; text-align:center; transition:all 0.25s;
+    font-family:inherit;
+  }
+  .csr-urgency-opt:hover { border-color:var(--green-pop); }
+  .csr-urgency-opt.selected {
+    border-color:var(--green-pop); background:rgba(74,106,46,0.06);
+  }
+  .csr-urgency-opt .urg-label {
+    display:block; font-size:0.82rem; font-weight:600;
+    color:var(--text-dark); margin-bottom:2px;
+  }
+  .csr-urgency-opt .urg-desc {
+    display:block; font-size:0.7rem; color:var(--text-mid); opacity:0.6;
+  }
+  .csr-urgency-opt.selected .urg-label { color:var(--green-pop); }
+
+  /* Submit */
+  .csr-submit-row { display:flex; gap:12px; padding-top:8px; }
+  .csr-submit {
+    flex:1; padding:15px; border:none; border-radius:var(--radius-pill);
+    background:var(--accent); color:var(--text-light);
+    font-size:0.95rem; font-weight:600; cursor:pointer;
+    transition:all 0.35s; font-family:inherit;
+    position:relative; overflow:hidden;
+  }
+  .csr-submit:hover {
+    background:var(--green-pop); transform:translateY(-1px);
+    box-shadow:0 8px 30px rgba(45,58,30,0.3);
+  }
+  .csr-submit:disabled {
+    opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none;
+  }
+  .csr-whatsapp {
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:15px 28px; border:1.5px solid rgba(0,0,0,0.1);
+    border-radius:var(--radius-pill); background:transparent;
+    color:var(--text-dark); font-size:0.88rem; font-weight:500;
+    cursor:pointer; transition:all 0.3s; font-family:inherit;
+    text-decoration:none; gap:6px;
+  }
+  .csr-whatsapp:hover { border-color:var(--green-pop); color:var(--green-pop); }
+
+  /* Divider */
+  .csr-divider {
+    display:flex; align-items:center; gap:16px;
+    margin:4px 0;
+  }
+  .csr-divider::before, .csr-divider::after {
+    content:''; flex:1; height:1px; background:var(--border);
+  }
+  .csr-divider span {
+    font-size:0.78rem; color:var(--text-muted); white-space:nowrap;
+  }
+
+  /* Trust note */
+  .csr-trust {
+    display:flex; gap:24px; margin-top:28px; padding:20px 24px;
+    background:rgba(74,106,46,0.04); border-radius:var(--radius-md);
+    border:1px solid rgba(74,106,46,0.1);
+  }
+  .csr-trust-item {
+    display:flex; align-items:center; gap:8px;
+    font-size:0.78rem; color:var(--text-mid); font-weight:500;
+  }
+  .csr-trust-item svg {
+    width:16px; height:16px; stroke:var(--green-pop);
+    fill:none; stroke-width:2; flex-shrink:0;
+  }
+
+  /* Success modal */
+  .csr-modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(6px); z-index:9999;
+    display:none; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 0.4s ease;
+  }
+  .csr-modal-overlay.show { display:flex; opacity:1; }
+  .csr-modal {
+    background:var(--white); border-radius:var(--radius-lg);
+    max-width:480px; width:92%; overflow:hidden;
+    transform:translateY(40px) scale(0.95); opacity:0;
+    transition:all 0.5s cubic-bezier(0.16,1,0.3,1);
+    box-shadow:0 32px 80px rgba(0,0,0,0.25);
+  }
+  .csr-modal-overlay.show .csr-modal { transform:translateY(0) scale(1); opacity:1; }
+  .csr-modal-top {
+    text-align:center; padding:48px 32px 28px;
+    background:linear-gradient(135deg,#2d2f22 0%,#3a3c2c 50%,#3d5a28 100%);
+    color:var(--text-light); position:relative; overflow:hidden;
+  }
+  .csr-check-circle {
+    width:80px; height:80px; border-radius:50%;
+    border:3px solid rgba(255,255,255,0.2);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 20px; position:relative;
+  }
+  .csr-check-circle svg {
+    width:36px; height:36px; stroke:var(--bg-cream);
+    stroke-dasharray:50; stroke-dashoffset:50;
+    animation:csrDrawCheck 0.6s 0.4s ease forwards;
+  }
+  .csr-check-circle::after {
+    content:''; position:absolute; inset:-3px; border-radius:50%;
+    border:3px solid var(--bg-cream);
+    animation:csrCirclePop 0.5s 0.2s ease forwards; opacity:0;
+  }
+  @keyframes csrDrawCheck { to { stroke-dashoffset:0; } }
+  @keyframes csrCirclePop {
+    0% { opacity:0; transform:scale(0.5); }
+    60% { transform:scale(1.1); }
+    100% { opacity:1; transform:scale(1); }
+  }
+  .csr-modal-top h3 {
+    font-family:'Playfair Display',serif; font-size:1.3rem;
+    font-weight:700; margin-bottom:6px;
+    opacity:0; animation:csrFadeUp 0.5s 0.6s ease forwards;
+  }
+  .csr-modal-top .csr-ref-num {
+    font-size:0.82rem; opacity:0;
+    background:rgba(255,255,255,0.1); display:inline-block;
+    padding:4px 16px; border-radius:var(--radius-pill);
+    margin-top:8px; letter-spacing:0.04em;
+    animation:csrFadeUp 0.5s 0.75s ease forwards;
+  }
+  @keyframes csrFadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .csr-modal-body { padding:28px 32px; text-align:center; }
+  .csr-modal-body p {
+    font-size:0.88rem; color:var(--text-mid); line-height:1.65;
+    margin-bottom:24px;
+  }
+  .csr-modal-actions { display:flex; gap:10px; padding:0 32px 32px; }
+  .csr-modal-actions button,
+  .csr-modal-actions a {
+    flex:1; padding:13px; border-radius:var(--radius-md);
+    font-family:inherit; font-size:0.85rem; font-weight:600;
+    cursor:pointer; text-align:center; text-decoration:none;
+    transition:all 0.3s; border:none;
+  }
+  .csr-btn-primary { background:var(--green-pop); color:var(--white); }
+  .csr-btn-primary:hover { background:#3d5a22; }
+  .csr-btn-secondary {
+    background:transparent; border:1.5px solid rgba(0,0,0,0.1) !important;
+    color:var(--text-dark);
+  }
+  .csr-btn-secondary:hover { border-color:var(--green-pop) !important; color:var(--green-pop); }
+  .csr-modal-close {
+    position:absolute; top:16px; right:16px;
+    background:rgba(255,255,255,0.1); border:none; border-radius:50%;
+    width:32px; height:32px; display:flex; align-items:center;
+    justify-content:center; cursor:pointer; color:var(--text-light);
+    font-size:1.1rem; transition:all 0.25s;
+  }
+  .csr-modal-close:hover { background:rgba(255,255,255,0.2); }
+
   /* Confetti */
-  .qb-confetti{position:absolute;width:8px;height:8px;border-radius:2px;opacity:0}
-  .qb-confetti.pop{animation:qbConfettiFall 1.5s ease forwards}
-  @keyframes qbConfettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1)}40%{opacity:1}100%{opacity:0;transform:translateY(120px) rotate(720deg) scale(0.3)}}
+  .csr-confetti { position:absolute; width:8px; height:8px; border-radius:2px; opacity:0; }
+  .csr-confetti.pop { animation:csrConfettiFall 1.5s ease forwards; }
+  @keyframes csrConfettiFall {
+    0% { opacity:1; transform:translateY(0) rotate(0deg) scale(1); }
+    40% { opacity:1; }
+    100% { opacity:0; transform:translateY(120px) rotate(720deg) scale(0.3); }
+  }
+
+  @media(max-width:700px) {
+    .csr-card { padding:28px 20px; }
+    .csr-row { grid-template-columns:1fr; }
+    .csr-urgency { flex-direction:column; }
+    .csr-submit-row { flex-direction:column; }
+    .csr-trust { flex-direction:column; gap:12px; }
+  }
 </style>
 </head>
 <body>
@@ -124,44 +254,140 @@
 <script src="nav.js"></script>
 
 <section class="service-hero section-pad">
-  <div class="section-tag">Customise</div>
-  <h1>Build Your Custom Quote</h1>
-  <p>Select exactly the services you need, add your details, and request a personalised quotation. Our team will respond within 24 hours.</p>
+  <div class="section-tag">Custom Request</div>
+  <h1>Request a Custom Service</h1>
+  <p>Can't find what you're looking for? Tell us what you need — our team will craft a tailored solution and get back to you within 24 hours.</p>
 </section>
 
 <section class="services section-pad" style="padding-top:0;">
-  <div class="qb-page">
-    <div class="qb-categories-col" id="qbCats"></div>
-    <div class="qb-summary-col">
-      <div class="qb-summary">
-        <h4>Your Quote Summary</h4>
-        <div class="qb-sum-items" id="qbSumItems"><div class="qb-sum-empty">Add items & select services to build your quote</div></div>
-        <div class="qb-sum-count"><span>Services Selected</span><span id="qbSumCount">0</span></div>
-        <div id="qbSumAddons" style="margin-top:10px"></div>
-        <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px">
-          <button id="qbRequestQuote" class="btn-hero" style="text-align:center;width:100%;border:none;cursor:pointer;font-family:inherit" onclick="submitQuotation()">Request Quote</button>
-          <a href="#" id="qbWhatsApp" class="qb-whatsapp" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Discuss on WhatsApp</a>
+  <div class="csr-page">
+    <div class="csr-card">
+
+      <div class="csr-card-header">
+        <h2>Tell Us What You Need</h2>
+        <p>Describe any service related to your life in India — whether it's property, vehicle, family, legal, or something entirely new. No request is too specific.</p>
+      </div>
+
+      <form class="csr-form" id="csrForm" onsubmit="submitCSR(event)">
+
+        <!-- Name & Email -->
+        <div class="csr-row">
+          <div class="csr-field">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" id="csrName" placeholder="e.g. Rajesh Kumar" required>
+          </div>
+          <div class="csr-field">
+            <label>Email Address <span class="req">*</span></label>
+            <input type="email" id="csrEmail" placeholder="e.g. rajesh@example.com" required>
+          </div>
+        </div>
+
+        <!-- Phone & City -->
+        <div class="csr-row">
+          <div class="csr-field">
+            <label>Phone Number</label>
+            <input type="tel" id="csrPhone" placeholder="e.g. +1 650 123 4567">
+          </div>
+          <div class="csr-field">
+            <label>City in India <span class="req">*</span></label>
+            <select id="csrCity" class="csr-field" required>
+              <option value="">Select City</option>
+              <option value="Chennai">Chennai</option>
+              <option value="Coimbatore">Coimbatore</option>
+              <option value="Kanyakumari">Kanyakumari</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Category -->
+        <div class="csr-field">
+          <label>What area does this relate to?</label>
+          <div class="csr-chips" id="csrChips">
+            <button type="button" class="csr-chip" data-cat="Property">🏠 Property</button>
+            <button type="button" class="csr-chip" data-cat="Vehicle">🚗 Vehicle</button>
+            <button type="button" class="csr-chip" data-cat="Parental Care">❤️ Parental Care</button>
+            <button type="button" class="csr-chip" data-cat="Legal">📄 Legal</button>
+            <button type="button" class="csr-chip" data-cat="Financial">💰 Financial</button>
+            <button type="button" class="csr-chip" data-cat="Travel">✈️ Travel</button>
+            <button type="button" class="csr-chip" data-cat="Other">🔧 Other</button>
+          </div>
+        </div>
+
+        <!-- Service Description -->
+        <div class="csr-field">
+          <label>Describe your requirement <span class="req">*</span></label>
+          <textarea id="csrDescription" placeholder="Tell us in detail what service you need. For example:&#10;&#10;• 'I need someone to manage my ancestral farmland in Kanyakumari — crop monitoring, tenant coordination, and revenue collection.'&#10;&#10;• 'I want to renovate my parents' bathroom in Chennai — need contractor sourcing, supervision, and quality checks.'&#10;&#10;The more detail you provide, the better we can help." required></textarea>
+          <div class="helper">Be as specific as possible — include locations, timelines, budget range, or any special requirements.</div>
+        </div>
+
+        <!-- Urgency -->
+        <div class="csr-field">
+          <label>How urgent is this?</label>
+          <div class="csr-urgency" id="csrUrgency">
+            <button type="button" class="csr-urgency-opt" data-val="not-urgent">
+              <span class="urg-label">Not Urgent</span>
+              <span class="urg-desc">Within a month</span>
+            </button>
+            <button type="button" class="csr-urgency-opt selected" data-val="moderate">
+              <span class="urg-label">Moderate</span>
+              <span class="urg-desc">Within a week</span>
+            </button>
+            <button type="button" class="csr-urgency-opt" data-val="urgent">
+              <span class="urg-label">Urgent</span>
+              <span class="urg-desc">As soon as possible</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="csr-divider"><span>Ready to submit?</span></div>
+
+        <!-- Submit -->
+        <div class="csr-submit-row">
+          <button type="submit" class="csr-submit" id="csrSubmitBtn">Submit Service Request</button>
+          <a href="#" id="csrWhatsApp" class="csr-whatsapp" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            WhatsApp Us
+          </a>
+        </div>
+      </form>
+
+      <!-- Trust bar -->
+      <div class="csr-trust">
+        <div class="csr-trust-item">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          100% Confidential
+        </div>
+        <div class="csr-trust-item">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Response within 24 hrs
+        </div>
+        <div class="csr-trust-item">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          No obligation
         </div>
       </div>
+
     </div>
   </div>
 </section>
 
-<!-- Quotation Success Modal -->
-<div class="qb-modal-overlay" id="qbModal">
-  <div class="qb-modal">
-    <div class="qb-modal-success" id="qbModalSuccess">
-      <button class="qb-modal-close" onclick="closeQuotationModal()">&times;</button>
-      <div class="qb-check-circle">
+<!-- Success Modal -->
+<div class="csr-modal-overlay" id="csrModal">
+  <div class="csr-modal">
+    <div class="csr-modal-top" id="csrModalTop">
+      <button class="csr-modal-close" onclick="closeCSRModal()">&times;</button>
+      <div class="csr-check-circle">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"/></svg>
       </div>
-      <h3>Custom Quotation Submitted!</h3>
-      <div class="qb-quote-num" id="qbQuoteNum">NBI-QT-000000</div>
+      <h3>Service Request Submitted!</h3>
+      <div class="csr-ref-num" id="csrRefNum">NBI-SR-000000</div>
     </div>
-    <div class="qb-receipt" id="qbReceipt"></div>
-    <div class="qb-modal-actions">
-      <button class="qb-modal-btn-secondary" onclick="closeQuotationModal()">Close</button>
-      <button class="qb-modal-btn-primary" onclick="printReceipt()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Save Quotation</button>
+    <div class="csr-modal-body">
+      <p>Thank you for your request. Our team will review your requirements and reach out to you via email within <strong>24 hours</strong> with a tailored solution and pricing.</p>
+    </div>
+    <div class="csr-modal-actions">
+      <button class="csr-btn-secondary" onclick="closeCSRModal()">Close</button>
+      <a href="propnri-saas-site.html" class="csr-btn-primary">Explore Our Services</a>
     </div>
   </div>
 </div>
@@ -169,484 +395,194 @@
 <footer></footer>
 <script src="footer.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+
 <script>
 (function(){
 'use strict';
 
-var ICONS = {
-  home:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--green-pop)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
-  vehicle:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--green-pop)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2M7 17v2m10-2v2"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg>',
-  parental:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--green-pop)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
-  legal:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--green-pop)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-  wrench:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--green-pop)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
-  truck:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--green-pop)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
-  clipboard:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--green-pop)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
-  shield:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--green-pop)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
-  parking:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--green-pop)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></svg>',
-  tag:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--green-pop)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>'
-};
-var GRP_ICONS = {0:'wrench',1:'truck',2:'clipboard',3:'shield',4:'parking',5:'tag'};
-
-var CAT = {
-  home:{
-    label:'Home Management',icon:'home',itemLabel:'Property',addLabel:'+ Add Property',
-    fields:[
-      {key:'type',label:'Property Type',el:'select',opts:['Apartment','Independent House','Villa','Commercial']},
-      {key:'city',label:'City',el:'input',ph:'e.g. Mumbai'},
-      {key:'rent',label:'Expected/Current Rent (₹)',el:'input',inputType:'number',ph:'e.g. 25000'},
-      {key:'age',label:'Property Age (years)',el:'input',inputType:'number',ph:'e.g. 5'},
-      {key:'status',label:'Status',el:'select',opts:['Vacant - Need Tenant','Tenanted','Maintenance Only']}
-    ],
-    services:[
-      {id:'tenant-acq',name:'Tenant Acquisition & Leasing',desc:'Marketing, screening, background checks, lease execution'},
-      {id:'rent-coll',name:'Rent Collection & Financial',desc:'Timely collection, payment tracking, income statements'},
-      {id:'prop-maint',name:'Property Maintenance & Repairs',desc:'Routine and emergency maintenance, vetted vendors'},
-      {id:'prop-insp',name:'Property Inspection & Reporting',desc:'Scheduled inspections with photo/video reports'},
-      {id:'tenant-rel',name:'Tenant Relationship Management',desc:'Complaints, conflict resolution, move-in/out'},
-      {id:'legal-comp',name:'Legal & Compliance',desc:'Lease agreements, rental law, KYC, eviction'},
-      {id:'lease-renew',name:'Lease Renewal & Vacancy',desc:'Renewal negotiations, rent revisions, re-listing'},
-      {id:'util-mgmt',name:'Utility & Bill Management',desc:'Electricity, water, gas, internet, society payments'}
-    ]
-  },
-  vehicle:{
-    label:'Vehicle Management',icon:'vehicle',itemLabel:'Vehicle',addLabel:'+ Add Vehicle',
-    fields:[
-      {key:'type',label:'Vehicle Type',el:'select',opts:['Car','SUV','Bike','Scooter']},
-      {key:'model',label:'Make/Model',el:'input',ph:'e.g. Honda City'},
-      {key:'reg',label:'Registration No.',el:'input',ph:'e.g. MH02AB1234'},
-      {key:'city',label:'City',el:'input',ph:'e.g. Delhi'},
-      {key:'status',label:'Current Status',el:'select',opts:['In Use','Parked Idle','Want to Sell']}
-    ],
-    serviceGroups:[
-      {title:'Maintenance & Care',gIcon:0,services:[
-        {id:'v-health',name:'Monthly Health Checks',desc:'Battery, tyres, fluids + photo/video report'},
-        {id:'v-idle',name:'Idle Car Care',desc:'Weekly engine warm-up runs'},
-        {id:'v-service',name:'Periodic Servicing & Maintenance',desc:'Scheduled service at authorised centres'},
-        {id:'v-annual',name:'Annual Comprehensive Service',desc:'Full annual service, parts at cost'},
-        {id:'v-wash',name:'Car Wash & Detailing',desc:'Bi-monthly professional cleaning'},
-        {id:'v-arrival',name:'Pre-arrival & Post-departure Checks',desc:'Prep before visit, secure after'}
-      ]},
-      {title:'Logistics & On-Ground Support',gIcon:1,services:[
-        {id:'v-pickup',name:'Pickup & Drop Services',desc:'Vehicle to/from service centres'},
-        {id:'v-emergency',name:'24×7 Emergency Coordination',desc:'Breakdown, towing, repair shop'},
-        {id:'v-chauffeur',name:'Chauffeur-on-Call',desc:'Driver during India visits (up to 10 hrs/mo)'},
-        {id:'v-manager',name:'Dedicated Service Manager',desc:'Personal coordinator + video calls'},
-        {id:'v-priority',name:'Priority Response',desc:'Same-day action on requests'},
-        {id:'v-whatsapp',name:'WhatsApp Updates',desc:'Real-time updates after every visit/action'}
-      ]},
-      {title:'Documentation, RTO & Compliance',gIcon:2,services:[
-        {id:'v-expiry',name:'Document Expiry Tracking',desc:'PUC, insurance, registration alerts'},
-        {id:'v-renewal',name:'Document Renewal Execution',desc:'End-to-end renewals + digital scans'},
-        {id:'v-reg',name:'Registration & Transfer',desc:'RC transfer, NOC, RTO paperwork'},
-        {id:'v-fitness',name:'Fitness & PUC Certificates',desc:'Testing & renewal coordination'}
-      ]},
-      {title:'Insurance Services',gIcon:3,services:[
-        {id:'v-insurance',name:'Insurance Renewal & Tracking',desc:'Policy comparison & end-to-end renewal'},
-        {id:'v-claims',name:'Claim Assistance',desc:'Filing claims & negotiation'}
-      ]},
-      {title:'Storage & Parking',gIcon:4,services:[
-        {id:'v-parking',name:'Parking & Storage Management',desc:'Secure parking & long-term storage'}
-      ]},
-      {title:'Sales Support',gIcon:5,services:[
-        {id:'v-selling',name:'Selling Assistance',desc:'Valuation, listing, negotiation, transfer docs'}
-      ]}
-    ]
-  },
-  parental:{
-    label:'Parental Care',icon:'parental',itemLabel:'Family Member',addLabel:'+ Add Family Member',
-    fields:[
-      {key:'name',label:'Name',el:'input',ph:"Parent's name"},
-      {key:'age',label:'Age',el:'input',inputType:'number',ph:'e.g. 68'},
-      {key:'city',label:'City',el:'input',ph:'e.g. Pune'},
-      {key:'health',label:'Health Conditions',el:'input',ph:'e.g. Diabetes, BP'},
-      {key:'emergency',label:'Emergency Contact',el:'input',ph:'Phone number'}
-    ],
-    services:[
-      {id:'p-checkup',name:'Health Check-Up Scheduling',desc:'Regular screenings, diagnostics, preventive check-ups'},
-      {id:'p-doctor',name:'Doctor Appointment Management',desc:'Specialist booking, accompaniment, follow-up'},
-      {id:'p-medicine',name:'Medicine Delivery Coordination',desc:'Prescription management, doorstep delivery, refill reminders'},
-      {id:'p-emergency',name:'Emergency Response Support',desc:'24/7 helpline, hospital admission, ambulance dispatch'},
-      {id:'p-companion',name:'Companion & Caretaker',desc:'Vetted companions, household help, trained caretakers'},
-      {id:'p-wellbeing',name:'Well-Being Check-Ins & Reporting',desc:'In-person visits, video updates, weekly reports'}
-    ]
-  },
-  legal:{
-    label:'Legal & Documentation',icon:'legal',itemLabel:'Legal Request',addLabel:'+ Add Legal Request',
-    fields:[
-      {key:'type',label:'Service Type',el:'select',opts:['Power of Attorney (POA)','Property Registration & Mutation','Will & Succession Planning','Tax Filing (ITR/TDS/Capital Gains)','Court Case Monitoring','Government Document Procurement']},
-      {key:'city',label:'City',el:'input',ph:'e.g. Chennai'},
-      {key:'desc',label:'Description',el:'textarea',ph:'Brief description of your requirement',span:2}
-    ]
-  }
-};
-
-var ADDONS_LIST=['Airport Pickup','Festival Prep','Puja / Event','Renovation','Insurance Claims','Bank Visit','Tenant Screening','Medical 2nd Opinion'];
-var state={items:{home:[],vehicle:[],parental:[],legal:[]},addons:[],counters:{home:0,vehicle:0,parental:0,legal:0}};
-
-function init(){
-  var root=document.getElementById('qbCats');
-  var html='';
-  for(var cat in CAT){
-    var c=CAT[cat];
-    html+='<div class="qb-accordion" data-cat="'+cat+'">'+
-      '<div class="qb-acc-header" onclick="toggleAcc(this)">'+
-        '<div class="qb-acc-left"><span class="qb-acc-icon">'+(ICONS[c.icon]||'')+'</span><span class="qb-acc-title">'+c.label+'</span>'+
-        '<span class="qb-acc-count" id="count-'+cat+'">0 selected</span></div>'+
-        '<span class="qb-acc-arrow">▼</span></div>'+
-      '<div class="qb-acc-body" id="body-'+cat+'"><div class="qb-acc-inner">'+
-        '<div id="items-'+cat+'"></div>'+
-        '<button class="qb-add-btn" onclick="addItem(\''+cat+'\')">'+c.addLabel+'</button>'+
-      '</div></div></div>';
-  }
-  // Addons section
-  html+='<div class="qb-addons-section"><h3>Add-on Services (Optional)</h3>'+
-    '<div class="qb-addon-chips-light" id="addonChips">'+
-    ADDONS_LIST.map(function(a){return '<button class="qb-addon-chip-light" data-addon="'+a+'" onclick="toggleAddon(this)">'+a+'</button>'}).join('')+
-    '</div><div class="qb-addon-input-light"><input type="text" id="customAddonInput" placeholder="Add custom service...">'+
-    '<button onclick="addCustomAddon()">+</button></div>'+
-    '<div class="qb-addon-tags-light" id="addonTags"></div></div>';
-  root.innerHTML=html;
-}
-
-window.toggleAcc=function(header){
-  var isOpen=header.classList.contains('open');
-  header.classList.toggle('open');
-  var body=header.nextElementSibling;
-  body.classList.toggle('open');
-};
-
-window.addItem=function(cat){
-  var c=CAT[cat];
-  state.counters[cat]++;
-  var id=state.counters[cat];
-  var item={id:id,data:{},services:[]};
-  state.items[cat].push(item);
-  var container=document.getElementById('items-'+cat);
-  var div=document.createElement('div');
-  div.className='qb-item';div.id='item-'+cat+'-'+id;
-
-  var fieldsHtml='<div class="qb-fields">';
-  c.fields.forEach(function(f){
-    var spanAttr=f.span?' style="grid-column:span '+f.span+'"':'';
-    fieldsHtml+='<div class="qb-field"'+spanAttr+'><label>'+f.label+'</label>';
-    if(f.el==='select'){
-      fieldsHtml+='<select data-cat="'+cat+'" data-id="'+id+'" data-key="'+f.key+'" onchange="updateField(this)">';
-      f.opts.forEach(function(o){fieldsHtml+='<option value="'+o+'">'+o+'</option>'});
-      fieldsHtml+='</select>';
-    } else if(f.el==='textarea'){
-      fieldsHtml+='<textarea data-cat="'+cat+'" data-id="'+id+'" data-key="'+f.key+'" placeholder="'+(f.ph||'')+'" onchange="updateField(this)"></textarea>';
-    } else {
-      fieldsHtml+='<input type="'+(f.inputType||'text')+'" data-cat="'+cat+'" data-id="'+id+'" data-key="'+f.key+'" placeholder="'+(f.ph||'')+'" onchange="updateField(this)">';
-    }
-    fieldsHtml+='</div>';
+// ── Category chip selection ──
+var selectedCats = [];
+document.querySelectorAll('.csr-chip').forEach(function(chip){
+  chip.addEventListener('click', function(){
+    var cat = this.dataset.cat;
+    var idx = selectedCats.indexOf(cat);
+    if(idx > -1){ selectedCats.splice(idx,1); this.classList.remove('selected'); }
+    else { selectedCats.push(cat); this.classList.add('selected'); }
+    updateWhatsApp();
   });
-  fieldsHtml+='</div>';
-
-  var svcsHtml='<div class="qb-svc-section">';
-  if(cat==='legal'){
-    svcsHtml+='<div class="qb-svc-section-title">This request will be quoted individually</div>';
-  } else if(c.serviceGroups){
-    svcsHtml+='<div class="qb-svc-section-title">Select Services for this '+c.itemLabel+'</div>';
-    c.serviceGroups.forEach(function(g){
-      svcsHtml+='<div class="qb-svc-group"><div class="qb-svc-group-title">'+(ICONS[GRP_ICONS[g.gIcon]]||'')+' '+g.title+'</div>';
-      g.services.forEach(function(s){
-        var uid=cat+'-'+id+'-'+s.id;
-        svcsHtml+='<div class="qb-svc-row" onclick="var cb=this.querySelector(\x27input\x27);if(event.target!==cb){cb.checked=!cb.checked;cb.dispatchEvent(new Event(\x27change\x27))}"><input type="checkbox" id="'+uid+'" data-cat="'+cat+'" data-id="'+id+'" data-svc="'+s.id+'" onchange="toggleSvc(this);this.parentNode.classList.toggle(\x27checked\x27,this.checked)"><label for="'+uid+'">'+s.name+'<span class="svc-desc">'+s.desc+'</span></label></div>';
-      });
-      svcsHtml+='</div>';
-    });
-  } else if(c.services){
-    svcsHtml+='<div class="qb-svc-section-title">Select Services for this '+c.itemLabel+'</div>';
-    c.services.forEach(function(s){
-      var uid=cat+'-'+id+'-'+s.id;
-      svcsHtml+='<div class="qb-svc-row" onclick="var cb=this.querySelector(\x27input\x27);if(event.target!==cb){cb.checked=!cb.checked;cb.dispatchEvent(new Event(\x27change\x27))}"><input type="checkbox" id="'+uid+'" data-cat="'+cat+'" data-id="'+id+'" data-svc="'+s.id+'" onchange="toggleSvc(this);this.parentNode.classList.toggle(\x27checked\x27,this.checked)"><label for="'+uid+'">'+s.name+'<span class="svc-desc">'+s.desc+'</span></label></div>';
-    });
-  }
-  svcsHtml+='</div>';
-
-  div.innerHTML='<div class="qb-item-head"><span class="qb-item-title">'+(ICONS[c.icon]||'')+' '+c.itemLabel+' #'+id+'</span><button class="qb-item-remove" onclick="removeItem(\''+cat+'\','+id+')">Remove</button></div>'+fieldsHtml+svcsHtml;
-  container.appendChild(div);
-
-  // Set defaults for select fields
-  c.fields.forEach(function(f){
-    if(f.el==='select'){item.data[f.key]=f.opts[0]}
-  });
-
-  // Auto-open accordion
-  var header=document.querySelector('.qb-accordion[data-cat="'+cat+'"] .qb-acc-header');
-  if(!header.classList.contains('open')){header.classList.add('open');header.nextElementSibling.classList.add('open')}
-  updateSummary();
-};
-
-window.removeItem=function(cat,id){
-  var el=document.getElementById('item-'+cat+'-'+id);
-  if(el)el.remove();
-  state.items[cat]=state.items[cat].filter(function(i){return i.id!==id});
-  updateSummary();
-};
-
-window.updateField=function(el){
-  var cat=el.dataset.cat,id=parseInt(el.dataset.id),key=el.dataset.key;
-  var item=state.items[cat].find(function(i){return i.id===id});
-  if(item)item.data[key]=el.value;
-  updateSummary();
-};
-
-window.toggleSvc=function(el){
-  var cat=el.dataset.cat,id=parseInt(el.dataset.id),svc=el.dataset.svc;
-  var item=state.items[cat].find(function(i){return i.id===id});
-  if(!item)return;
-  if(el.checked){if(item.services.indexOf(svc)===-1)item.services.push(svc)}
-  else{var idx=item.services.indexOf(svc);if(idx>-1)item.services.splice(idx,1)}
-  updateSummary();
-};
-
-window.toggleAddon=function(el){
-  var addon=el.dataset.addon;
-  var idx=state.addons.indexOf(addon);
-  if(idx>-1){state.addons.splice(idx,1);el.classList.remove('selected')}
-  else{state.addons.push(addon);el.classList.add('selected')}
-  renderAddonTags();updateSummary();
-};
-
-window.addCustomAddon=function(){
-  var input=document.getElementById('customAddonInput');
-  var val=input.value.trim();
-  if(val&&state.addons.indexOf(val)===-1){state.addons.push(val);renderAddonTags();updateSummary();input.value=''}
-};
-document.addEventListener('keydown',function(e){
-  if(e.target.id==='customAddonInput'&&e.key==='Enter'){e.preventDefault();addCustomAddon()}
 });
 
-function renderAddonTags(){
-  var c=document.getElementById('addonTags');
-  c.innerHTML=state.addons.map(function(a){return '<span class="qb-addon-tag-light">'+a+'<button onclick="removeAddon(\''+a.replace(/'/g,"\\'")+'\')">&times;</button></span>'}).join('');
-}
-window.removeAddon=function(addon){
-  var idx=state.addons.indexOf(addon);
-  if(idx>-1)state.addons.splice(idx,1);
-  var chip=document.querySelector('.qb-addon-chip-light[data-addon="'+addon+'"]');
-  if(chip)chip.classList.remove('selected');
-  renderAddonTags();updateSummary();
-};
+// ── Urgency selection ──
+var selectedUrgency = 'moderate';
+document.querySelectorAll('.csr-urgency-opt').forEach(function(opt){
+  opt.addEventListener('click', function(){
+    document.querySelectorAll('.csr-urgency-opt').forEach(function(o){ o.classList.remove('selected'); });
+    this.classList.add('selected');
+    selectedUrgency = this.dataset.val;
+  });
+});
 
-function getSvcName(cat,svcId){
-  var c=CAT[cat];
-  if(c.services){var s=c.services.find(function(s){return s.id===svcId});return s?s.name:svcId}
-  if(c.serviceGroups){for(var g=0;g<c.serviceGroups.length;g++){var s=c.serviceGroups[g].services.find(function(s){return s.id===svcId});if(s)return s.name}}
-  return svcId;
-}
-
-function getItemLabel(cat,item){
-  var d=item.data;
-  if(cat==='home')return (d.type||'Property')+' in '+(d.city||'—');
-  if(cat==='vehicle')return (d.model||d.type||'Vehicle')+' ('+(d.reg||'—')+')';
-  if(cat==='parental')return d.name||'Family Member';
-  if(cat==='legal')return d.type||'Legal Request';
-  return CAT[cat].itemLabel+' #'+item.id;
+// ── Prefill from session ──
+var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
+if(session){
+  if(session.name) document.getElementById('csrName').value = session.name;
+  if(session.email) document.getElementById('csrEmail').value = session.email;
+  if(session.phone) document.getElementById('csrPhone').value = session.phone;
 }
 
-function updateSummary(){
-  var sumEl=document.getElementById('qbSumItems');
-  var countEl=document.getElementById('qbSumCount');
-  var addonsEl=document.getElementById('qbSumAddons');
-  var totalSvcs=0;
-  var html='';
+// ── WhatsApp link ──
+function updateWhatsApp(){
+  var name = document.getElementById('csrName').value.trim();
+  var desc = document.getElementById('csrDescription').value.trim();
+  var city = document.getElementById('csrCity').value.trim();
+  var msg = "Hi NRI Bridge India! I'd like to request a custom service.\n\n";
+  if(name) msg += "Name: " + name + "\n";
+  if(city) msg += "City: " + city + "\n";
+  if(selectedCats.length > 0) msg += "Category: " + selectedCats.join(', ') + "\n";
+  if(desc) msg += "\nRequirement:\n" + desc + "\n";
+  msg += "\nUrgency: " + selectedUrgency;
+  document.getElementById('csrWhatsApp').href = 'https://wa.me/91XXXXXXXXXX?text=' + encodeURIComponent(msg);
+}
+document.querySelectorAll('#csrForm input, #csrForm textarea').forEach(function(el){
+  el.addEventListener('input', updateWhatsApp);
+});
+updateWhatsApp();
 
-  for(var cat in state.items){
-    state.items[cat].forEach(function(item){
-      var svcCount=cat==='legal'?1:item.services.length;
-      if(cat==='legal'||svcCount>0){
-        totalSvcs+=svcCount;
-        var label=getItemLabel(cat,item);
-        var svcsStr='';
-        if(cat==='legal'){svcsStr=item.data.desc||'Quote requested'}
-        else{svcsStr=item.services.map(function(s){return getSvcName(cat,s)}).join(', ')||'No services selected'}
-        html+='<div class="qb-sum-item"><div class="qb-sum-item-label">'+label+'</div><div class="qb-sum-item-svcs">'+svcsStr+'</div></div>';
-      }
-    });
-    // Update accordion count
-    var catCount=0;
-    state.items[cat].forEach(function(i){catCount+=cat==='legal'?1:i.services.length});
-    var countBadge=document.getElementById('count-'+cat);
-    if(countBadge)countBadge.textContent=catCount+' selected';
-  }
-
-  if(!html)html='<div class="qb-sum-empty">Add items & select services to build your quote</div>';
-  sumEl.innerHTML=html;
-  countEl.textContent=totalSvcs;
-
-  // Addons in summary
-  if(state.addons.length>0){
-    addonsEl.innerHTML='<div style="font-size:0.72rem;opacity:0.6;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)"><strong>Add-ons:</strong> '+state.addons.join(', ')+'</div>';
-  } else {addonsEl.innerHTML=''}
-
-  updateLinks();
+// ── Generate reference number ──
+function generateRefNum(){
+  var d = new Date();
+  var yr = String(d.getFullYear()).slice(2);
+  var mn = String(d.getMonth()+1).padStart(2,'0');
+  var rand = String(Math.floor(Math.random()*9000)+1000);
+  return 'NBI-SR-' + yr + mn + '-' + rand;
 }
 
-function updateLinks(){
-  var msg="Hi NRI Bridge India! I'd like a quote for:\n\n";
-  for(var cat in state.items){
-    state.items[cat].forEach(function(item){
-      if(cat==='legal'||item.services.length>0){
-        msg+='• '+getItemLabel(cat,item)+'\n';
-        if(cat!=='legal'){item.services.forEach(function(s){msg+='  - '+getSvcName(cat,s)+'\n'})}
-      }
-    });
-  }
-  if(state.addons.length>0)msg+='\nAdd-ons: '+state.addons.join(', ');
-  document.getElementById('qbWhatsApp').href='https://wa.me/91XXXXXXXXXX?text='+encodeURIComponent(msg);
-}
-
-// ── Quotation Modal ──
-function generateQuoteNumber(){
-  var d=new Date();
-  var yr=String(d.getFullYear()).slice(2);
-  var mn=String(d.getMonth()+1).padStart(2,'0');
-  var rand=String(Math.floor(Math.random()*9000)+1000);
-  return 'NBI-QT-'+yr+mn+'-'+rand;
-}
-
+// ── Confetti ──
 function spawnConfetti(container){
-  var colors=['#4a6a2e','#8ba85e','#f2efe5','#d4c9a8','#3d3f2e','#6b8c42'];
-  for(var i=0;i<24;i++){
-    var el=document.createElement('div');
-    el.className='qb-confetti';
-    el.style.background=colors[Math.floor(Math.random()*colors.length)];
-    el.style.left=Math.random()*100+'%';
-    el.style.top=Math.random()*60+'%';
-    el.style.width=(4+Math.random()*8)+'px';
-    el.style.height=(4+Math.random()*6)+'px';
-    el.style.borderRadius=Math.random()>0.5?'50%':'2px';
-    el.style.animationDelay=(Math.random()*0.5)+'s';
-    el.style.animationDuration=(1+Math.random()*1)+'s';
+  var colors = ['#4a6a2e','#8ba85e','#f2efe5','#d4c9a8','#3d3f2e','#6b8c42'];
+  for(var i = 0; i < 20; i++){
+    var el = document.createElement('div');
+    el.className = 'csr-confetti';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.left = Math.random()*100 + '%';
+    el.style.top = Math.random()*60 + '%';
+    el.style.width = (4+Math.random()*8) + 'px';
+    el.style.height = (4+Math.random()*6) + 'px';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    el.style.animationDelay = (Math.random()*0.5) + 's';
+    el.style.animationDuration = (1+Math.random()*1) + 's';
     container.appendChild(el);
-    setTimeout(function(e){e.classList.add('pop')},10,el);
+    setTimeout(function(e){ e.classList.add('pop'); }, 10, el);
   }
 }
 
-function buildReceiptHTML(){
-  var now=new Date();
-  var dateStr=now.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})+' • '+now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-  var catLabels={home:'Home Management',vehicle:'Vehicle Management',parental:'Parental Care',legal:'Legal & Documentation'};
-  var html='<div class="qb-receipt-header"><h4>Itemised Quotation</h4><span class="qb-receipt-date">'+dateStr+'</span></div>';
-  var totalSvcs=0;
+// ── Submit ──
+window.submitCSR = function(e){
+  e.preventDefault();
 
-  for(var cat in state.items){
-    var catItems=state.items[cat].filter(function(item){return cat==='legal'||item.services.length>0});
-    if(catItems.length===0)continue;
-    html+='<div class="qb-receipt-cat"><div class="qb-receipt-cat-title">'+catLabels[cat]+'</div>';
-    catItems.forEach(function(item){
-      var label=getItemLabel(cat,item);
-      var svcs='';
-      if(cat==='legal'){
-        svcs=item.data.type||'Legal Service';
-        if(item.data.desc)svcs+=' — '+item.data.desc;
-        totalSvcs++;
-      } else {
-        svcs=item.services.map(function(s){return getSvcName(cat,s)}).join(' • ');
-        totalSvcs+=item.services.length;
-      }
-      html+='<div class="qb-receipt-item"><div class="qb-receipt-item-label">'+label+'</div><div class="qb-receipt-item-svcs">'+svcs+'</div></div>';
-    });
-    html+='</div>';
-  }
+  var name = document.getElementById('csrName').value.trim();
+  var email = document.getElementById('csrEmail').value.trim();
+  var phone = document.getElementById('csrPhone').value.trim();
+  var city = document.getElementById('csrCity').value.trim();
+  var desc = document.getElementById('csrDescription').value.trim();
 
-  if(state.addons.length>0){
-    html+='<div class="qb-receipt-addons"><div class="qb-receipt-addons-title">Add-on Requests</div><div class="qb-receipt-addons-list">'+state.addons.join(' • ')+'</div></div>';
-  }
-
-  html+='<div class="qb-receipt-footer"><span>Total Services</span><span>'+totalSvcs+' service'+(totalSvcs!==1?'s':'')+(state.addons.length>0?' + '+state.addons.length+' add-on'+(state.addons.length>1?'s':''):'')+' requested</span></div>';
-  html+='<div style="text-align:center;padding-top:14px;font-size:0.72rem;color:var(--text-mid);line-height:1.5;opacity:0.7;">Our team will review your requirements and share a detailed pricing quotation via email within 24 hours.</div>';
-  return html;
-}
-
-window.submitQuotation=function(){
-  // Validate: at least 1 service selected
-  var totalSvcs=0;
-  for(var cat in state.items){
-    state.items[cat].forEach(function(item){totalSvcs+=cat==='legal'?1:item.services.length});
-  }
-  if(totalSvcs===0){
-    alert('Please add at least one item and select services before requesting a quote.');
+  if(!name || !email || !city || !desc){
+    alert('Please fill in all required fields.');
     return;
   }
 
-  var quoteNum=generateQuoteNumber();
-  document.getElementById('qbQuoteNum').textContent=quoteNum;
-  document.getElementById('qbReceipt').innerHTML=buildReceiptHTML();
+  var btn = document.getElementById('csrSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
 
-  // Reset animations by re-cloning the success section
-  var successEl=document.getElementById('qbModalSuccess');
-  var clone=successEl.cloneNode(true);
-  successEl.parentNode.replaceChild(clone,successEl);
+  var refNum = generateRefNum();
 
-  var overlay=document.getElementById('qbModal');
-  overlay.style.display='flex';
-  // Force reflow then add class for animation
-  void overlay.offsetHeight;
-  overlay.classList.add('show');
+  // Save to localStorage
+  var requests = JSON.parse(localStorage.getItem('nbi_custom_requests') || '[]');
+  requests.unshift({
+    id: refNum,
+    date: new Date().toISOString(),
+    name: name,
+    email: email,
+    phone: phone,
+    city: city,
+    categories: selectedCats.slice(),
+    description: desc,
+    urgency: selectedUrgency
+  });
+  if(requests.length > 50) requests = requests.slice(0, 50);
+  localStorage.setItem('nbi_custom_requests', JSON.stringify(requests));
 
-  // Confetti burst
+  // Try Supabase if available
+  if(typeof window.supabaseClient !== 'undefined' && window.supabaseClient){
+    window.supabaseClient.from('custom_service_requests').insert([{
+      ref_num: refNum,
+      name: name,
+      email: email,
+      phone: phone,
+      city: city,
+      categories: selectedCats.join(', '),
+      description: desc,
+      urgency: selectedUrgency
+    }]).then(function(){}).catch(function(){});
+  }
+
+  // Show success modal
   setTimeout(function(){
-    spawnConfetti(clone);
-  },300);
+    btn.disabled = false;
+    btn.textContent = 'Submit Service Request';
 
-  // Save to localStorage for reference
-  var history=JSON.parse(localStorage.getItem('nbi_quotes')||'[]');
-  history.unshift({id:quoteNum,date:new Date().toISOString(),services:totalSvcs,addons:state.addons.length});
-  if(history.length>20)history=history.slice(0,20);
-  localStorage.setItem('nbi_quotes',JSON.stringify(history));
+    document.getElementById('csrRefNum').textContent = refNum;
+
+    // Reset animations
+    var topEl = document.getElementById('csrModalTop');
+    var clone = topEl.cloneNode(true);
+    topEl.parentNode.replaceChild(clone, topEl);
+
+    var overlay = document.getElementById('csrModal');
+    overlay.style.display = 'flex';
+    void overlay.offsetHeight;
+    overlay.classList.add('show');
+
+    setTimeout(function(){ spawnConfetti(clone); }, 300);
+
+    // Reset form
+    document.getElementById('csrForm').reset();
+    selectedCats = [];
+    document.querySelectorAll('.csr-chip').forEach(function(c){ c.classList.remove('selected'); });
+    selectedUrgency = 'moderate';
+    document.querySelectorAll('.csr-urgency-opt').forEach(function(o){
+      o.classList.toggle('selected', o.dataset.val === 'moderate');
+    });
+  }, 800);
 };
 
-window.closeQuotationModal=function(){
-  var overlay=document.getElementById('qbModal');
+// ── Close modal ──
+window.closeCSRModal = function(){
+  var overlay = document.getElementById('csrModal');
   overlay.classList.remove('show');
-  setTimeout(function(){overlay.style.display='none'},400);
+  setTimeout(function(){ overlay.style.display = 'none'; }, 400);
 };
-
-window.printReceipt=function(){
-  var receiptContent=document.getElementById('qbReceipt').innerHTML;
-  var quoteNum=document.getElementById('qbQuoteNum').textContent;
-  var win=window.open('','_blank','width=600,height=800');
-  win.document.write('<!DOCTYPE html><html><head><title>'+quoteNum+' — NRI Bridge India</title>');
-  win.document.write('<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">');
-  win.document.write('<style>');
-  win.document.write('*{margin:0;padding:0;box-sizing:border-box}body{font-family:"DM Sans",sans-serif;color:#2d2d1e;padding:40px;max-width:600px;margin:0 auto}');
-  win.document.write('.header{text-align:center;padding-bottom:24px;border-bottom:2px solid #4a6a2e;margin-bottom:24px}');
-  win.document.write('.header h2{font-family:"Playfair Display",serif;font-size:1.4rem;color:#4a6a2e;margin-bottom:4px}');
-  win.document.write('.header .qnum{font-size:0.82rem;color:#666;margin-bottom:4px}');
-  win.document.write('.header .date{font-size:0.72rem;color:#999}');
-  win.document.write('.qb-receipt-header{display:none}');
-  win.document.write('.qb-receipt-cat{margin-bottom:16px}');
-  win.document.write('.qb-receipt-cat-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#4a6a2e;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(74,106,46,0.15)}');
-  win.document.write('.qb-receipt-item{padding:6px 0;border-bottom:1px solid #eee}');
-  win.document.write('.qb-receipt-item:last-child{border-bottom:none}');
-  win.document.write('.qb-receipt-item-label{font-size:0.82rem;font-weight:600;margin-bottom:2px}');
-  win.document.write('.qb-receipt-item-svcs{font-size:0.72rem;color:#777;line-height:1.5}');
-  win.document.write('.qb-receipt-addons{padding-top:12px;border-top:1px solid #ddd;margin-top:8px}');
-  win.document.write('.qb-receipt-addons-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;color:#999;margin-bottom:4px}');
-  win.document.write('.qb-receipt-addons-list{font-size:0.78rem}');
-  win.document.write('.qb-receipt-footer{display:flex;justify-content:space-between;padding-top:16px;margin-top:16px;border-top:2px solid #4a6a2e;font-weight:700;font-size:0.85rem}');
-  win.document.write('.qb-receipt-footer span:last-child{color:#4a6a2e}');
-  win.document.write('.footer{text-align:center;margin-top:32px;padding-top:16px;border-top:1px solid #eee;font-size:0.72rem;color:#999}');
-  win.document.write('@media print{body{padding:20px}.no-print{display:none}}');
-  win.document.write('</style></head><body>');
-  win.document.write('<div class="header"><h2>NRI Bridge India</h2><div class="qnum">Quotation '+quoteNum+'</div><div class="date">'+new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})+'</div></div>');
-  win.document.write(receiptContent);
-  win.document.write('<div class="footer">This is an auto-generated quotation request. Our team will share final pricing within 24 hours.<br>NRI Bridge India • nribridgeindia.com</div>');
-  win.document.write('<div class="no-print" style="text-align:center;margin-top:24px"><button onclick="window.print()" style="padding:10px 32px;background:#4a6a2e;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:0.85rem">Print / Save as PDF</button></div>');
-  win.document.write('</body></html>');
-  win.document.close();
-};
-
-// Close modal on overlay click
-document.getElementById('qbModal').addEventListener('click',function(e){
-  if(e.target===this)closeQuotationModal();
+document.getElementById('csrModal').addEventListener('click', function(e){
+  if(e.target === this) closeCSRModal();
 });
 
-init();
-updateSummary();
+// ── Animate on scroll ──
+var observer = new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if(entry.isIntersecting){
+      entry.target.style.animation = 'fadeUp 0.7s ease both';
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.csr-card').forEach(function(el){
+  el.style.opacity = '0';
+  observer.observe(el);
+});
+
 })();
 </script>
 </body>

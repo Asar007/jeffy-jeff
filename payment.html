@@ -152,7 +152,7 @@
     <li><a href="home-management.html">Services</a></li>
     <li><a href="propnri-saas-site.html#pricing">Pricing</a></li>
     <li><a href="propnri-saas-site.html#how">How It Works</a></li>
-    <li><a href="#">Contact</a></li>
+    <li><a href="contact.html">Contact</a></li>
   </ul>
   <div class="nav-actions" id="navActions">
     <a href="login.html" class="btn-outline">Log in</a>
@@ -273,6 +273,8 @@
   </div>
 </main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="invoice-generator.js"></script>
 <script>
 (function() {
   'use strict';
@@ -422,25 +424,56 @@
       // Generate fake transaction ID
       var txnId = 'NBI' + Date.now().toString().slice(-8) + Math.random().toString(36).slice(2, 6).toUpperCase();
 
+      // Generate Invoice Data
+      var invItems = [];
+      var activeTab = document.querySelector('.pay-tab.active');
+      var payMethod = activeTab ? activeTab.getAttribute('data-method') : 'card';
+      
+      order.forEach(function(p) {
+        var plan = PLANS[p.plan];
+        var price = 0;
+        
+        if (p.plan === 'platinum') {
+          price = p.rent ? Math.round(p.rent * 0.1) : 0;
+        } else {
+          if (p.billing === 'annual') {
+            price = Math.round(plan.monthly * 12 * 0.85);
+          } else {
+            price = plan.monthly;
+          }
+        }
+        
+        var capType = p.type ? (p.type.charAt(0).toUpperCase() + p.type.slice(1)) : 'Service';
+        var title = p.city + ' — ' + capType + ' (' + plan.name + ' - ' + (p.billing === 'annual' ? 'Annual' : 'Monthly') + ')';
+        invItems.push({ description: title, qty: 1, price: price });
+      });
+      
+      localStorage.setItem('nri_invoice', JSON.stringify({
+        txnId: txnId,
+        date: new Date().toISOString(),
+        method: payMethod,
+        items: invItems
+      }));
+
       // Show success
       var payPanel = document.getElementById('payPanel');
       payPanel.innerHTML =
         '<div class="payment-success">' +
           '<div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>' +
           '<h2>Payment Successful!</h2>' +
-          '<p>Thank you, ' + session.name.split(' ')[0] + '! Your subscription is now active. Our team will reach out to you within 24 hours to begin onboarding your properties.</p>' +
-          '<div class="txn-id">Transaction ID: ' + txnId + '</div>' +
+          '<p>Thank you, ' + session.name.split(' ')[0] + '! Your subscription is now active. Your invoice will download automatically.</p>' +
+          '<div class="txn-id">Transaction ID: ' + txnId + '<br><br><button class="btn-outline" style="color:var(--text-dark);border-color:var(--border);" onclick="downloadInvoice(JSON.parse(localStorage.getItem(\'nri_invoice\')), JSON.parse(localStorage.getItem(\'nri_session\')))">Download Invoice Again</button></div>' +
         '</div>';
 
       // Update order panel
       var orderPanel = document.getElementById('orderPanel');
       orderPanel.querySelector('h2').textContent = 'Payment Confirmed';
-      orderPanel.querySelector('.order-note').textContent = 'A confirmation email has been sent to ' + session.email + '. Redirecting to homepage\u2026';
+      orderPanel.querySelector('.order-note').textContent = 'A confirmation email has been sent to ' + session.email + '.';
 
       setTimeout(function() {
-        window.location.href = 'propnri-saas-site.html';
-      }, 4000);
-    }, 2000);
+        if(window.downloadInvoice) window.downloadInvoice(JSON.parse(localStorage.getItem('nri_invoice')), session);
+      }, 500);
+    }, 1500);
   };
 
 })();

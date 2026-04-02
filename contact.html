@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schedule a Callback — NRI Bridge India</title>
+<meta name="description" content="Schedule a callback with NRI Bridge India's expert team to discuss your property management, legal, or concierge needs in India.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .contact-page { max-width:720px; margin:0 auto; }
+
+  /* Request card */
+  .contact-card {
+    background:var(--white); border-radius:var(--radius-lg);
+    padding:44px 40px; border:1.5px solid rgba(0,0,0,0.06);
+    box-shadow:0 8px 40px rgba(0,0,0,0.04);
+  }
+  .contact-card-header { margin-bottom:32px; text-align: center; }
+  .contact-card-header h2 {
+    font-family:'Playfair Display',serif; font-size:1.8rem;
+    font-weight:700; color:var(--text-dark); margin-bottom:10px;
+  }
+  .contact-card-header p {
+    font-size:0.95rem; color:var(--text-mid); opacity:0.8; line-height:1.6;
+    max-width: 500px; margin: 0 auto;
+  }
+
+  /* Form */
+  .contact-form { display:flex; flex-direction:column; gap:20px; }
+  .contact-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .contact-field label {
+    display:block; font-size:0.85rem; font-weight:600;
+    color:var(--text-mid); margin-bottom:6px; letter-spacing:0.02em;
+  }
+  .contact-field label .req { color:#dc3545; margin-left:2px; }
+  
+  .contact-field input,
+  .contact-field select,
+  .contact-field textarea {
+    width:100%; padding:14px 16px;
+    border:1.5px solid rgba(0,0,0,0.1); border-radius:var(--radius-sm);
+    font-family:inherit; font-size:0.9rem; color:var(--text-dark);
+    background:var(--bg-cream); transition:all 0.3s;
+  }
+  .contact-field input:focus,
+  .contact-field select:focus,
+  .contact-field textarea:focus {
+    outline:none; border-color:var(--green-pop);
+    background:var(--white); box-shadow:0 0 0 3px rgba(74,106,46,0.1);
+  }
+  .contact-field input::placeholder,
+  .contact-field textarea::placeholder { color:var(--text-muted); opacity:0.6; }
+  .contact-field textarea { resize:vertical; min-height:120px; line-height:1.65; }
+
+  /* Submit */
+  .contact-submit-row { display:flex; gap:12px; padding-top:16px; }
+  .contact-submit {
+    flex:1; padding:16px; border:none; border-radius:var(--radius-pill);
+    background:var(--green-pop); color:var(--white);
+    font-size:1rem; font-weight:600; cursor:pointer;
+    transition:all 0.35s; font-family:inherit;
+    position:relative; overflow:hidden;
+  }
+  .contact-submit:hover {
+    background:#3d5a22; transform:translateY(-1px);
+    box-shadow:0 8px 30px rgba(45,58,30,0.3);
+  }
+  .contact-submit:disabled {
+    opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none;
+  }
+
+  /* Success modal - identical to csr-modal logic */
+  .contact-modal-overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(6px); z-index:9999;
+    display:none; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 0.4s ease;
+  }
+  .contact-modal-overlay.show { display:flex; opacity:1; }
+  .contact-modal {
+    background:var(--white); border-radius:var(--radius-lg);
+    max-width:480px; width:92%; overflow:hidden;
+    transform:translateY(40px) scale(0.95); opacity:0;
+    transition:all 0.5s cubic-bezier(0.16,1,0.3,1);
+    box-shadow:0 32px 80px rgba(0,0,0,0.25);
+  }
+  .contact-modal-overlay.show .contact-modal { transform:translateY(0) scale(1); opacity:1; }
+  .contact-modal-top {
+    text-align:center; padding:48px 32px 36px;
+    background:linear-gradient(135deg,#2d2f22 0%,#3a3c2c 50%,#3d5a28 100%);
+    color:var(--text-light); position:relative; overflow:hidden;
+  }
+  .contact-check-circle {
+    width:80px; height:80px; border-radius:50%;
+    border:3px solid rgba(255,255,255,0.2);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 20px; position:relative;
+  }
+  .contact-check-circle svg {
+    width:36px; height:36px; stroke:var(--bg-cream);
+    stroke-dasharray:50; stroke-dashoffset:50;
+    animation:contactDrawCheck 0.6s 0.4s ease forwards;
+  }
+  .contact-check-circle::after {
+    content:''; position:absolute; inset:-3px; border-radius:50%;
+    border:3px solid var(--bg-cream);
+    animation:contactCirclePop 0.5s 0.2s ease forwards; opacity:0;
+  }
+  @keyframes contactDrawCheck { to { stroke-dashoffset:0; } }
+  @keyframes contactCirclePop {
+    0% { opacity:0; transform:scale(0.5); }
+    60% { transform:scale(1.1); }
+    100% { opacity:1; transform:scale(1); }
+  }
+  .contact-modal-top h3 {
+    font-family:'Playfair Display',serif; font-size:1.4rem;
+    font-weight:700; margin-bottom:0;
+    opacity:0; animation:contactFadeUp 0.5s 0.6s ease forwards;
+  }
+  @keyframes contactFadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .contact-modal-body { padding:28px 32px; text-align:center; }
+  .contact-modal-body p {
+    font-size:0.95rem; color:var(--text-mid); line-height:1.65;
+    margin-bottom:24px;
+  }
+  .contact-modal-actions { display:flex; gap:10px; padding:0 32px 32px; }
+  .contact-modal-actions button,
+  .contact-modal-actions a {
+    flex:1; padding:14px; border-radius:var(--radius-md);
+    font-family:inherit; font-size:0.9rem; font-weight:600;
+    cursor:pointer; text-align:center; text-decoration:none;
+    transition:all 0.3s; border:none;
+  }
+  .contact-btn-primary { background:var(--green-pop); color:var(--white); }
+  .contact-btn-primary:hover { background:#3d5a22; }
+
+  @media(max-width:600px) {
+    .contact-card { padding:32px 24px; }
+    .contact-row { grid-template-columns:1fr; gap:12px; }
+  }
+</style>
+</head>
+<body>
+<nav></nav>
+<script src="nav.js"></script>
+
+<section class="service-hero section-pad">
+  <div class="section-tag">Contact Us</div>
+  <h1>Let's Start a Conversation</h1>
+  <p>Speak directly with an NRI Property Management Expert. Tell us your timezone, and we'll call you when it's convenient.</p>
+</section>
+
+<section class="services section-pad" style="padding-top:0;">
+  <div class="contact-page">
+    <div class="contact-card">
+      <div class="contact-card-header">
+        <h2>Schedule a Callback</h2>
+        <p>Drop your details below and an expert from our team will reach out to understand your requirements.</p>
+      </div>
+
+      <form class="contact-form" id="contactForm" onsubmit="submitContact(event)">
+        <div class="contact-row">
+          <div class="contact-field">
+            <label>Full Name <span class="req">*</span></label>
+            <input type="text" id="contactName" placeholder="e.g. Rajesh Kumar" required>
+          </div>
+          <div class="contact-field">
+            <label>Email Address</label>
+            <input type="email" id="contactEmail" placeholder="e.g. rajesh@example.com">
+          </div>
+        </div>
+
+        <div class="contact-field">
+          <label>Phone Number <span class="req">*</span></label>
+          <input type="tel" id="contactPhone" placeholder="e.g. +1 650 123 4567" required>
+        </div>
+
+        <div class="contact-row">
+          <div class="contact-field">
+            <label>Preferred Time (24HR) <span class="req">*</span></label>
+            <input type="time" id="contactTime" required>
+          </div>
+          <div class="contact-field">
+            <label>Your Time Zone <span class="req">*</span></label>
+            <select id="contactTimezone" class="contact-field" required>
+              <option value="">Select Time Zone</option>
+              <option value="EST">Eastern Standard Time (EST) - US/Canada</option>
+              <option value="CST">Central Standard Time (CST) - US/Canada</option>
+              <option value="MST">Mountain Standard Time (MST) - US/Canada</option>
+              <option value="PST">Pacific Standard Time (PST) - US/Canada</option>
+              <option value="GMT">Greenwich Mean Time (GMT) - UK/Europe</option>
+              <option value="CET">Central European Time (CET) - Europe</option>
+              <option value="GST">Gulf Standard Time (GST) - UAE/Middle East</option>
+              <option value="SGT">Singapore Time (SGT) - SE Asia</option>
+              <option value="AEST">Australian Eastern Standard Time (AEST) - Australia</option>
+              <option value="IST">Indian Standard Time (IST)</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="contact-field">
+          <label>How can we help? (Optional)</label>
+          <textarea id="contactMessage" placeholder="Briefly describe what you're looking for (e.g., specific property management services, legal assistance, etc.)"></textarea>
+        </div>
+
+        <div class="contact-submit-row">
+          <button type="submit" class="contact-submit" id="contactSubmitBtn">Schedule Callback</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Success Modal -->
+<div class="contact-modal-overlay" id="contactModal">
+  <div class="contact-modal">
+    <div class="contact-modal-top" id="contactModalTop">
+      <div class="contact-check-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"/></svg>
+      </div>
+      <h3>Request Received!</h3>
+    </div>
+    <div class="contact-modal-body">
+      <p>Thank you for reaching out to NRI Bridge India. One of our experts will call you at the phone number provided, keeping your timezone in mind.</p>
+    </div>
+    <div class="contact-modal-actions">
+      <a href="propnri-saas-site.html" class="contact-btn-primary">Return to Homepage</a>
+    </div>
+  </div>
+</div>
+
+<footer></footer>
+<script src="footer.js"></script>
+
+<script>
+(function(){
+  'use strict';
+
+  // Prefill from session
+  var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
+  if(session){
+    if(session.name) document.getElementById('contactName').value = session.name;
+    if(session.email) document.getElementById('contactEmail').value = session.email;
+    if(session.phone) document.getElementById('contactPhone').value = session.phone;
+  }
+
+  // Submit Callback
+  window.submitContact = function(e){
+    e.preventDefault();
+
+    var name = document.getElementById('contactName').value.trim();
+    var email = document.getElementById('contactEmail').value.trim();
+    var phone = document.getElementById('contactPhone').value.trim();
+    var time = document.getElementById('contactTime').value.trim();
+    var timezone = document.getElementById('contactTimezone').value.trim();
+    var message = document.getElementById('contactMessage').value.trim();
+
+    if(!name || !phone || !time || !timezone){
+      alert('Please fill in your name, phone number, preferred time, and time zone.');
+      return;
+    }
+
+    var btn = document.getElementById('contactSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    // Format the database payload
+    var payload = {
+      id: 'NBI-CB-' + Date.now().toString().slice(-6),
+      date: new Date().toISOString(),
+      name: name,
+      email: email,
+      phone: phone,
+      time: time,
+      timezone: timezone,
+      message: message
+    };
+
+    // Simulated Backend Persistence
+    var contacts = JSON.parse(localStorage.getItem('nri_contacts') || '[]');
+    contacts.unshift(payload);
+    localStorage.setItem('nri_contacts', JSON.stringify(contacts));
+
+    // Show success modal
+    setTimeout(function(){
+      btn.disabled = false;
+      btn.textContent = 'Schedule Callback';
+
+      // Reset Modal Animations
+      var topEl = document.getElementById('contactModalTop');
+      var clone = topEl.cloneNode(true);
+      topEl.parentNode.replaceChild(clone, topEl);
+
+      var overlay = document.getElementById('contactModal');
+      overlay.style.display = 'flex';
+      // Trigger reflow
+      void overlay.offsetHeight;
+      overlay.classList.add('show');
+
+      // Reset form
+      document.getElementById('contactForm').reset();
+    }, 800);
+  };
+})();
+</script>
+</body>
+</html>
