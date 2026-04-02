@@ -155,8 +155,8 @@
     <li><a href="#">Contact</a></li>
   </ul>
   <div class="nav-actions" id="navActions">
-    <a href="/login" class="btn-outline">Log in</a>
-    <a href="/signup" class="btn-primary">Get Started</a>
+    <a href="login.html" class="btn-outline">Log in</a>
+    <a href="signup.html" class="btn-primary">Get Started</a>
   </div>
 </nav>
 
@@ -280,7 +280,7 @@
   // Check session
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
   if (!session) {
-    window.location.href = '/login';
+    window.location.href = 'login.html';
     return;
   }
 
@@ -293,7 +293,7 @@
   // Load order data
   var order = JSON.parse(localStorage.getItem('nri_order') || '[]');
   if (!order.length) {
-    window.location.href = '/onboarding';
+    window.location.href = 'onboarding.html';
     return;
   }
 
@@ -438,7 +438,7 @@
       orderPanel.querySelector('.order-note').textContent = 'A confirmation email has been sent to ' + session.email + '. Redirecting to homepage\u2026';
 
       setTimeout(function() {
-        window.location.href = '/home';
+        window.location.href = 'propnri-saas-site.html';
       }, 4000);
     }, 2000);
   };

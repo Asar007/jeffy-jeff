@@ -80,7 +80,7 @@
 
       <!-- Footer link -->
       <div class="auth-footer">
-        Don't have an account? <a href="/signup">Sign up</a>
+        Don't have an account? <a href="signup.html">Sign up</a>
       </div>
 
     </div>
@@ -188,9 +188,9 @@
 
       setTimeout(function() {
         if (planParam) {
-          window.location.href = '/onboarding?plan=' + planParam;
+          window.location.href = 'onboarding.html?plan=' + planParam;
         } else {
-          window.location.href = '/home';
+          window.location.href = 'propnri-saas-site.html';
         }
       }, 2000);
     });
@@ -210,7 +210,7 @@
     document.getElementById('googleBtn').addEventListener('click', async function() {
       let basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
       if (!basePath.endsWith('/')) basePath += '/';
-      const redirectPath = window.location.origin + '/home';
+      const redirectPath = window.location.origin + basePath + 'propnri-saas-site.html';
       
       const { error } = await supabaseClient.auth.signInWithOAuth({ 
         provider: 'google',

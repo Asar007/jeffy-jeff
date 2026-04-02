@@ -271,7 +271,7 @@
 (function(){
   'use strict';
   var session = JSON.parse(localStorage.getItem('nri_session')||'null');
-  if(!session){window.location.href='/login';return}
+  if(!session){window.location.href='login.html';return}
   document.getElementById('welcomeHeading').textContent='Welcome, '+session.name.split(' ')[0]+'!';
 
   // State
@@ -677,7 +677,7 @@
       document.querySelectorAll('.progress-line').forEach(function(l){l.classList.add('done')});
       document.getElementById('successMsg').textContent='Thank you, '+session.name.split(' ')[0]+'! Your subscription is now active. Our team will reach out within 24 hours.';
       document.getElementById('successTxn').textContent='Transaction ID: '+txnId;
-      setTimeout(function(){window.location.href='/home';},4000);
+      setTimeout(function(){window.location.href='propnri-saas-site.html'},4000);
     },2000);
   };
 

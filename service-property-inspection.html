@@ -145,7 +145,7 @@
   <p>Get regular, detailed inspections with photo and video reports delivered straight to your dashboard.</p>
   <div class="cta-btns">
     <a href="#" class="btn-hero" onclick="handlePlanClick(event,'platinum')">Get Started Today</a>
-    <a href="/home#pricing" class="btn-ghost">View All Plans &rarr;</a>
+    <a href="propnri-saas-site.html#pricing" class="btn-ghost">View All Plans →</a>
   </div>
 </section>
 
@@ -173,9 +173,9 @@
     e.preventDefault();
     var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
     if (session) {
-      window.location.href = '/onboarding?plan=' + plan;
+      window.location.href = 'onboarding.html?plan=' + plan;
     } else {
-      window.location.href = '/signup?plan=' + plan;
+      window.location.href = 'signup.html?plan=' + plan;
     }
   }
 
