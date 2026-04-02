@@ -179,6 +179,7 @@
       email: email.value.trim(),
       password: passwordInput.value,
       options: {
+        emailRedirectTo: window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'auth-callback.html',
         data: {
           full_name: name.value.trim(),
           phone: formattedPhone,
