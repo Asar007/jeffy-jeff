@@ -40,14 +40,59 @@
     navEl.innerHTML = navHTML;
   }
 
-  // Session-aware nav update
-  var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
-  if (session) {
+  // ── Helper: render the logged-in nav state ────────────────────────────────
+  function renderLoggedIn(name) {
     var navActions = document.getElementById('navActions');
     if (navActions) {
       navActions.innerHTML =
-        '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;margin-right:12px;">Hi, ' + session.name.split(' ')[0] + '</span>' +
+        '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;margin-right:12px;">Hi, ' + name.split(' ')[0] + '</span>' +
         '<a href="account.html" class="btn-outline" style="border-color: rgba(255,255,255,0.4); color: white;">My Account</a>';
     }
+  }
+
+  // ── 1. Immediate render from localStorage (avoids flash on normal page loads) ──
+  var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
+  if (session && session.name) {
+    renderLoggedIn(session.name);
+  }
+
+  // ── 2. Subscribe to Supabase auth state (handles Google OAuth redirect) ────
+  // supabase-client.js is loaded AFTER nav.js, so we wait for it to be ready.
+  function subscribeToAuth() {
+    if (window.supabaseClient && window.supabaseClient.auth) {
+      window.supabaseClient.auth.getSession().then(function(result) {
+        var s = result.data && result.data.session;
+        if (s && s.user) {
+          var meta = s.user.user_metadata || {};
+          var name = meta.full_name || s.user.email || 'User';
+          renderLoggedIn(name);
+        }
+      });
+
+      window.supabaseClient.auth.onAuthStateChange(function(event, s) {
+        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && s && s.user) {
+          var meta = s.user.user_metadata || {};
+          var name = meta.full_name || s.user.email || 'User';
+          renderLoggedIn(name);
+        } else if (event === 'SIGNED_OUT') {
+          var navActions = document.getElementById('navActions');
+          if (navActions) {
+            navActions.innerHTML =
+              '<a href="login.html" class="btn-outline">Log in</a>' +
+              '<a href="signup.html" class="btn-primary">Get Started</a>';
+          }
+        }
+      });
+    } else {
+      // Supabase hasn't loaded yet — retry in 50 ms
+      setTimeout(subscribeToAuth, 50);
+    }
+  }
+
+  // Start polling once the DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', subscribeToAuth);
+  } else {
+    subscribeToAuth();
   }
 })();
