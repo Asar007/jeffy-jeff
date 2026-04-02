@@ -145,7 +145,7 @@
   <p>Focus on your life abroad while we ensure every bill is paid and every service stays connected.</p>
   <div class="cta-btns">
     <a href="#" class="btn-hero" onclick="handlePlanClick(event,'platinum')">Get Started Today</a>
-    <a href="propnri-saas-site.html#pricing" class="btn-ghost">View All Plans →</a>
+    <a href="/home#pricing" class="btn-ghost">View All Plans &rarr;</a>
   </div>
 </section>
 
@@ -173,9 +173,9 @@
     e.preventDefault();
     var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
     if (session) {
-      window.location.href = 'onboarding.html?plan=' + plan;
+      window.location.href = '/onboarding?plan=' + plan;
     } else {
-      window.location.href = 'signup.html?plan=' + plan;
+      window.location.href = '/signup?plan=' + plan;
     }
   }
 

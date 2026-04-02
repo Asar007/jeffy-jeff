@@ -94,7 +94,7 @@
       Continue with Google
     </button>
 
-    <div class="auth-footer">Already have an account? <a href="login.html">Sign in</a></div>
+    <div class="auth-footer">Already have an account? <a href="/login">Sign in</a></div>
 
   </div>
 </main>
@@ -179,7 +179,7 @@
       email: email.value.trim(),
       password: passwordInput.value,
       options: {
-        emailRedirectTo: window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'auth-callback.html',
+        emailRedirectTo: window.location.origin + '/auth',
         data: {
           full_name: name.value.trim(),
           phone: formattedPhone,
@@ -209,7 +209,7 @@
       '</div>';
 
     setTimeout(function() {
-      window.location.href = loginUrl;
+      window.location.href = '/login';
     }, 2500);
   });
 

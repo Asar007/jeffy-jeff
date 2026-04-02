@@ -68,9 +68,9 @@
     title.textContent = 'Email Verified!';
     msg.textContent   = 'Your account has been confirmed' + (name ? ', ' + name.split(' ')[0] : '') + '. Redirecting you now…';
     card.insertAdjacentHTML('beforeend',
-      '<a href="propnri-saas-site.html" class="btn-go" id="goBtn">Go to Dashboard</a>');
+      '<a href="/home" class="btn-go" id="goBtn">Go to Dashboard</a>');
     setTimeout(function () {
-      window.location.href = 'propnri-saas-site.html';
+      window.location.href = '/home';
     }, 2500);
   }
 
@@ -80,7 +80,7 @@
     title.textContent = 'Verification Failed';
     msg.textContent   = detail || 'This link may have expired. Please request a new verification email.';
     card.insertAdjacentHTML('beforeend',
-      '<a href="login.html" class="btn-go" id="goBtn">Back to Login</a>');
+      '<a href="/login" class="btn-go" id="goBtn">Back to Login</a>');
   }
 
   // ── Parse URL parameters ──────────────────────────────────────────────────

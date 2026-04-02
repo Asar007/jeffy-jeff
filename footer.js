@@ -11,11 +11,11 @@
         '<div class="footer-col">' +
           '<h4>Services</h4>' +
           '<ul>' +
-            '<li><a href="home-management.html">Home Management</a></li>' +
-            '<li><a href="vehicle-management.html">Vehicle Management</a></li>' +
-            '<li><a href="parental-care.html">Parental Care</a></li>' +
-            '<li><a href="legal-documentation.html">Legal & Documentation</a></li>' +
-            '<li><a href="services.html">View All Services</a></li>' +
+            '<li><a href="/home-management">Home Management</a></li>' +
+            '<li><a href="/vehicle-management">Vehicle Management</a></li>' +
+            '<li><a href="/parental-care">Parental Care</a></li>' +
+            '<li><a href="/legal-documentation">Legal & Documentation</a></li>' +
+            '<li><a href="/services">View All Services</a></li>' +
           '</ul>' +
         '</div>' +
         '<div class="footer-col">' +
