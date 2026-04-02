@@ -35,16 +35,16 @@
   <div class="coverage-grid">
     <div class="coverage-card not-included"><div class="plan-name">Starter</div><div class="plan-price">&#8377;4,999/mo</div><div class="plan-status">Not in this plan</div><a href="#" onclick="handlePlanClick(event,'starter')">View Plan</a></div>
     <div class="coverage-card included"><div class="plan-name">Standard</div><div class="plan-price">&#8377;8,999/mo</div><div class="plan-status">&#10003; Full Access</div><a href="#" onclick="handlePlanClick(event,'standard')">Get Started</a></div>
-    <div class="coverage-card included"><div class="plan-name">Premium</div><div class="plan-price">&#8377;14,999/mo</div><div class="plan-status">&#10003; Priority Access</div><a href="#" onclick="handlePlanClick(event,'premium')">Get Started</a></div>
+    <div class="coverage-card included"><div class="plan-name">Premium</div><div class="plan-price">&#14,999/mo</div><div class="plan-status">&#10003; Priority Access</div><a href="#" onclick="handlePlanClick(event,'premium')">Get Started</a></div>
   </div>
 </section>
 
-<section class="cta-section section-pad"><h2>Your parents, never alone at the doctor</h2><p>Professional accompaniment, real-time updates, and complete coordination — because healthcare shouldn't be navigated alone.</p><div class="cta-btns"><a href="#" class="btn-hero" onclick="handlePlanClick(event,'standard')">Get Started Today</a><a href="propnri-saas-site.html#pricing" class="btn-ghost">View All Plans &rarr;</a></div></section>
+<section class="cta-section section-pad"><h2>Your parents, never alone at the doctor</h2><p>Professional accompaniment, real-time updates, and complete coordination — because healthcare shouldn't be navigated alone.</p><div class="cta-btns"><a href="#" class="btn-hero" onclick="handlePlanClick(event,'standard')">Get Started Today</a><a href="/home#pricing" class="btn-ghost">View All Plans &rarr;</a></div></section>
 
 <footer></footer><script src="footer.js"></script>
 <script>
   const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.style.animation = 'fadeUp 0.7s ease both'; entry.target.style.animationDelay = entry.target.dataset.delay || '0s'; observer.unobserve(entry.target); } }); }, { threshold: 0.12 });
   document.querySelectorAll('.detail-card, .value-card, .coverage-card').forEach((el, i) => { el.style.opacity = '0'; el.dataset.delay = `${(i % 6) * 0.1}s`; observer.observe(el); });
-  function handlePlanClick(e, plan) { e.preventDefault(); var s = JSON.parse(localStorage.getItem('nri_session') || 'null'); window.location.href = s ? 'onboarding.html?plan=' + plan + '&category=parental' : 'signup.html?plan=' + plan + '&category=parental'; }
+  function handlePlanClick(e, plan) { e.preventDefault(); var s = JSON.parse(localStorage.getItem('nri_session') || 'null'); window.location.href = s ? '/onboarding?plan=' + plan + '&category=parental' : '/signup?plan=' + plan + '&category=parental'; }
 </script>
 </body></html>

@@ -40,12 +40,12 @@
   </div>
 </section>
 
-<section class="cta-section section-pad"><h2>Stay compliant without the hassle</h2><p>Let us handle all certificates and compliance while you focus on your life abroad.</p><div class="cta-btns"><a href="#" class="btn-hero" onclick="handlePlanClick(event,'standard')">Get Started Today</a><a href="propnri-saas-site.html#pricing" class="btn-ghost">View All Plans &rarr;</a></div></section>
+<section class="cta-section section-pad"><h2>Stay compliant without the hassle</h2><p>Let us handle all certificates and compliance while you focus on your life abroad.</p><div class="cta-btns"><a href="#" class="btn-hero" onclick="handlePlanClick(event,'standard')">Get Started Today</a><a href="/home#pricing" class="btn-ghost">View All Plans &rarr;</a></div></section>
 
 <footer></footer><script src="footer.js"></script>
 <script>
   const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.style.animation = 'fadeUp 0.7s ease both'; entry.target.style.animationDelay = entry.target.dataset.delay || '0s'; observer.unobserve(entry.target); } }); }, { threshold: 0.12 });
   document.querySelectorAll('.detail-card, .value-card, .coverage-card').forEach((el, i) => { el.style.opacity = '0'; el.dataset.delay = `${(i % 6) * 0.1}s`; observer.observe(el); });
-  function handlePlanClick(e, plan) { e.preventDefault(); var s = JSON.parse(localStorage.getItem('nri_session') || 'null'); window.location.href = s ? 'onboarding.html?plan=' + plan + '&category=vehicle' : 'signup.html?plan=' + plan + '&category=vehicle'; }
+  function handlePlanClick(e, plan) { e.preventDefault(); var s = JSON.parse(localStorage.getItem('nri_session') || 'null'); window.location.href = s ? '/onboarding?plan=' + plan + '&category=vehicle' : '/signup?plan=' + plan + '&category=vehicle'; }
 </script>
 </body></html>

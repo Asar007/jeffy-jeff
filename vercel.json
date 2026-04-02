@@ -1,0 +1,10 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/",     "destination": "/propnri-saas-site.html" },
+    { "source": "/home", "destination": "/propnri-saas-site.html" },
+    { "source": "/auth", "destination": "/auth-callback.html" },
+    { "source": "/quote","destination": "/quote-builder.html"    }
+  ]
+}

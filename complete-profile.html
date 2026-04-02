@@ -140,7 +140,7 @@
     // Preserve plan param if present
     var urlParams = new URLSearchParams(window.location.search);
     var planParam = urlParams.get('plan');
-    var redirectUrl = 'propnri-saas-site.html' + (planParam ? '?plan=' + planParam : '');
+    var redirectUrl = '/home' + (planParam ? '?plan=' + planParam : '');
 
     setTimeout(function() {
       window.location.href = redirectUrl;

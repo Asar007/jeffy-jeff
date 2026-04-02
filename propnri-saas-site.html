@@ -70,7 +70,7 @@
   <h1>We bridge the <em>distance</em>,<br>you feel the <strong>difference</strong></h1>
   <p>At NRI Bridge India, we manage your properties, vehicles, legal documents, parental care, investments, and trip planning — everything your Indian life needs, all in one place. Wherever you are in the world, we keep your India running seamless.</p>
   <div class="hero-ctas">
-    <a href="signup.html" class="btn-hero">Get Started — Create Account</a>
+    <a href="/signup" class="btn-hero">Get Started — Create Account</a>
     <a href="#how" class="btn-ghost">See How It Works →</a>
   </div>
 </section>
@@ -377,7 +377,7 @@
   <h2>Your life in India deserves<br>better management</h2>
   <p>Join thousands of NRIs who manage their Indian properties, vehicles, family care, and legal needs stress-free from anywhere in the world.</p>
   <div class="cta-btns">
-    <a href="signup.html" class="btn-hero">Get Started — Create Account</a>
+    <a href="/signup" class="btn-hero">Get Started — Create Account</a>
     <a href="#pricing" class="btn-ghost">View Plans & Pricing →</a>
   </div>
 </section>
@@ -520,9 +520,9 @@
     e.preventDefault();
     var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
     if (session) {
-      window.location.href = 'onboarding.html?plan=' + plan + '&category=' + currentCategory;
+      window.location.href = '/onboarding?plan=' + plan + '&category=' + currentCategory;
     } else {
-      window.location.href = 'signup.html?plan=' + plan + '&category=' + currentCategory;
+      window.location.href = '/signup?plan=' + plan + '&category=' + currentCategory;
     }
   }
 
