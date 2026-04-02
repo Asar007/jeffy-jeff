@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verifying your account… — NRI Bridge India</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg-dark, #0d1117); }
+    .callback-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 60px 48px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .spinner {
+      width: 56px; height: 56px;
+      border: 4px solid rgba(255,255,255,0.15);
+      border-top-color: #4a9d5f;
+      border-radius: 50%;
+      margin: 0 auto 28px;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-icon { font-size: 3rem; margin-bottom: 20px; }
+    h1 { color: #fff; font-size: 1.4rem; margin: 0 0 12px; font-weight: 600; }
+    p  { color: rgba(255,255,255,0.65); font-size: 0.92rem; line-height: 1.6; margin: 0; }
+    .btn-go {
+      display: inline-block;
+      margin-top: 28px;
+      padding: 12px 32px;
+      background: #4a9d5f;
+      color: #fff;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+    .btn-go:hover { background: #3c8a50; }
+  </style>
+</head>
+<body>
+
+<div class="callback-card" id="callbackCard">
+  <div class="spinner" id="spinner"></div>
+  <h1 id="title">Verifying your email…</h1>
+  <p id="message">Please wait while we confirm your account.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+(async function () {
+  const card    = document.getElementById('callbackCard');
+  const spinner = document.getElementById('spinner');
+  const title   = document.getElementById('title');
+  const msg     = document.getElementById('message');
+
+  function showSuccess(name) {
+    spinner.style.display = 'none';
+    card.insertAdjacentHTML('afterbegin', '<div class="status-icon">✅</div>');
+    title.textContent = 'Email Verified!';
+    msg.textContent   = 'Your account has been confirmed' + (name ? ', ' + name.split(' ')[0] : '') + '. Redirecting you now…';
+    card.insertAdjacentHTML('beforeend',
+      '<a href="propnri-saas-site.html" class="btn-go" id="goBtn">Go to Dashboard</a>');
+    setTimeout(function () {
+      window.location.href = 'propnri-saas-site.html';
+    }, 2500);
+  }
+
+  function showError(detail) {
+    spinner.style.display = 'none';
+    card.insertAdjacentHTML('afterbegin', '<div class="status-icon">❌</div>');
+    title.textContent = 'Verification Failed';
+    msg.textContent   = detail || 'This link may have expired. Please request a new verification email.';
+    card.insertAdjacentHTML('beforeend',
+      '<a href="login.html" class="btn-go" id="goBtn">Back to Login</a>');
+  }
+
+  // ── Parse URL parameters ──────────────────────────────────────────────────
+  // Supabase v2 sends email verification as a PKCE flow with query params:
+  //   ?token_hash=...&type=signup   OR   ?token_hash=...&type=email
+  // It can also be a legacy link with #access_token in the fragment.
+  const params   = new URLSearchParams(window.location.search);
+  const hash     = new URLSearchParams(window.location.hash.slice(1)); // strip leading #
+
+  const tokenHash    = params.get('token_hash');
+  const type         = params.get('type') || 'signup';
+  const accessToken  = hash.get('access_token');
+  const refreshToken = hash.get('refresh_token');
+
+  try {
+    if (tokenHash) {
+      // ── PKCE / OTP flow (modern Supabase) ─────────────────────────────
+      const { data, error } = await window.supabaseClient.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: type
+      });
+      if (error) { showError(error.message); return; }
+      const name = data?.user?.user_metadata?.full_name || '';
+      showSuccess(name);
+
+    } else if (accessToken) {
+      // ── Legacy fragment-based flow ─────────────────────────────────────
+      const { data, error } = await window.supabaseClient.auth.setSession({
+        access_token:  accessToken,
+        refresh_token: refreshToken || ''
+      });
+      if (error) { showError(error.message); return; }
+      const name = data?.user?.user_metadata?.full_name || '';
+      showSuccess(name);
+
+    } else {
+      // No token found — maybe user landed here directly
+      showError('No verification token found in this link. Please use the link from your email.');
+    }
+  } catch (err) {
+    showError(err.message || 'An unexpected error occurred.');
+  }
+})();
+</script>
+
+</body>
+</html>
