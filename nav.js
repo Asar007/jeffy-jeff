@@ -40,14 +40,6 @@
     navEl.innerHTML = navHTML;
   }
 
-  // ── Helper: update landing page CTAs based on login state ────────────────
-  function updateLandingPageCTAs(isLoggedIn) {
-    var heroBtn = document.getElementById('hero-signup-btn');
-    var footerBtn = document.getElementById('footer-signup-btn');
-    if (heroBtn) heroBtn.style.display = isLoggedIn ? 'none' : 'inline-block';
-    if (footerBtn) footerBtn.style.display = isLoggedIn ? 'none' : 'inline-block';
-  }
-
   // ── Helper: render the logged-in nav state ────────────────────────────────
   function renderLoggedIn(name) {
     var navActions = document.getElementById('navActions');
@@ -56,12 +48,11 @@
         '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;margin-right:12px;">Hi, ' + name.split(' ')[0] + '</span>' +
         '<a href="account.html" class="btn-outline" style="border-color: rgba(255,255,255,0.4); color: white;">My Account</a>';
     }
-    // Update landing page CTAs if they exist
-    updateLandingPageCTAs(true);
-    // Also re-run on DOMContentLoaded to catch them if nav.js loaded too early
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function() { updateLandingPageCTAs(true); });
-    }
+    // Hide signup CTAs on landing page if logged in
+    var heroBtn = document.getElementById('hero-signup-btn');
+    var footerBtn = document.getElementById('footer-signup-btn');
+    if (heroBtn) heroBtn.style.display = 'none';
+    if (footerBtn) footerBtn.style.display = 'none';
   }
 
   // ── 1. Immediate render from localStorage (avoids flash on normal page loads) ──
@@ -71,8 +62,18 @@
   }
 
   // ── 2. Subscribe to Supabase auth state (handles Google OAuth redirect) ────
+  // supabase-client.js is loaded AFTER nav.js, so we wait for it to be ready.
   function subscribeToAuth() {
     if (window.supabaseClient && window.supabaseClient.auth) {
+      window.supabaseClient.auth.getSession().then(function(result) {
+        var s = result.data && result.data.session;
+        if (s && s.user) {
+          var meta = s.user.user_metadata || {};
+          var name = meta.full_name || s.user.email || 'User';
+          renderLoggedIn(name);
+        }
+      });
+
       window.supabaseClient.auth.onAuthStateChange(function(event, s) {
         if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && s && s.user) {
           var meta = s.user.user_metadata || {};
@@ -85,14 +86,20 @@
               '<a href="login.html" class="btn-outline">Sign In</a>' +
               '<a href="signup.html" class="btn-primary">Get Started</a>';
           }
-          updateLandingPageCTAs(false);
+          // Show signup CTAs on landing page if logged out
+          var heroBtn = document.getElementById('hero-signup-btn');
+          var footerBtn = document.getElementById('footer-signup-btn');
+          if (heroBtn) heroBtn.style.display = 'inline-block';
+          if (footerBtn) footerBtn.style.display = 'inline-block';
         }
       });
     } else {
+      // Supabase hasn't loaded yet — retry in 50 ms
       setTimeout(subscribeToAuth, 50);
     }
   }
 
+  // Start polling once the DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', subscribeToAuth);
   } else {
