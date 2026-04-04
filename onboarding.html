@@ -694,8 +694,20 @@
         u.serviceBilling = Object.assign({}, u.serviceBilling||{}, serviceBilling);
         
         u.paymentDate=new Date().toISOString();
-        localStorage.setItem('nri_users',JSON.stringify(users));
+      } else {
+        // User doesn't exist yet — create a new entry
+        users.push({
+          email: session.email,
+          country: session.country || '',
+          createdAt: session.createdAt || new Date().toISOString(),
+          services: selectedServices.slice(),
+          serviceDetails: JSON.parse(JSON.stringify(serviceDetails)),
+          servicePlans: Object.assign({}, servicePlans),
+          serviceBilling: Object.assign({}, serviceBilling),
+          paymentDate: new Date().toISOString()
+        });
       }
+      localStorage.setItem('nri_users',JSON.stringify(users));
       session.onboarded=true;
       localStorage.setItem('nri_session',JSON.stringify(session));
       localStorage.removeItem('nri_order');
