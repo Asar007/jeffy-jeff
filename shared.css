@@ -2035,6 +2035,9 @@ footer {
   .dash-welcome-right { text-align: center; }
   .dash-svc-desc { margin-left: 0; }
   .dash-progress { margin-left: 0; }
+  .dash-svc-action { margin-left: 0; }
+  .dash-svc-docs-toggle { margin-left: 0; }
+  .dash-svc-docs-list { margin-left: 0; }
   .dash-quick-actions { flex-direction: column; }
 }
 @media (max-width: 600px) {
