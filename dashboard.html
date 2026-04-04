@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dashboard — NRI Bridge India</title>
+<meta name="description" content="Track your active services, payments, documents, and subscription — all from one clean dashboard.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body class="dash-page">
+
+<nav></nav>
+<script src="nav.js"></script>
+
+<!-- MAIN DASHBOARD -->
+<main class="dash-container">
+  <div class="dash-grid">
+
+    <!-- WELCOME BANNER (full-width) -->
+    <div class="dash-welcome" id="welcomeBanner">
+      <div class="dash-welcome-left">
+        <div class="dash-welcome-wave">
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--green-pop)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="dash-welcome-text">
+          <div class="greeting">Welcome back</div>
+          <h1 id="welcomeName">User</h1>
+          <div class="member-meta" id="memberMeta">Member since —</div>
+          <div class="dash-pending-summary" id="pendingSummary" style="margin-top:8px;font-size:0.78rem;color:#e8a83a;font-weight:600;display:none;"></div>
+        </div>
+      </div>
+      <div class="dash-welcome-right">
+        <div class="plan-label">Current Plan</div>
+        <div class="plan-name" id="planDisplay">Standard Care</div>
+        <div class="plan-renew" id="planRenew">Renews: —</div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS BAR -->
+    <div class="dash-quick-actions" id="quickActions">
+      <a href="quote-builder.html" class="dash-quick-btn">
+        <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+        Request Additional Service
+      </a>
+      <a href="contact.html" class="dash-quick-btn">
+        <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        Contact Support
+      </a>
+      <a href="onboarding.html" class="dash-quick-btn">
+        <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        Manage Services
+      </a>
+    </div>
+
+    <!-- LEFT: MAIN CONTENT -->
+    <div class="dash-main">
+
+      <!-- My Services — Live Status -->
+      <div class="dash-section-header">
+        <h2>My Services <span class="dash-em">— Live Status</span></h2>
+      </div>
+      <div class="dash-services-list" id="servicesList">
+        <!-- JS renders service cards here -->
+      </div>
+
+      <!-- Payment History -->
+      <div class="dash-payments">
+        <div class="dash-section-header">
+          <h2>Payment History</h2>
+        </div>
+        <div class="dash-payments-list" id="paymentsList">
+          <!-- JS renders payment rows here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: SIDEBAR -->
+    <aside class="dash-sidebar">
+
+      <!-- Subscription -->
+      <div class="dash-sub-card" id="subCard">
+        <div class="dash-sub-header">
+          <h3>Subscription</h3>
+        </div>
+        <div id="subContent">
+          <!-- JS renders subscription details -->
+        </div>
+      </div>
+
+      <!-- My Documents -->
+      <div class="dash-docs-card">
+        <div class="dash-section-header" style="margin-bottom:14px;">
+          <h2 style="font-size:1.05rem;">My Documents</h2>
+        </div>
+        <div class="dash-docs-list" id="docsList">
+          <!-- JS renders docs here -->
+        </div>
+      </div>
+
+      <!-- Request Additional Service -->
+      <div class="dash-request-card">
+        <h3>Request Additional Service</h3>
+        <p>Need something specific? Tell us what you need and we'll handle it.</p>
+        <a href="quote-builder.html" class="btn-hero">Submit Request →</a>
+      </div>
+
+    </aside>
+
+  </div>
+</main>
+
+<footer></footer>
+<script src="footer.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="invoice-generator.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── Auth Check ──
+  var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
+  if (!session) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // ── User Data ──
+  var users = JSON.parse(localStorage.getItem('nri_users') || '[]');
+  var user = users.find(function(u) { return u.email === session.email; }) || {};
+  var fullName = session.name || session.email;
+  var firstName = fullName.split(' ')[0];
+  var country = session.country || user.country || 'India';
+  var joinDate = user.createdAt || session.createdAt || new Date().toISOString();
+  var joinFormatted = new Date(joinDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+  // Active services from onboarding
+  var activeServices = user.services || [];
+  var serviceDetails = user.serviceDetails || { home: { properties: [] }, vehicle: { vehicles: [] }, parental: { members: [] }, legal: { cases: [] } };
+  var servicePlans = user.servicePlans || {};
+  var serviceBilling = user.serviceBilling || {};
+
+  var SVC_NAMES = {
+    home: 'Home Management',
+    vehicle: 'Vehicle Management',
+    parental: 'Parental Care',
+    legal: 'Legal & Documentation'
+  };
+  var SVC_CATS = { home: 'cat-home', vehicle: 'cat-vehicle', parental: 'cat-parental', legal: 'cat-legal' };
+
+  // SVG icons for service categories
+  var SVC_SVG = {
+    home: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+    vehicle: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 5h3v6h-2"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    parental: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+    legal: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>'
+  };
+
+  var PLAN_PRICES = {
+    home: { starter: 4999, standard: 9999, premium: '10% of rent' },
+    vehicle: { starter: 1499, standard: 2999, premium: 5499 },
+    parental: { starter: 4999, standard: 8999, premium: 14999 },
+    legal: { starter: 2999, standard: 5999, premium: 9999 }
+  };
+
+  function getPlanName(svc, tier) {
+    if (svc === 'vehicle') {
+      return { starter: 'Guardian', standard: 'Command', premium: 'Concierge' }[tier] || tier;
+    }
+    return { starter: 'Starter', standard: 'Standard', premium: 'Premium' }[tier] || tier;
+  }
+
+  // ── SERVICE DATA PIPELINE ──
+  // Real document/legal requirements per service type (from research)
+  var SERVICE_WORKFLOWS = {
+    home: {
+      steps: ['Property Verified', 'Tenant Acquired', 'Lease Signed', 'Rent Collecting'],
+      requiredDocs: ['Sale Deed / Title Deed', 'Encumbrance Certificate (EC)', 'Power of Attorney (PoA)', 'Property Tax Receipts', 'Lease/Rental Agreement'],
+      demoStatus: 'in-progress', demoStep: 2, demoProgress: 60, demoEta: 'Est. Apr 15',
+      demoDesc: 'Property verification complete. Encumbrance certificate received from sub-registrar. Tenant screening in progress.'
+    },
+    vehicle: {
+      steps: ['Docs Verified', 'Quotes Collected', 'Your Approval', 'Policy Issued'],
+      requiredDocs: ['Registration Certificate (RC)', 'Previous Insurance Policy', 'PUC Certificate', 'PAN Card', 'Address Proof'],
+      demoStatus: 'pending', demoStep: 2, demoProgress: 45, demoEta: 'Awaiting input',
+      demoDesc: 'Insurance quotes collected from 3 providers. Awaiting your approval to proceed.'
+    },
+    parental: {
+      steps: ['Profile Created', 'Doctor Assigned', 'Check-up Done', 'Report Sent'],
+      requiredDocs: ['Aadhaar Card', 'Health Insurance Policy', 'Medications List', 'Previous Medical Records', 'Emergency Contacts'],
+      demoStatus: 'in-progress', demoStep: 1, demoProgress: 35, demoEta: 'Apr 8',
+      demoDesc: 'Doctor home visit scheduled for this week. Previous vitals report shared via WhatsApp.'
+    },
+    legal: {
+      steps: ['Docs Collected', 'Computed', 'Filed / Submitted', 'Verified'],
+      requiredDocs: ['PAN Card', 'Passport', 'NRE/NRO Bank Statements', 'Form 16/16A (TDS Certificates)', 'Form 26AS & AIS', 'Investment Statements'],
+      demoStatus: 'completed', demoStep: 4, demoProgress: 100, demoEta: 'Filed Mar 28',
+      demoDesc: 'ITR-2 filed and verified. Acknowledgement and computation sheet are ready to download.'
+    }
+  };
+
+  // ── Populate User Info ──
+  document.getElementById('welcomeName').textContent = fullName;
+  document.getElementById('memberMeta').textContent =
+    'Member since ' + joinFormatted + ' · ' + country;
+
+  // Determine primary plan name for welcome banner
+  var planTierDisplay = 'Standard Care';
+  if (activeServices.length > 0) {
+    var firstKey = Object.keys(servicePlans)[0] || '';
+    var firstTier = servicePlans[firstKey] || 'standard';
+    var tierLabel = getPlanName(activeServices[0], firstTier);
+    planTierDisplay = tierLabel + ' Care';
+  }
+  document.getElementById('planDisplay').textContent = planTierDisplay;
+
+  // Renewal — 3 months from payment or today
+  var payDate = user.paymentDate ? new Date(user.paymentDate) : new Date();
+  var renewDate = new Date(payDate);
+  renewDate.setMonth(renewDate.getMonth() + 3);
+  document.getElementById('planRenew').textContent =
+    'Renews: ' + renewDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  // ── Build service entries from real data pipeline ──
+  var serviceEntries = [];
+  var pendingCount = 0;
+
+  function getItems(svc) {
+    if (svc === 'home') return serviceDetails.home ? serviceDetails.home.properties || [] : [];
+    if (svc === 'vehicle') return serviceDetails.vehicle ? serviceDetails.vehicle.vehicles || [] : [];
+    if (svc === 'parental') return serviceDetails.parental ? serviceDetails.parental.members || [] : [];
+    if (svc === 'legal') return serviceDetails.legal ? serviceDetails.legal.cases || [] : [];
+    return [];
+  }
+
+  function getItemLabel(svc, item) {
+    if (svc === 'home') return (item.type || 'Property') + ' in ' + (item.city || '—');
+    if (svc === 'vehicle') return (item.model || item.type || 'Vehicle') + ' (' + (item.reg || '—') + ')';
+    if (svc === 'parental') return item.name || 'Family Member';
+    if (svc === 'legal') return (item.type || 'Case') + ' in ' + (item.city || '—');
+    return 'Item';
+  }
+
+  activeServices.forEach(function(svc) {
+    var workflow = SERVICE_WORKFLOWS[svc];
+    if (!workflow) return;
+    var items = getItems(svc);
+    if (items.length === 0) {
+      // If no items (shouldn't happen after onboarding), show one generic entry
+      serviceEntries.push({
+        category: svc,
+        name: SVC_NAMES[svc],
+        status: workflow.demoStatus,
+        description: workflow.demoDesc,
+        progress: workflow.demoProgress,
+        steps: workflow.steps,
+        currentStep: workflow.demoStep,
+        eta: workflow.demoEta,
+        requiredDocs: workflow.requiredDocs
+      });
+      if (workflow.demoStatus === 'pending') pendingCount++;
+    } else {
+      // Generate entry for each actual item — use realistic demo statuses
+      items.forEach(function(item, idx) {
+        var step = Math.min(workflow.demoStep + (idx % 2), workflow.steps.length);
+        var prog = Math.round((step / workflow.steps.length) * 100);
+        var status = prog >= 100 ? 'completed' : (step <= 1 ? 'pending' : 'in-progress');
+        if (status === 'pending') pendingCount++;
+        serviceEntries.push({
+          category: svc,
+          name: SVC_NAMES[svc] + ' — ' + getItemLabel(svc, item),
+          status: status,
+          description: workflow.demoDesc,
+          progress: prog,
+          steps: workflow.steps,
+          currentStep: step,
+          eta: status === 'completed' ? 'Complete' : workflow.demoEta,
+          requiredDocs: workflow.requiredDocs
+        });
+      });
+    }
+  });
+
+  // Fallback for users with no services
+  if (serviceEntries.length === 0) {
+    serviceEntries = [
+      {
+        category: 'home', name: 'Property Legal Verification',
+        status: 'in-progress',
+        description: 'Title deed review underway. Encumbrance certificate received from sub-registrar. Awaiting lawyer sign-off.',
+        progress: 72, steps: ['Docs Received', 'EC Fetched', 'Legal Review', 'Final Report'],
+        currentStep: 2, eta: 'Est. Apr 10',
+        requiredDocs: ['Sale Deed', 'Title Deed', 'Encumbrance Certificate', 'Property Tax Receipts']
+      },
+      {
+        category: 'legal', name: 'Tax Filing (AY 2025-26)',
+        status: 'completed',
+        description: 'ITR-2 filed and verified. Acknowledgement and computation sheet are ready to download.',
+        progress: 100, steps: ['Docs Collected', 'Computed', 'Filed', 'Verified'],
+        currentStep: 4, eta: 'Filed Mar 28',
+        requiredDocs: ['PAN Card', 'Passport', 'NRE/NRO Statements', 'Form 16/16A']
+      }
+    ];
+  }
+
+  // Show pending summary
+  if (pendingCount > 0) {
+    var sumEl = document.getElementById('pendingSummary');
+    sumEl.style.display = 'block';
+    sumEl.textContent = pendingCount + ' service' + (pendingCount > 1 ? 's' : '') + ' awaiting your input';
+  }
+
+  // ── Render Service Cards ──
+  var checkSvg = '<svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>';
+  var dotSvg = '<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="3" fill="currentColor"/></svg>';
+  var svcsHtml = '';
+
+  serviceEntries.forEach(function(svc, idx) {
+    var statusClass = 'status-' + svc.status.replace(' ', '-');
+    var statusText = svc.status === 'in-progress' ? 'In Progress' :
+                     svc.status === 'completed' ? 'Completed' : 'Pending';
+
+    var stepsHtml = '';
+    svc.steps.forEach(function(step, si) {
+      var dotClass = '';
+      var labelClass = '';
+      var dotContent = '';
+
+      if (si < svc.currentStep) {
+        dotClass = 'done'; labelClass = 'done'; dotContent = checkSvg;
+      } else if (si === svc.currentStep) {
+        dotClass = 'active'; labelClass = 'active'; dotContent = dotSvg;
+      }
+
+      stepsHtml += '<div class="dash-progress-step">' +
+        '<div class="dash-progress-dot ' + dotClass + '">' + dotContent + '</div>' +
+        '<div class="dash-progress-label ' + labelClass + '">' + step + '</div>' +
+        '</div>';
+
+      if (si < svc.steps.length - 1) {
+        var connClass = si < svc.currentStep ? 'done' : '';
+        stepsHtml += '<div class="dash-progress-connector ' + connClass + '"></div>';
+      }
+    });
+
+    svcsHtml +=
+      '<div class="dash-svc-card" style="animation:fadeUp 0.5s ease both;animation-delay:' + (idx * 0.1) + 's;opacity:0;">' +
+        '<div class="dash-svc-header">' +
+          '<div class="dash-svc-icon ' + SVC_CATS[svc.category] + '">' + (SVC_SVG[svc.category] || '') + '</div>' +
+          '<div>' +
+            '<div class="dash-svc-title-row">' +
+              '<h3>' + svc.name + '</h3>' +
+              '<span class="dash-status ' + statusClass + '">' + statusText + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<p class="dash-svc-desc">' + svc.description + '</p>' +
+        '<div class="dash-progress">' +
+          '<div class="dash-progress-steps">' + stepsHtml + '</div>' +
+          '<div class="dash-progress-track"><div class="dash-progress-fill" style="width:' + svc.progress + '%;"></div></div>' +
+          '<div class="dash-progress-meta">' +
+            '<span class="dash-progress-pct">' + svc.progress + '% complete</span>' +
+            '<span class="dash-progress-eta">' + svc.eta + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  });
+
+  document.getElementById('servicesList').innerHTML = svcsHtml;
+
+  // ── Render Payment History from real data ──
+  var totalMonthly = 0;
+  var allPlanKeys = Object.keys(servicePlans);
+  allPlanKeys.forEach(function(key) {
+    var svcType = key.split('-')[0];
+    var tier = servicePlans[key];
+    var price = PLAN_PRICES[svcType] ? PLAN_PRICES[svcType][tier] : 0;
+    if (typeof price === 'number') totalMonthly += price;
+  });
+  if (totalMonthly === 0) totalMonthly = 9999; // fallback
+
+  var invoiceData = JSON.parse(localStorage.getItem('nri_invoice') || 'null');
+
+  var payments = [];
+  // Add the actual onboarding payment if it exists
+  if (user.paymentDate) {
+    payments.push({
+      title: planTierDisplay + ' — Initial Payment',
+      date: new Date(user.paymentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+      ref: invoiceData ? invoiceData.txnId : 'NBI' + Date.now().toString().slice(-6),
+      amount: totalMonthly,
+      status: 'paid',
+      invoiceData: invoiceData
+    });
+  }
+
+  // Add upcoming renewal
+  payments.push({
+    title: planTierDisplay + ' — Next Quarter',
+    date: 'Due: ' + renewDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+    ref: '',
+    amount: totalMonthly,
+    status: 'due-soon',
+    invoiceData: null
+  });
+
+  var payHtml = '';
+  payments.forEach(function(pay, idx) {
+    var statusLabel = pay.status === 'paid' ? 'Paid' :
+                      pay.status === 'due-soon' ? 'Due Soon' : 'Upcoming';
+    var downloadBtn = '';
+    if (pay.status === 'paid') {
+      downloadBtn = '<button class="dash-pay-download" data-pay-idx="' + idx + '">' +
+        '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+        'Download Invoice</button>';
+    }
+
+    payHtml +=
+      '<div class="dash-pay-row">' +
+        '<div class="dash-pay-left">' +
+          '<div class="dash-pay-indicator ' + pay.status + '"></div>' +
+          '<div class="dash-pay-info">' +
+            '<h4>' + pay.title + '</h4>' +
+            '<span>' + pay.date + (pay.ref ? ' · Ref: ' + pay.ref : '') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="dash-pay-right">' +
+          '<div class="dash-pay-amount">₹' + pay.amount.toLocaleString('en-IN') + '</div>' +
+          '<div class="dash-pay-status ' + pay.status + '">' + statusLabel + '</div>' +
+          downloadBtn +
+        '</div>' +
+      '</div>';
+  });
+
+  document.getElementById('paymentsList').innerHTML = payHtml;
+
+  // Attach invoice download handlers
+  document.querySelectorAll('.dash-pay-download').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-pay-idx'));
+      var pay = payments[idx];
+      if (!pay) return;
+
+      // Use stored invoice data or generate on-the-fly
+      var invData = pay.invoiceData || {
+        invoiceNo: 'NBI-' + (new Date(pay.date.replace('Due: ', '')).getTime() || Date.now()).toString().slice(-8),
+        txnId: pay.ref || 'TXN' + Date.now().toString().slice(-6),
+        date: pay.date.replace('Due: ', ''),
+        planName: pay.title,
+        amount: pay.amount,
+        services: activeServices.map(function(s) { return SVC_NAMES[s]; }),
+        customerName: fullName,
+        customerEmail: session.email
+      };
+
+      if (window.downloadInvoice) {
+        window.downloadInvoice(invData, session);
+      }
+    });
+  });
+
+  // ── Render Subscription Sidebar (accurate per-item) ──
+  var subHtml = '';
+  subHtml += '<span class="dash-plan-badge">' + planTierDisplay + '</span>';
+  subHtml += '<div class="dash-sub-price" style="margin-top:14px;">₹' + totalMonthly.toLocaleString('en-IN') + '<span class="period">/mo (est.)</span></div>';
+  subHtml += '<div class="dash-sub-meta">';
+  subHtml += '<div class="dash-sub-meta-item"><div class="meta-label">Status</div><div class="meta-value active-status">Active</div></div>';
+  subHtml += '<div class="dash-sub-meta-item"><div class="meta-label">Member Since</div><div class="meta-value">' + joinFormatted + '</div></div>';
+  subHtml += '<div class="dash-sub-meta-item"><div class="meta-label">Next Renewal</div><div class="meta-value renewal-date">' + renewDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + '</div></div>';
+  subHtml += '<div class="dash-sub-meta-item"><div class="meta-label">Services</div><div class="meta-value">' + allPlanKeys.length + ' Active</div></div>';
+  subHtml += '</div>';
+
+  // Per-item subscription list
+  subHtml += '<div class="dash-sub-services"><h4>Subscriptions</h4>';
+  subHtml += '<div class="dash-sub-items">';
+
+  if (allPlanKeys.length > 0) {
+    allPlanKeys.forEach(function(key) {
+      var parts = key.split('-');
+      var svcType = parts[0];
+      var tier = servicePlans[key];
+      var billing = serviceBilling[key] || 'monthly';
+      var basePrice = PLAN_PRICES[svcType] ? PLAN_PRICES[svcType][tier] : 0;
+      var priceStr = '';
+
+      if (typeof basePrice === 'string') {
+        priceStr = basePrice;
+      } else {
+        if (billing === 'annual') {
+          priceStr = '₹' + Math.round(basePrice * 12 * 0.85).toLocaleString('en-IN') + '/yr';
+        } else {
+          priceStr = '₹' + basePrice.toLocaleString('en-IN') + '/mo';
+        }
+      }
+
+      // Get item label
+      var label = SVC_NAMES[svcType] || svcType;
+      if (svcType !== 'parental') {
+        var itemId = parseInt(parts[parts.length - 1]);
+        var items = getItems(svcType);
+        var item = items.find(function(i) { return i.id === itemId; });
+        if (item) label = getItemLabel(svcType, item);
+      } else {
+        label = 'Parental Care';
+      }
+
+      subHtml += '<div class="dash-sub-item">' +
+        '<div>' +
+          '<div class="dash-sub-item-name">' + label + '</div>' +
+          '<div class="dash-sub-item-detail">' + getPlanName(svcType, tier) + ' · ' + (billing === 'annual' ? 'Annual' : 'Monthly') + '</div>' +
+        '</div>' +
+        '<div>' +
+          '<div class="dash-sub-item-price">' + priceStr + '</div>' +
+        '</div>' +
+      '</div>';
+    });
+  } else {
+    subHtml += '<div style="font-size:0.82rem;color:var(--text-mid);padding:8px 0;">No active subscriptions. <a href="onboarding.html" style="color:var(--green-pop);font-weight:600;">Get started →</a></div>';
+  }
+
+  subHtml += '</div></div>';
+  document.getElementById('subContent').innerHTML = subHtml;
+
+  // ── Render Documents (based on active services) ──
+  var docIcon = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+  var docsHtml = '';
+  var docEntries = [];
+
+  // Generate document entries from active services
+  activeServices.forEach(function(svc) {
+    var workflow = SERVICE_WORKFLOWS[svc];
+    if (!workflow) return;
+    workflow.requiredDocs.forEach(function(docName) {
+      // For demo: first 2 docs are "Received", rest are "Pending"
+      var isReceived = docEntries.length < 3;
+      docEntries.push({
+        name: docName,
+        meta: SVC_NAMES[svc],
+        status: isReceived ? 'received' : 'pending',
+        action: isReceived ? 'View' : 'Upload'
+      });
+    });
+  });
+
+  if (docEntries.length === 0) {
+    docEntries = [
+      { name: 'Sale Deed / Title Deed', meta: 'Home Management', status: 'received', action: 'View' },
+      { name: 'Encumbrance Certificate', meta: 'Home Management', status: 'received', action: 'View' },
+      { name: 'PAN Card', meta: 'Tax Filing', status: 'pending', action: 'Upload' }
+    ];
+  }
+
+  // Show max 6 docs
+  docEntries.slice(0, 6).forEach(function(doc) {
+    var actionClass = doc.status === 'pending' ? 'upload-cta' : '';
+    docsHtml +=
+      '<div class="dash-doc-row">' +
+        '<div class="dash-doc-left">' +
+          '<div class="dash-doc-icon">' + docIcon + '</div>' +
+          '<div class="dash-doc-info">' +
+            '<strong>' + doc.name + '</strong>' +
+            '<span>' + doc.meta + ' · ' + (doc.status === 'received' ? '✓ Received' : '⏳ Pending') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<button class="dash-doc-action ' + actionClass + '">' + doc.action + '</button>' +
+      '</div>';
+  });
+
+  document.getElementById('docsList').innerHTML = docsHtml;
+
+  // ── Animate on scroll ──
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.dash-svc-card, .dash-pay-row').forEach(function(el) {
+    observer.observe(el);
+  });
+
+})();
+</script>
+</body>
+</html>
