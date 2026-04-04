@@ -30,7 +30,7 @@
       '<li><a href="contact.html">Contact</a></li>' +
     '</ul>' +
     '<div class="nav-actions" id="navActions">' +
-      '<a href="login.html" class="btn-outline">Log in</a>' +
+      '<a href="login.html" class="btn-outline">Sign In</a>' +
       '<a href="signup.html" class="btn-primary">Get Started</a>' +
     '</div>';
 
@@ -43,51 +43,16 @@
   // ── Helper: render the logged-in nav state ────────────────────────────────
   function renderLoggedIn(name) {
     var navActions = document.getElementById('navActions');
-    if (!navActions) return;
-
-    var firstName = name.split(' ')[0];
-    var initials = name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
-
-    // Replace Login/Get Started buttons with a clickable user pill + dropdown
-    navActions.innerHTML =
-      '<div class="nav-user-dropdown" id="navUserDropdown">' +
-        '<button class="nav-user-pill" id="navUserPillBtn" type="button">' +
-          '<div class="nav-user-avatar">' + initials + '</div>' +
-          '<span class="nav-user-name">' + firstName + '</span>' +
-          '<svg class="nav-user-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
-        '</button>' +
-        '<div class="nav-user-menu" id="navUserMenu">' +
-          '<a href="dashboard.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Dashboard</a>' +
-          '<a href="onboarding.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Manage Services</a>' +
-          '<div class="nav-user-menu-divider"></div>' +
-          '<a href="#" class="nav-signout-link" id="navSignOut"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out</a>' +
-        '</div>' +
-      '</div>';
-
-    // Toggle dropdown on click
-    var pillBtn = document.getElementById('navUserPillBtn');
-    var menu = document.getElementById('navUserMenu');
-    var dropdown = document.getElementById('navUserDropdown');
-
-    pillBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      dropdown.classList.toggle('open');
-    });
-
-    // Close on outside click
-    document.addEventListener('click', function() {
-      dropdown.classList.remove('open');
-    });
-
-    // Sign out handler
-    document.getElementById('navSignOut').addEventListener('click', function(e) {
-      e.preventDefault();
-      if (window.supabaseClient) {
-        window.supabaseClient.auth.signOut();
-      }
-      localStorage.removeItem('nri_session');
-      window.location.href = 'login.html';
-    });
+    if (navActions) {
+      navActions.innerHTML =
+        '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;margin-right:12px;">Hi, ' + name.split(' ')[0] + '</span>' +
+        '<a href="account.html" class="btn-outline" style="border-color: rgba(255,255,255,0.4); color: white;">My Account</a>';
+    }
+    // Hide signup CTAs on landing page if logged in
+    var heroBtn = document.getElementById('hero-signup-btn');
+    var footerBtn = document.getElementById('footer-signup-btn');
+    if (heroBtn) heroBtn.style.display = 'none';
+    if (footerBtn) footerBtn.style.display = 'none';
   }
 
   // ── 1. Immediate render from localStorage (avoids flash on normal page loads) ──
@@ -118,9 +83,14 @@
           var navActions = document.getElementById('navActions');
           if (navActions) {
             navActions.innerHTML =
-              '<a href="login.html" class="btn-outline">Log in</a>' +
+              '<a href="login.html" class="btn-outline">Sign In</a>' +
               '<a href="signup.html" class="btn-primary">Get Started</a>';
           }
+          // Show signup CTAs on landing page if logged out
+          var heroBtn = document.getElementById('hero-signup-btn');
+          var footerBtn = document.getElementById('footer-signup-btn');
+          if (heroBtn) heroBtn.style.display = 'inline-block';
+          if (footerBtn) footerBtn.style.display = 'inline-block';
         }
       });
     } else {
