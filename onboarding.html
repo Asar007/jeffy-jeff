@@ -369,7 +369,7 @@
     var div = document.createElement('div');
     div.className='item-card';div.id=svc+'-item-'+id;
     if(svc==='home'){
-      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'home\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Property Type</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="type"><option value="apartment">Apartment</option><option value="house">Independent House</option><option value="villa">Villa</option><option value="commercial">Commercial</option></select></div><div class="form-group"><label class="form-label">Status</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="status"><option value="vacant-tenant">Vacant - Need Tenant</option><option value="tenanted">Tenanted - Need Management</option><option value="maint-only">Maintenance Only (No Tenant)</option></select></div><div class="form-group"><label class="form-label">City</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="city"><option value="">Select City</option><option value="Chennai">Chennai</option><option value="Coimbatore">Coimbatore</option><option value="Kanyakumari">Kanyakumari</option></select></div><div class="form-group"><label class="form-label">Monthly Rent (₹)</label><input type="number" class="form-input" data-svc="home" data-id="'+id+'" data-field="rent" placeholder="e.g. 25000"></div></div>';
+      div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'home\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Property Type</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="type"><option value="apartment">Apartment</option><option value="house">Independent House</option><option value="villa">Villa</option><option value="commercial">Commercial</option></select></div><div class="form-group"><label class="form-label">Status</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="status" onchange="toggleRentVisibility('+id+', this.value)"><option value="vacant-tenant">Vacant - Need Tenant</option><option value="tenanted">Tenanted - Need Management</option><option value="maint-only">Maintenance Only (No Tenant)</option></select></div><div class="form-group"><label class="form-label">City</label><select class="form-input" data-svc="home" data-id="'+id+'" data-field="city"><option value="">Select City</option><option value="Chennai">Chennai</option><option value="Coimbatore">Coimbatore</option><option value="Kanyakumari">Kanyakumari</option></select></div><div class="form-group" id="home-rent-group-'+id+'"><label class="form-label">Monthly Rent (₹)</label><input type="number" class="form-input" data-svc="home" data-id="'+id+'" data-field="rent" placeholder="e.g. 25000"></div></div>';
     } else if(svc==='vehicle'){
       div.innerHTML='<button type="button" class="btn-remove" onclick="removeItem(\'vehicle\','+id+')">Remove</button><div class="item-fields"><div class="form-group"><label class="form-label">Registration No.</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="reg" placeholder="e.g. MH02AB1234"></div><div class="form-group"><label class="form-label">Vehicle Type</label><select class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="type"><option value="car">Car</option><option value="suv">SUV</option><option value="bike">Bike</option><option value="scooter">Scooter</option></select></div><div class="form-group"><label class="form-label">City</label><select class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="city"><option value="">Select City</option><option value="Chennai">Chennai</option><option value="Coimbatore">Coimbatore</option><option value="Kanyakumari">Kanyakumari</option></select></div><div class="form-group"><label class="form-label">Make/Model</label><input type="text" class="form-input" data-svc="vehicle" data-id="'+id+'" data-field="model" placeholder="e.g. Honda City"></div></div>';
     } else if(svc==='parental'){
@@ -395,6 +395,18 @@
     var items = getItems(svc);
     var idx = items.findIndex(function(i){return i.id===id});
     if(idx!==-1)items.splice(idx,1);
+  };
+
+  window.toggleRentVisibility = function(id, val) {
+    var group = document.getElementById('home-rent-group-' + id);
+    if (!group) return;
+    if (val === 'maint-only') {
+      group.style.display = 'none';
+      var input = group.querySelector('input');
+      if (input) input.value = '';
+    } else {
+      group.style.display = 'block';
+    }
   };
 
   function collectDetails(){
