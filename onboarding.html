@@ -283,7 +283,20 @@
   var serviceBilling = {};
   var selectedPayMethod = 'card';
   var currentStep = 1;
-  var counters = {home:0,vehicle:0,parental:0,legal:0};
+
+  var existingUsers = JSON.parse(localStorage.getItem('nri_users')||'[]');
+  var currentUser = existingUsers.find(function(u){return u.email===session.email}) || {};
+  var existingDetails = currentUser.serviceDetails || {home:{properties:[]},vehicle:{vehicles:[]},parental:{members:[]},legal:{cases:[]}};
+  function getMaxId(arr) {
+    if(!arr || !arr.length) return 0;
+    return Math.max.apply(Math, arr.map(function(i){return i.id||0}));
+  }
+  var counters = {
+    home: getMaxId(existingDetails.home ? existingDetails.home.properties : []),
+    vehicle: getMaxId(existingDetails.vehicle ? existingDetails.vehicle.vehicles : []),
+    parental: getMaxId(existingDetails.parental ? existingDetails.parental.members : []),
+    legal: getMaxId(existingDetails.legal ? existingDetails.legal.cases : [])
+  };
 
   var PLAN_PRICES = {
     home:{starter:4999,standard:9999,premium:'10% of rent'},
@@ -674,11 +687,25 @@
       var users=JSON.parse(localStorage.getItem('nri_users')||'[]');
       var userIdx=users.findIndex(function(u){return u.email===session.email});
       if(userIdx!==-1){
-        users[userIdx].services=selectedServices;
-        users[userIdx].serviceDetails=serviceDetails;
-        users[userIdx].servicePlans=servicePlans;
-        users[userIdx].serviceBilling=serviceBilling;
-        users[userIdx].paymentDate=new Date().toISOString();
+        var u = users[userIdx];
+        
+        // Append services
+        var sList = u.services || [];
+        selectedServices.forEach(function(s){ if(sList.indexOf(s)===-1) sList.push(s); });
+        u.services = sList;
+
+        // Append serviceDetails
+        if(!u.serviceDetails) u.serviceDetails = {home:{properties:[]},vehicle:{vehicles:[]},parental:{members:[]},legal:{cases:[]}};
+        if(serviceDetails.home.properties.length) u.serviceDetails.home.properties = u.serviceDetails.home.properties.concat(serviceDetails.home.properties);
+        if(serviceDetails.vehicle.vehicles.length) u.serviceDetails.vehicle.vehicles = u.serviceDetails.vehicle.vehicles.concat(serviceDetails.vehicle.vehicles);
+        if(serviceDetails.parental.members.length) u.serviceDetails.parental.members = u.serviceDetails.parental.members.concat(serviceDetails.parental.members);
+        if(serviceDetails.legal.cases.length) u.serviceDetails.legal.cases = u.serviceDetails.legal.cases.concat(serviceDetails.legal.cases);
+
+        // Merge plans & billing
+        u.servicePlans = Object.assign({}, u.servicePlans||{}, servicePlans);
+        u.serviceBilling = Object.assign({}, u.serviceBilling||{}, serviceBilling);
+        
+        u.paymentDate=new Date().toISOString();
         localStorage.setItem('nri_users',JSON.stringify(users));
       }
       session.onboarded=true;
