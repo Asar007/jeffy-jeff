@@ -1532,6 +1532,116 @@ footer {
   background: var(--green-pop);
 }
 
+/* ── Service Card Action Button ── */
+.dash-svc-action {
+  margin-left: 58px; margin-top: 16px;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px;
+  border: none; border-radius: var(--radius-pill);
+  background: var(--green-pop); color: var(--white);
+  font-family: inherit; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; transition: all 0.3s;
+  box-shadow: 0 4px 16px rgba(74,106,46,0.2);
+}
+.dash-svc-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(74,106,46,0.3);
+}
+.dash-svc-action svg {
+  width: 14px; height: 14px; stroke-width: 2.5;
+}
+.dash-svc-action.action-pending {
+  background: #e8a83a;
+  box-shadow: 0 4px 16px rgba(232,168,58,0.25);
+}
+.dash-svc-action.action-pending:hover {
+  box-shadow: 0 8px 24px rgba(232,168,58,0.35);
+}
+
+/* ── Expandable Document Checklist ── */
+.dash-svc-docs-toggle {
+  margin-left: 58px; margin-top: 14px;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: 1.5px solid rgba(0,0,0,0.06);
+  border-radius: var(--radius-pill);
+  padding: 6px 16px;
+  font-family: inherit; font-size: 0.76rem; font-weight: 600;
+  color: var(--text-mid); cursor: pointer;
+  transition: all 0.3s;
+}
+.dash-svc-docs-toggle:hover {
+  border-color: var(--green-pop); color: var(--green-pop);
+}
+.dash-svc-docs-toggle svg {
+  width: 12px; height: 12px; transition: transform 0.3s;
+}
+.dash-svc-docs-toggle.open svg {
+  transform: rotate(180deg);
+}
+.dash-svc-docs-toggle .doc-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; border-radius: 9px;
+  background: rgba(74,106,46,0.1); color: var(--green-pop);
+  font-size: 0.65rem; font-weight: 700; padding: 0 5px;
+}
+
+.dash-svc-docs-list {
+  margin-left: 58px; margin-top: 10px;
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  border-radius: var(--radius-md);
+}
+.dash-svc-docs-list.open {
+  max-height: 600px;
+}
+.dash-svc-docs-list-inner {
+  background: rgba(0,0,0,0.015);
+  border: 1px solid rgba(0,0,0,0.04);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+}
+
+.dash-doc-check-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+  font-size: 0.8rem;
+}
+.dash-doc-check-row:last-child { border-bottom: none; }
+
+.dash-doc-check-icon {
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.dash-doc-check-icon.received {
+  background: rgba(74,106,46,0.1); color: var(--green-pop);
+}
+.dash-doc-check-icon.pending {
+  background: rgba(232,168,58,0.12); color: #e8a83a;
+}
+.dash-doc-check-icon svg {
+  width: 11px; height: 11px; stroke-width: 2.5;
+}
+
+.dash-doc-check-name {
+  flex: 1; font-weight: 500; color: var(--text-dark);
+}
+.dash-doc-check-name.pending-doc {
+  color: var(--text-mid);
+}
+
+.dash-doc-check-status {
+  font-size: 0.68rem; font-weight: 600;
+  padding: 2px 8px; border-radius: var(--radius-pill);
+}
+.dash-doc-check-status.received {
+  background: rgba(74,106,46,0.08); color: var(--green-pop);
+}
+.dash-doc-check-status.pending {
+  background: rgba(232,168,58,0.1); color: #e8a83a;
+}
+
 /* ── Payment History ── */
 .dash-payments { margin-top: 32px; }
 .dash-payments-list {
@@ -1855,23 +1965,38 @@ footer {
 /* Quick actions bar */
 .dash-quick-actions {
   grid-column: 1 / -1;
-  display: flex; gap: 12px; flex-wrap: wrap;
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin: 12px 0 8px;
 }
 .dash-quick-btn {
-  flex: 1; min-width: 140px;
-  display: flex; align-items: center; gap: 8px;
-  padding: 12px 18px;
-  background: var(--white); border: 1px solid var(--border);
+  flex: 1; min-width: 180px;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 16px 20px;
+  background: var(--white); border: 1.5px solid rgba(0,0,0,0.05);
   border-radius: var(--radius-md);
-  font-size: 0.82rem; font-weight: 600; color: var(--text-dark);
+  font-size: 0.9rem; font-weight: 600; color: var(--text-dark);
   text-decoration: none; cursor: pointer;
-  transition: all 0.3s; font-family: inherit;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.03);
 }
 .dash-quick-btn:hover {
-  border-color: var(--green-pop); color: var(--green-pop);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+  border-color: rgba(74,106,46,0.4); color: var(--green-pop);
+  background: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(74,106,46,0.08);
 }
-.dash-quick-btn span { font-size: 1.1rem; }
+.dash-quick-btn span {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(74,106,46,0.06); color: var(--green-pop);
+  transition: all 0.3s ease; flex-shrink: 0;
+}
+.dash-quick-btn:hover span {
+  background: var(--green-pop); color: var(--white);
+  transform: scale(1.05);
+}
+.dash-quick-btn svg { width: 16px; height: 16px; stroke-width: 2.2; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1024px) {

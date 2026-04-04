@@ -39,7 +39,7 @@
 
     <!-- QUICK ACTIONS BAR -->
     <div class="dash-quick-actions" id="quickActions">
-      <a href="quote-builder.html" class="dash-quick-btn">
+      <a href="onboarding.html" class="dash-quick-btn">
         <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
         Request Additional Service
       </a>
@@ -102,7 +102,7 @@
       <div class="dash-request-card">
         <h3>Request Additional Service</h3>
         <p>Need something specific? Tell us what you need and we'll handle it.</p>
-        <a href="quote-builder.html" class="btn-hero">Submit Request →</a>
+        <a href="onboarding.html" class="btn-hero">Submit Request →</a>
       </div>
 
     </aside>
@@ -172,34 +172,195 @@
     return { starter: 'Starter', standard: 'Standard', premium: 'Premium' }[tier] || tier;
   }
 
-  // ── SERVICE DATA PIPELINE ──
-  // Real document/legal requirements per service type (from research)
-  var SERVICE_WORKFLOWS = {
+  // ── RESEARCH-BACKED SERVICE PIPELINES ──
+  // Accurate legal/regulatory steps for NRI services in India
+
+  var SERVICE_PIPELINES = {
     home: {
-      steps: ['Property Verified', 'Tenant Acquired', 'Lease Signed', 'Rent Collecting'],
-      requiredDocs: ['Sale Deed / Title Deed', 'Encumbrance Certificate (EC)', 'Power of Attorney (PoA)', 'Property Tax Receipts', 'Lease/Rental Agreement'],
-      demoStatus: 'in-progress', demoStep: 2, demoProgress: 60, demoEta: 'Est. Apr 15',
-      demoDesc: 'Property verification complete. Encumbrance certificate received from sub-registrar. Tenant screening in progress.'
+      steps: [
+        'Onboarding & PoA',
+        'Property Inspection',
+        'Tenant Acquisition',
+        'Lease & Registration',
+        'Rent Collection'
+      ],
+      descriptions: [
+        'Collecting property documents (Sale Deed, EC, Tax Receipts). Power of Attorney execution initiated for remote management.',
+        'Physical inspection by our local team underway. Condition report, photographs, and society NOC being obtained.',
+        'Property listed on NoBroker & MagicBricks. Screening tenants — ID verification, employment check, police background verification in progress.',
+        'Drafting rental agreement on stamp paper. Sub-Registrar registration scheduled for agreements ≥12 months.',
+        'First rent collected and deposited to your NRO account. TDS (30%) compliance handled. Monthly reports have begun.'
+      ],
+      actions: [
+        null,
+        null,
+        null,
+        { label: 'Review Lease Draft', icon: 'doc' },
+        null
+      ],
+      requiredDocs: [
+        { name: 'Sale Deed / Title Deed', critical: true },
+        { name: 'Encumbrance Certificate (EC)', critical: true },
+        { name: 'Power of Attorney (PoA)', critical: true },
+        { name: 'Property Tax Receipts', critical: false },
+        { name: 'Society NOC', critical: false },
+        { name: 'PAN Card', critical: true },
+        { name: 'Passport Copy', critical: true },
+        { name: 'NRO Account Details', critical: false }
+      ]
     },
     vehicle: {
-      steps: ['Docs Verified', 'Quotes Collected', 'Your Approval', 'Policy Issued'],
-      requiredDocs: ['Registration Certificate (RC)', 'Previous Insurance Policy', 'PUC Certificate', 'PAN Card', 'Address Proof'],
-      demoStatus: 'pending', demoStep: 2, demoProgress: 45, demoEta: 'Awaiting input',
-      demoDesc: 'Insurance quotes collected from 3 providers. Awaiting your approval to proceed.'
+      steps: [
+        'Document Verification',
+        'Insurance Assessment',
+        'Owner Approval',
+        'Policy Issuance',
+        'Ongoing Monitoring'
+      ],
+      descriptions: [
+        'Collecting RC, previous insurance, and PUC certificate. Verifying ownership chain and checking for pending challans/fines.',
+        'Gathering quotes from 3+ insurers. Comparing coverage — Third-Party vs Comprehensive, Zero Depreciation and Roadside Assistance add-ons.',
+        'Insurance comparison sheet ready. Awaiting your approval to select the best policy option.',
+        'KYC completed, payment processed. Digital policy issued and stored in DigiLocker/mParivahan.',
+        'Calendar reminders set for RC renewal (Form 25 at RTO), PUC expiry, and next insurance renewal. Periodic vehicle health check scheduled.'
+      ],
+      actions: [
+        null,
+        null,
+        { label: 'Approve Insurance Quote', icon: 'check', pending: true },
+        null,
+        null
+      ],
+      requiredDocs: [
+        { name: 'Registration Certificate (RC)', critical: true },
+        { name: 'Previous Insurance Policy', critical: true },
+        { name: 'PUC Certificate', critical: true },
+        { name: 'PAN Card', critical: true },
+        { name: 'Passport Copy', critical: false },
+        { name: 'Address Proof', critical: false },
+        { name: 'Chassis / Engine Print', critical: false }
+      ]
     },
     parental: {
-      steps: ['Profile Created', 'Doctor Assigned', 'Check-up Done', 'Report Sent'],
-      requiredDocs: ['Aadhaar Card', 'Health Insurance Policy', 'Medications List', 'Previous Medical Records', 'Emergency Contacts'],
-      demoStatus: 'in-progress', demoStep: 1, demoProgress: 35, demoEta: 'Apr 8',
-      demoDesc: 'Doctor home visit scheduled for this week. Previous vitals report shared via WhatsApp.'
+      steps: [
+        'Health Profile Setup',
+        'Coordinator Assigned',
+        'Initial Check-up',
+        'Ongoing Care Active'
+      ],
+      descriptions: [
+        'Building digital health vault — collecting medical history, current medications list, insurance policy details, allergies, and blood group records.',
+        'Dedicated local care coordinator has been assigned. Emergency contacts verified. Hospital network mapped within 5km radius of your parent\'s residence.',
+        'Doctor home visit or clinic appointment scheduled. Vitals will be recorded and a baseline health report created.',
+        'Regular check-ups scheduled. Medicine refill tracking active. Monthly health summary reports sent via WhatsApp/email. 24/7 emergency helpline is live.'
+      ],
+      actions: [
+        null,
+        { label: 'Verify Emergency Contacts', icon: 'phone' },
+        null,
+        null
+      ],
+      requiredDocs: [
+        { name: 'Aadhaar Card (Parent)', critical: true },
+        { name: 'Health Insurance Policy', critical: true },
+        { name: 'Current Medications List', critical: true },
+        { name: 'Previous Medical Records', critical: false },
+        { name: 'Emergency Contact Numbers', critical: true },
+        { name: 'Blood Group Card', critical: false }
+      ]
     },
     legal: {
-      steps: ['Docs Collected', 'Computed', 'Filed / Submitted', 'Verified'],
-      requiredDocs: ['PAN Card', 'Passport', 'NRE/NRO Bank Statements', 'Form 16/16A (TDS Certificates)', 'Form 26AS & AIS', 'Investment Statements'],
-      demoStatus: 'completed', demoStep: 4, demoProgress: 100, demoEta: 'Filed Mar 28',
-      demoDesc: 'ITR-2 filed and verified. Acknowledgement and computation sheet are ready to download.'
+      steps: [
+        'Document Collection',
+        'Review & Computation',
+        'Filing & Submission',
+        'Verification & Closure'
+      ],
+      descriptions: [
+        'Gathering PAN, Passport (with entry/exit stamps), NRE/NRO bank statements, Form 16/16A, Form 26AS & AIS, and investment statements.',
+        'Verifying residential status (days in India). Selecting ITR form (ITR-2/3). Computing tax liability and checking DTAA benefits with Tax Residency Certificate.',
+        'E-filing on incometax.gov.in in progress. Form 15CA/15CB being generated if repatriation needed. E-verification via Aadhaar OTP or net banking.',
+        'CPC has processed your return. ITR-V acknowledgement received. Refund processed (if applicable). Computation sheet archived and ready to download.'
+      ],
+      actions: [
+        null,
+        null,
+        { label: 'E-Verify Return', icon: 'shield' },
+        null
+      ],
+      requiredDocs: [
+        { name: 'PAN Card', critical: true },
+        { name: 'Passport (with stamps)', critical: true },
+        { name: 'NRE/NRO Bank Statements', critical: true },
+        { name: 'Form 16/16A (TDS Certificates)', critical: true },
+        { name: 'Form 26AS & AIS', critical: true },
+        { name: 'Investment Statements', critical: false },
+        { name: 'Tax Residency Certificate (TRC)', critical: false },
+        { name: 'Form 10F', critical: false }
+      ]
     }
   };
+
+  // ── TIME-BASED STATUS ENGINE ──
+  // Derives realistic pipeline progress from how recently the user onboarded.
+  function getTimeBasedStep(svc, itemIdx) {
+    var paymentDate = user.paymentDate ? new Date(user.paymentDate) : new Date();
+    var now = new Date();
+    var daysSince = Math.floor((now - paymentDate) / (1000 * 60 * 60 * 24));
+    // Stagger different items slightly so they don't all look identical
+    var offset = itemIdx * 0.7;
+    var adjustedDays = daysSince + offset;
+
+    var totalSteps = SERVICE_PIPELINES[svc].steps.length;
+    var step;
+
+    if (adjustedDays < 1)       step = 0;
+    else if (adjustedDays < 3)  step = 1;
+    else if (adjustedDays < 7)  step = Math.min(2, totalSteps - 1);
+    else if (adjustedDays < 14) step = Math.min(3, totalSteps - 1);
+    else                        step = totalSteps - 1;
+
+    // Ensure step doesn't exceed total
+    step = Math.min(step, totalSteps - 1);
+
+    var progress = Math.round(((step + 1) / totalSteps) * 100);
+    var status;
+    if (progress >= 100) status = 'completed';
+    else if (step === 0)  status = 'pending';
+    else                   status = 'in-progress';
+
+    // ETA based on remaining steps
+    var etaTexts = {
+      'pending': 'Est. ' + formatFutureDate(14 - daysSince),
+      'in-progress': 'Est. ' + formatFutureDate(Math.max(3, 14 - daysSince)),
+      'completed': 'Complete'
+    };
+
+    return {
+      currentStep: step,
+      progress: progress,
+      status: status,
+      eta: etaTexts[status]
+    };
+  }
+
+  function formatFutureDate(daysFromNow) {
+    var d = new Date();
+    d.setDate(d.getDate() + Math.max(1, Math.round(daysFromNow)));
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  // ── SVG icon helpers ──
+  var ACTION_ICONS = {
+    doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+  };
+
+  var checkSvgSmall = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>';
+  var clockSvgSmall = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="4.5"/><polyline points="6 3.5 6 6 7.5 7"/></svg>';
+  var chevronDownSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
   // ── Populate User Info ──
   document.getElementById('welcomeName').textContent = fullName;
@@ -244,40 +405,40 @@
   }
 
   activeServices.forEach(function(svc) {
-    var workflow = SERVICE_WORKFLOWS[svc];
-    if (!workflow) return;
+    var pipeline = SERVICE_PIPELINES[svc];
+    if (!pipeline) return;
     var items = getItems(svc);
     if (items.length === 0) {
-      // If no items (shouldn't happen after onboarding), show one generic entry
+      // If no items, show one generic entry
+      var timeStatus = getTimeBasedStep(svc, 0);
       serviceEntries.push({
         category: svc,
         name: SVC_NAMES[svc],
-        status: workflow.demoStatus,
-        description: workflow.demoDesc,
-        progress: workflow.demoProgress,
-        steps: workflow.steps,
-        currentStep: workflow.demoStep,
-        eta: workflow.demoEta,
-        requiredDocs: workflow.requiredDocs
+        status: timeStatus.status,
+        description: pipeline.descriptions[timeStatus.currentStep],
+        progress: timeStatus.progress,
+        steps: pipeline.steps,
+        currentStep: timeStatus.currentStep,
+        eta: timeStatus.eta,
+        requiredDocs: pipeline.requiredDocs,
+        action: pipeline.actions[timeStatus.currentStep]
       });
-      if (workflow.demoStatus === 'pending') pendingCount++;
+      if (timeStatus.status === 'pending') pendingCount++;
     } else {
-      // Generate entry for each actual item — use realistic demo statuses
       items.forEach(function(item, idx) {
-        var step = Math.min(workflow.demoStep + (idx % 2), workflow.steps.length);
-        var prog = Math.round((step / workflow.steps.length) * 100);
-        var status = prog >= 100 ? 'completed' : (step <= 1 ? 'pending' : 'in-progress');
-        if (status === 'pending') pendingCount++;
+        var timeStatus = getTimeBasedStep(svc, idx);
+        if (timeStatus.status === 'pending') pendingCount++;
         serviceEntries.push({
           category: svc,
           name: SVC_NAMES[svc] + ' — ' + getItemLabel(svc, item),
-          status: status,
-          description: workflow.demoDesc,
-          progress: prog,
-          steps: workflow.steps,
-          currentStep: step,
-          eta: status === 'completed' ? 'Complete' : workflow.demoEta,
-          requiredDocs: workflow.requiredDocs
+          status: timeStatus.status,
+          description: pipeline.descriptions[timeStatus.currentStep],
+          progress: timeStatus.progress,
+          steps: pipeline.steps,
+          currentStep: timeStatus.currentStep,
+          eta: timeStatus.eta,
+          requiredDocs: pipeline.requiredDocs,
+          action: pipeline.actions[timeStatus.currentStep]
         });
       });
     }
@@ -285,22 +446,16 @@
 
   // Fallback for users with no services
   if (serviceEntries.length === 0) {
+    var fallbackPipeline = SERVICE_PIPELINES['home'];
     serviceEntries = [
       {
-        category: 'home', name: 'Property Legal Verification',
+        category: 'home', name: 'Home Management — Sample Property',
         status: 'in-progress',
-        description: 'Title deed review underway. Encumbrance certificate received from sub-registrar. Awaiting lawyer sign-off.',
-        progress: 72, steps: ['Docs Received', 'EC Fetched', 'Legal Review', 'Final Report'],
-        currentStep: 2, eta: 'Est. Apr 10',
-        requiredDocs: ['Sale Deed', 'Title Deed', 'Encumbrance Certificate', 'Property Tax Receipts']
-      },
-      {
-        category: 'legal', name: 'Tax Filing (AY 2025-26)',
-        status: 'completed',
-        description: 'ITR-2 filed and verified. Acknowledgement and computation sheet are ready to download.',
-        progress: 100, steps: ['Docs Collected', 'Computed', 'Filed', 'Verified'],
-        currentStep: 4, eta: 'Filed Mar 28',
-        requiredDocs: ['PAN Card', 'Passport', 'NRE/NRO Statements', 'Form 16/16A']
+        description: fallbackPipeline.descriptions[2],
+        progress: 60, steps: fallbackPipeline.steps,
+        currentStep: 2, eta: 'Est. Apr 15',
+        requiredDocs: fallbackPipeline.requiredDocs,
+        action: null
       }
     ];
   }
@@ -322,6 +477,7 @@
     var statusText = svc.status === 'in-progress' ? 'In Progress' :
                      svc.status === 'completed' ? 'Completed' : 'Pending';
 
+    // ── Step tracker ──
     var stepsHtml = '';
     svc.steps.forEach(function(step, si) {
       var dotClass = '';
@@ -345,8 +501,47 @@
       }
     });
 
+    // ── Action button ──
+    var actionHtml = '';
+    if (svc.action && svc.status !== 'completed') {
+      var actionClass = svc.action.pending ? 'dash-svc-action action-pending' : 'dash-svc-action';
+      var actionIcon = ACTION_ICONS[svc.action.icon] || '';
+      actionHtml = '<button class="' + actionClass + '">' + actionIcon + svc.action.label + '</button>';
+    }
+
+    // ── Expandable document checklist ──
+    var receivedCount = 0;
+    var totalDocs = svc.requiredDocs.length;
+    // Simulate: docs up to currentStep+1 are received, rest pending
+    var docsReceivedThreshold = Math.min(Math.round(totalDocs * (svc.progress / 100)), totalDocs);
+
+    var docsHtml = '';
+    svc.requiredDocs.forEach(function(doc, di) {
+      var isReceived = di < docsReceivedThreshold;
+      if (isReceived) receivedCount++;
+      var iconClass = isReceived ? 'received' : 'pending';
+      var iconSvg = isReceived ? checkSvgSmall : clockSvgSmall;
+      var nameClass = isReceived ? '' : ' pending-doc';
+      var statusLabel = isReceived ? 'Received' : 'Pending';
+
+      docsHtml += '<div class="dash-doc-check-row">' +
+        '<div class="dash-doc-check-icon ' + iconClass + '">' + iconSvg + '</div>' +
+        '<div class="dash-doc-check-name' + nameClass + '">' + doc.name + (doc.critical ? ' *' : '') + '</div>' +
+        '<span class="dash-doc-check-status ' + iconClass + '">' + statusLabel + '</span>' +
+        '</div>';
+    });
+
+    var cardId = 'svc-card-' + idx;
+    var docsToggleHtml = '<button class="dash-svc-docs-toggle" onclick="toggleSvcDocs(\'' + cardId + '\')">' +
+      chevronDownSvg +
+      'Required Documents <span class="doc-count">' + receivedCount + '/' + totalDocs + '</span>' +
+      '</button>' +
+      '<div class="dash-svc-docs-list" id="docs-' + cardId + '">' +
+        '<div class="dash-svc-docs-list-inner">' + docsHtml + '</div>' +
+      '</div>';
+
     svcsHtml +=
-      '<div class="dash-svc-card" style="animation:fadeUp 0.5s ease both;animation-delay:' + (idx * 0.1) + 's;opacity:0;">' +
+      '<div class="dash-svc-card" id="' + cardId + '" style="animation:fadeUp 0.5s ease both;animation-delay:' + (idx * 0.1) + 's;opacity:0;">' +
         '<div class="dash-svc-header">' +
           '<div class="dash-svc-icon ' + SVC_CATS[svc.category] + '">' + (SVC_SVG[svc.category] || '') + '</div>' +
           '<div>' +
@@ -365,8 +560,20 @@
             '<span class="dash-progress-eta">' + svc.eta + '</span>' +
           '</div>' +
         '</div>' +
+        actionHtml +
+        docsToggleHtml +
       '</div>';
   });
+
+  // Global toggle function for doc checklists
+  window.toggleSvcDocs = function(cardId) {
+    var list = document.getElementById('docs-' + cardId);
+    var btn = document.querySelector('#' + cardId + ' .dash-svc-docs-toggle');
+    if (list && btn) {
+      list.classList.toggle('open');
+      btn.classList.toggle('open');
+    }
+  };
 
   document.getElementById('servicesList').innerHTML = svcsHtml;
 
@@ -523,20 +730,23 @@
   subHtml += '</div></div>';
   document.getElementById('subContent').innerHTML = subHtml;
 
-  // ── Render Documents (based on active services) ──
+  // ── Render Documents (based on active services, using pipeline data) ──
   var docIcon = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
-  var docsHtml = '';
-  var docEntries = [];
+  var sideDocsHtml = '';
+  var sideDocEntries = [];
 
-  // Generate document entries from active services
+  // Collect docs from all active service pipelines
   activeServices.forEach(function(svc) {
-    var workflow = SERVICE_WORKFLOWS[svc];
-    if (!workflow) return;
-    workflow.requiredDocs.forEach(function(docName) {
-      // For demo: first 2 docs are "Received", rest are "Pending"
-      var isReceived = docEntries.length < 3;
-      docEntries.push({
-        name: docName,
+    var pipeline = SERVICE_PIPELINES[svc];
+    if (!pipeline) return;
+    var timeStatus = getTimeBasedStep(svc, 0);
+    var totalDocs = pipeline.requiredDocs.length;
+    var threshold = Math.min(Math.round(totalDocs * (timeStatus.progress / 100)), totalDocs);
+
+    pipeline.requiredDocs.forEach(function(doc, di) {
+      var isReceived = di < threshold;
+      sideDocEntries.push({
+        name: doc.name,
         meta: SVC_NAMES[svc],
         status: isReceived ? 'received' : 'pending',
         action: isReceived ? 'View' : 'Upload'
@@ -544,31 +754,40 @@
     });
   });
 
-  if (docEntries.length === 0) {
-    docEntries = [
+  if (sideDocEntries.length === 0) {
+    sideDocEntries = [
       { name: 'Sale Deed / Title Deed', meta: 'Home Management', status: 'received', action: 'View' },
       { name: 'Encumbrance Certificate', meta: 'Home Management', status: 'received', action: 'View' },
-      { name: 'PAN Card', meta: 'Tax Filing', status: 'pending', action: 'Upload' }
+      { name: 'PAN Card', meta: 'Legal & Documentation', status: 'pending', action: 'Upload' }
     ];
   }
 
-  // Show max 6 docs
-  docEntries.slice(0, 6).forEach(function(doc) {
+  // Show max 6 docs, prioritizing pending ones first
+  var pendingDocs = sideDocEntries.filter(function(d) { return d.status === 'pending'; });
+  var receivedDocs = sideDocEntries.filter(function(d) { return d.status === 'received'; });
+  var sortedDocs = pendingDocs.concat(receivedDocs).slice(0, 6);
+
+  var checkIconSmall = '<svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>';
+  var clockIconSmall = '<svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="4.5"/><polyline points="6 3.5 6 6 7.5 7"/></svg>';
+
+  sortedDocs.forEach(function(doc) {
     var actionClass = doc.status === 'pending' ? 'upload-cta' : '';
-    docsHtml +=
+    var statusIcon = doc.status === 'received' ? checkIconSmall : clockIconSmall;
+    var statusText = doc.status === 'received' ? 'Received' : 'Pending';
+    sideDocsHtml +=
       '<div class="dash-doc-row">' +
         '<div class="dash-doc-left">' +
           '<div class="dash-doc-icon">' + docIcon + '</div>' +
           '<div class="dash-doc-info">' +
             '<strong>' + doc.name + '</strong>' +
-            '<span>' + doc.meta + ' · ' + (doc.status === 'received' ? '✓ Received' : '⏳ Pending') + '</span>' +
+            '<span>' + doc.meta + ' · ' + statusIcon + ' ' + statusText + '</span>' +
           '</div>' +
         '</div>' +
         '<button class="dash-doc-action ' + actionClass + '">' + doc.action + '</button>' +
       '</div>';
   });
 
-  document.getElementById('docsList').innerHTML = docsHtml;
+  document.getElementById('docsList').innerHTML = sideDocsHtml;
 
   // ── Animate on scroll ──
   var observer = new IntersectionObserver(function(entries) {
