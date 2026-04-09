@@ -746,12 +746,21 @@
         invItems.push({ description: title, qty: 1, price: amount });
       });
       
-      localStorage.setItem('nri_invoice', JSON.stringify({
+      var newInvoice = {
         txnId: txnId,
         date: new Date().toISOString(),
         method: selectedPayMethod,
         items: invItems
-      }));
+      };
+      localStorage.setItem('nri_invoice', JSON.stringify(newInvoice));
+      
+      var usersList = JSON.parse(localStorage.getItem('nri_users')||'[]');
+      var idx = usersList.findIndex(function(u){return u.email===session.email});
+      if(idx !== -1) {
+        if(!usersList[idx].invoices) usersList[idx].invoices = [];
+        usersList[idx].invoices.push(newInvoice);
+        localStorage.setItem('nri_users', JSON.stringify(usersList));
+      }
 
       document.querySelectorAll('.onboard-step').forEach(function(el){el.classList.remove('active')});
       document.getElementById('stepSuccess').classList.add('active');

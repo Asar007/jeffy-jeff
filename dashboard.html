@@ -591,8 +591,28 @@
   var invoiceData = JSON.parse(localStorage.getItem('nri_invoice') || 'null');
 
   var payments = [];
-  // Add the actual onboarding payment if it exists
-  if (user.paymentDate) {
+  
+  if (user.invoices && user.invoices.length > 0) {
+    // Add all historical invoices
+    user.invoices.forEach(function(inv, index) {
+      var invTotal = 0;
+      if(inv.items) {
+         inv.items.forEach(function(item){ invTotal += item.price; });
+      }
+      var titleSuffix = index === 0 ? 'Initial Payment' : 'Additional Service';
+      payments.push({
+        title: planTierDisplay + ' — ' + titleSuffix,
+        date: new Date(inv.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+        ref: inv.txnId,
+        amount: invTotal,
+        status: 'paid',
+        invoiceData: inv
+      });
+    });
+    // sort descending by date so newest is top, wait normally we want chronological or reverse chronological?
+    payments.sort(function(a,b) { return new Date(b.date) - new Date(a.date); });
+  } else if (user.paymentDate) {
+    // Fallback for older data
     payments.push({
       title: planTierDisplay + ' — Initial Payment',
       date: new Date(user.paymentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
