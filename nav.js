@@ -40,13 +40,37 @@
     navEl.innerHTML = navHTML;
   }
 
+  // ── Helper: hide "Get Started" CTAs on the page when logged in ─────────────
+  function hideGetStartedButtons() {
+    var btns = document.querySelectorAll('.hide-when-logged-in');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].style.display = 'none';
+    }
+  }
+
+  // ── Helper: show "Get Started" CTAs when logged out ───────────────────────
+  function showGetStartedButtons() {
+    var btns = document.querySelectorAll('.hide-when-logged-in');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].style.display = '';
+    }
+  }
+
+  var ADMIN_EMAILS = ['iqbalahmedkm@gmail.com', 'arfan@nribridgeindia.com', 'admin@nribridgeindia.com', 'admin@gmail.com'];
+
   // ── Helper: render the logged-in nav state ────────────────────────────────
-  function renderLoggedIn(name) {
+  function renderLoggedIn(name, email) {
+    hideGetStartedButtons();
     var navActions = document.getElementById('navActions');
     if (!navActions) return;
 
     var firstName = name.split(' ')[0];
     var initials = name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+    var isAdmin = email && ADMIN_EMAILS.indexOf(email.toLowerCase()) !== -1;
+
+    var adminLink = isAdmin
+      ? '<a href="admin.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin Portal</a>'
+      : '';
 
     // Replace Login/Get Started buttons with a clickable user pill + dropdown
     navActions.innerHTML =
@@ -59,6 +83,7 @@
         '<div class="nav-user-menu" id="navUserMenu">' +
           '<a href="dashboard.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Dashboard</a>' +
           '<a href="onboarding.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Manage Services</a>' +
+          adminLink +
           '<div class="nav-user-menu-divider"></div>' +
           '<a href="#" class="nav-signout-link" id="navSignOut"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out</a>' +
         '</div>' +
@@ -93,7 +118,7 @@
   // ── 1. Immediate render from localStorage (avoids flash on normal page loads) ──
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
   if (session && session.name) {
-    renderLoggedIn(session.name);
+    renderLoggedIn(session.name, session.email || '');
   }
 
   // ── 2. Subscribe to Supabase auth state (handles Google OAuth redirect) ────
@@ -105,7 +130,7 @@
         if (s && s.user) {
           var meta = s.user.user_metadata || {};
           var name = meta.full_name || s.user.email || 'User';
-          renderLoggedIn(name);
+          renderLoggedIn(name, s.user.email || '');
         }
       });
 
@@ -113,8 +138,9 @@
         if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && s && s.user) {
           var meta = s.user.user_metadata || {};
           var name = meta.full_name || s.user.email || 'User';
-          renderLoggedIn(name);
+          renderLoggedIn(name, s.user.email || '');
         } else if (event === 'SIGNED_OUT') {
+          showGetStartedButtons();
           var navActions = document.getElementById('navActions');
           if (navActions) {
             navActions.innerHTML =

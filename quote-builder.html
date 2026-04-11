@@ -522,17 +522,16 @@ window.submitCSR = function(e){
   if(requests.length > 50) requests = requests.slice(0, 50);
   localStorage.setItem('nbi_custom_requests', JSON.stringify(requests));
 
-  // Try Supabase if available
+  // Dual-write to Supabase requests table for admin dashboard
   if(typeof window.supabaseClient !== 'undefined' && window.supabaseClient){
-    window.supabaseClient.from('custom_service_requests').insert([{
-      ref_num: refNum,
-      name: name,
-      email: email,
-      phone: phone,
-      city: city,
-      categories: selectedCats.join(', '),
-      description: desc,
-      urgency: selectedUrgency
+    var urgencyNote = selectedUrgency ? ' [' + selectedUrgency + ']' : '';
+    window.supabaseClient.from('requests').insert([{
+      client_name: name,
+      customer_email: email,
+      amount: 0,
+      description: desc + urgencyNote + (city ? ' — ' + city : ''),
+      status: 'New',
+      received_at: new Date().toISOString().split('T')[0]
     }]).then(function(){}).catch(function(){});
   }
 

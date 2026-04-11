@@ -47,10 +47,10 @@
         <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
         Contact Support
       </a>
-      <a href="onboarding.html" class="dash-quick-btn">
-        <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-        Manage Services
-      </a>
+      <button class="dash-quick-btn" onclick="document.getElementById('paymentsList').scrollIntoView({behavior:'smooth',block:'start'})">
+        <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+        Payment History
+      </button>
     </div>
 
     <!-- LEFT: MAIN CONTENT -->
@@ -71,6 +71,16 @@
         </div>
         <div class="dash-payments-list" id="paymentsList">
           <!-- JS renders payment rows here -->
+        </div>
+      </div>
+
+      <!-- My Quotations -->
+      <div class="dash-payments" id="quotationsSection" style="display:none;">
+        <div class="dash-section-header">
+          <h2>My Quotations</h2>
+        </div>
+        <div id="quotationsList">
+          <!-- JS renders quotation cards here -->
         </div>
       </div>
     </div>
@@ -110,6 +120,29 @@
   </div>
 </main>
 
+<!-- ACTION MODAL -->
+<div class="action-modal-overlay" id="actionModal">
+  <div class="action-modal">
+    <div class="action-modal-top">
+      <div class="modal-svc-name" id="modalSvcName"></div>
+      <div class="modal-step-label" id="modalStepLabel"></div>
+      <div class="modal-action-title" id="modalActionTitle"></div>
+    </div>
+    <div class="action-modal-body">
+      <p class="modal-description" id="modalDescription"></p>
+      <textarea id="modalComment" placeholder="Add your comments or instructions..."></textarea>
+    </div>
+    <div class="action-modal-actions">
+      <button class="action-btn action-btn-approve" id="modalApproveBtn">Approve</button>
+      <button class="action-btn action-btn-reject" id="modalRejectBtn">Reject</button>
+      <button class="action-btn action-btn-cancel" id="modalCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden file input for document uploads -->
+<input type="file" id="docFileInput" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+
 <footer></footer>
 <script src="footer.js"></script>
 
@@ -119,6 +152,22 @@
 <script>
 (function() {
   'use strict';
+
+  // ── Toast Helper ──
+  function showToast(message, type) {
+    var existing = document.querySelector('.nbi-toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'nbi-toast nbi-toast-' + (type || 'success');
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    void toast.offsetHeight;
+    toast.classList.add('show');
+    setTimeout(function() {
+      toast.classList.remove('show');
+      setTimeout(function() { toast.remove(); }, 400);
+    }, 3000);
+  }
 
   // ── Auth Check ──
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
@@ -501,12 +550,21 @@
       }
     });
 
-    // ── Action button ──
+    // ── Action button (or decision badge if already decided) ──
     var actionHtml = '';
-    if (svc.action && svc.status !== 'completed') {
+    var decisionKey = svc.category + '-' + svc.currentStep;
+    var existingDecision = (user.decisions || {})[decisionKey];
+    if (existingDecision) {
+      var badgeClass = existingDecision.decision === 'approved' ? 'approved' : 'rejected';
+      var badgeLabel = existingDecision.decision === 'approved' ? 'Approved' : 'Rejected';
+      var badgeIcon = existingDecision.decision === 'approved'
+        ? '<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>'
+        : '<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>';
+      actionHtml = '<span class="dash-decision-badge ' + badgeClass + '">' + badgeIcon + ' ' + badgeLabel + '</span>';
+    } else if (svc.action && svc.status !== 'completed') {
       var actionClass = svc.action.pending ? 'dash-svc-action action-pending' : 'dash-svc-action';
       var actionIcon = ACTION_ICONS[svc.action.icon] || '';
-      actionHtml = '<button class="' + actionClass + '">' + actionIcon + svc.action.label + '</button>';
+      actionHtml = '<button class="' + actionClass + '" data-svc-idx="' + idx + '">' + actionIcon + svc.action.label + '</button>';
     }
 
     // ── Expandable document checklist ──
@@ -756,6 +814,7 @@
   var sideDocEntries = [];
 
   // Collect docs from all active service pipelines
+  var uploadedDocs = user.uploadedDocs || {};
   activeServices.forEach(function(svc) {
     var pipeline = SERVICE_PIPELINES[svc];
     if (!pipeline) return;
@@ -764,12 +823,15 @@
     var threshold = Math.min(Math.round(totalDocs * (timeStatus.progress / 100)), totalDocs);
 
     pipeline.requiredDocs.forEach(function(doc, di) {
-      var isReceived = di < threshold;
+      var docKey = SVC_NAMES[svc] + '/' + doc.name;
+      var uploaded = uploadedDocs[docKey];
+      var isReceived = uploaded ? true : di < threshold;
       sideDocEntries.push({
         name: doc.name,
         meta: SVC_NAMES[svc],
         status: isReceived ? 'received' : 'pending',
-        action: isReceived ? 'View' : 'Upload'
+        action: isReceived ? 'View' : 'Upload',
+        uploaded: uploaded || null
       });
     });
   });
@@ -795,7 +857,7 @@
     var statusIcon = doc.status === 'received' ? checkIconSmall : clockIconSmall;
     var statusText = doc.status === 'received' ? 'Received' : 'Pending';
     sideDocsHtml +=
-      '<div class="dash-doc-row">' +
+      '<div class="dash-doc-row" data-doc-name="' + doc.name + '" data-doc-service="' + doc.meta + '">' +
         '<div class="dash-doc-left">' +
           '<div class="dash-doc-icon">' + docIcon + '</div>' +
           '<div class="dash-doc-info">' +
@@ -803,7 +865,7 @@
             '<span>' + doc.meta + ' · ' + statusIcon + ' ' + statusText + '</span>' +
           '</div>' +
         '</div>' +
-        '<button class="dash-doc-action ' + actionClass + '">' + doc.action + '</button>' +
+        '<button class="dash-doc-action ' + actionClass + '" data-doc-name="' + doc.name + '" data-doc-service="' + doc.meta + '" data-doc-status="' + doc.status + '">' + doc.action + '</button>' +
       '</div>';
   });
 
@@ -822,6 +884,352 @@
   document.querySelectorAll('.dash-svc-card, .dash-pay-row').forEach(function(el) {
     observer.observe(el);
   });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── ACTION MODAL LOGIC ──────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+
+  var currentModalSvcIdx = null;
+
+  function openActionModal(svcEntry, svcIdx) {
+    currentModalSvcIdx = svcIdx;
+    var overlay = document.getElementById('actionModal');
+    document.getElementById('modalSvcName').textContent = svcEntry.name;
+    document.getElementById('modalStepLabel').textContent = 'Step ' + (svcEntry.currentStep + 1) + ' of ' + svcEntry.steps.length + ' — ' + svcEntry.steps[svcEntry.currentStep];
+    document.getElementById('modalActionTitle').textContent = svcEntry.action.label;
+    document.getElementById('modalDescription').textContent = svcEntry.description;
+    document.getElementById('modalComment').value = '';
+
+    overlay.style.display = 'flex';
+    void overlay.offsetHeight;
+    overlay.classList.add('show');
+  }
+
+  function closeActionModal() {
+    var overlay = document.getElementById('actionModal');
+    overlay.classList.remove('show');
+    setTimeout(function() { overlay.style.display = 'none'; }, 400);
+    currentModalSvcIdx = null;
+  }
+
+  function submitActionDecision(decision) {
+    if (currentModalSvcIdx === null) return;
+    var svcEntry = serviceEntries[currentModalSvcIdx];
+    if (!svcEntry) return;
+
+    var comment = document.getElementById('modalComment').value.trim();
+    var decisionKey = svcEntry.category + '-' + svcEntry.currentStep;
+
+    // Persist to localStorage
+    user.decisions = user.decisions || {};
+    user.decisions[decisionKey] = {
+      decision: decision,
+      comment: comment,
+      timestamp: new Date().toISOString(),
+      serviceName: svcEntry.name,
+      stepLabel: svcEntry.steps[svcEntry.currentStep],
+      actionLabel: svcEntry.action ? svcEntry.action.label : ''
+    };
+    localStorage.setItem('nri_users', JSON.stringify(users));
+
+    // Update DOM — replace button with badge
+    var btn = document.querySelector('.dash-svc-action[data-svc-idx="' + currentModalSvcIdx + '"]');
+    if (btn) {
+      var badgeClass = decision === 'approved' ? 'approved' : 'rejected';
+      var badgeLabel = decision === 'approved' ? 'Approved' : 'Rejected';
+      var badgeIcon = decision === 'approved'
+        ? '<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>'
+        : '<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>';
+      var badge = document.createElement('span');
+      badge.className = 'dash-decision-badge ' + badgeClass;
+      badge.innerHTML = badgeIcon + ' ' + badgeLabel;
+      btn.parentNode.replaceChild(badge, btn);
+    }
+
+    closeActionModal();
+    showToast(decision === 'approved' ? 'Action approved successfully' : 'Action rejected', decision === 'approved' ? 'success' : 'info');
+  }
+
+  // Wire up action buttons on service cards
+  document.querySelectorAll('.dash-svc-action[data-svc-idx]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-svc-idx'));
+      var svcEntry = serviceEntries[idx];
+      if (svcEntry && svcEntry.action) {
+        openActionModal(svcEntry, idx);
+      }
+    });
+  });
+
+  // Modal button handlers
+  document.getElementById('modalApproveBtn').addEventListener('click', function() {
+    submitActionDecision('approved');
+  });
+  document.getElementById('modalRejectBtn').addEventListener('click', function() {
+    submitActionDecision('rejected');
+  });
+  document.getElementById('modalCancelBtn').addEventListener('click', closeActionModal);
+
+  // Close modal on overlay click
+  document.getElementById('actionModal').addEventListener('click', function(e) {
+    if (e.target === this) closeActionModal();
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeActionModal();
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── DOCUMENT UPLOAD / VIEW LOGIC ────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+
+  var pendingUploadDoc = null; // tracks which doc the file picker is for
+  var docFileInput = document.getElementById('docFileInput');
+
+  function sanitizePath(str) {
+    return str.replace(/[^a-zA-Z0-9._-]/g, '_');
+  }
+
+  function refreshDocRow(docName, docService, newStatus) {
+    var row = document.querySelector('.dash-doc-row[data-doc-name="' + docName + '"][data-doc-service="' + docService + '"]');
+    if (!row) return;
+    var infoSpan = row.querySelector('.dash-doc-info span');
+    var btn = row.querySelector('.dash-doc-action');
+    if (newStatus === 'received') {
+      var checkIcon = '<svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>';
+      if (infoSpan) infoSpan.innerHTML = docService + ' &middot; ' + checkIcon + ' Received';
+      if (btn) {
+        btn.textContent = 'View';
+        btn.classList.remove('upload-cta');
+        btn.setAttribute('data-doc-status', 'received');
+      }
+    }
+  }
+
+  function refreshDocChecklist(docName, docService) {
+    // Also update the expandable doc checklist inside service cards
+    document.querySelectorAll('.dash-doc-check-row').forEach(function(row) {
+      var nameEl = row.querySelector('.dash-doc-check-name');
+      if (!nameEl) return;
+      var name = nameEl.textContent.replace(' *', '').trim();
+      if (name === docName) {
+        var iconEl = row.querySelector('.dash-doc-check-icon');
+        var statusEl = row.querySelector('.dash-doc-check-status');
+        if (iconEl) {
+          iconEl.className = 'dash-doc-check-icon received';
+          iconEl.innerHTML = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>';
+        }
+        if (statusEl) {
+          statusEl.className = 'dash-doc-check-status received';
+          statusEl.textContent = 'Received';
+        }
+        if (nameEl) nameEl.classList.remove('pending-doc');
+      }
+    });
+  }
+
+  // Handle file selection from picker
+  docFileInput.addEventListener('change', function() {
+    if (!this.files || !this.files[0] || !pendingUploadDoc) return;
+    var file = this.files[0];
+    var docName = pendingUploadDoc.name;
+    var docService = pendingUploadDoc.service;
+    var docKey = docService + '/' + docName;
+    var ext = file.name.split('.').pop();
+    var storagePath = sanitizePath(session.email) + '/' + sanitizePath(docService) + '/' + sanitizePath(docName) + '-' + Date.now() + '.' + ext;
+
+    // Try Supabase upload, fallback to localStorage-only
+    if (window.supabaseClient && window.supabaseClient.storage) {
+      window.supabaseClient.storage.from('documents').upload(storagePath, file)
+        .then(function(result) {
+          if (result.error) {
+            // Storage bucket may not exist — fallback
+            saveDocLocally(docKey, docName, docService, file.name, null);
+            showToast('Document status updated (offline mode)', 'info');
+          } else {
+            saveDocLocally(docKey, docName, docService, file.name, storagePath);
+            showToast('Document uploaded successfully', 'success');
+          }
+        })
+        .catch(function() {
+          saveDocLocally(docKey, docName, docService, file.name, null);
+          showToast('Document status updated (offline mode)', 'info');
+        });
+    } else {
+      saveDocLocally(docKey, docName, docService, file.name, null);
+      showToast('Document status updated (offline mode)', 'info');
+    }
+
+    // Reset file input
+    this.value = '';
+    pendingUploadDoc = null;
+  });
+
+  function saveDocLocally(docKey, docName, docService, fileName, storagePath) {
+    user.uploadedDocs = user.uploadedDocs || {};
+    user.uploadedDocs[docKey] = {
+      status: 'received',
+      fileName: fileName,
+      storagePath: storagePath,
+      uploadedAt: new Date().toISOString()
+    };
+    localStorage.setItem('nri_users', JSON.stringify(users));
+    refreshDocRow(docName, docService, 'received');
+    refreshDocChecklist(docName, docService);
+
+    // Dual-write to Supabase documents table for admin dashboard
+    if (window.supabaseClient) {
+      window.supabaseClient.from('documents').insert([{
+        client_email: session.email,
+        service_type: docService,
+        doc_name: docName,
+        file_name: fileName,
+        storage_path: storagePath,
+        status: 'uploaded'
+      }]).then(function(){}).catch(function(){});
+    }
+  }
+
+  // Attach click handlers to all doc action buttons
+  document.querySelectorAll('.dash-doc-action').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var docName = this.getAttribute('data-doc-name');
+      var docService = this.getAttribute('data-doc-service');
+      var docStatus = this.getAttribute('data-doc-status');
+      var docKey = docService + '/' + docName;
+      var uploaded = (user.uploadedDocs || {})[docKey];
+
+      if (docStatus === 'pending' || this.textContent.trim() === 'Upload') {
+        // Open file picker
+        pendingUploadDoc = { name: docName, service: docService };
+        docFileInput.click();
+      } else {
+        // View — try to get signed URL from Supabase
+        if (uploaded && uploaded.storagePath && window.supabaseClient && window.supabaseClient.storage) {
+          window.supabaseClient.storage.from('documents').createSignedUrl(uploaded.storagePath, 3600)
+            .then(function(result) {
+              if (result.error || !result.data || !result.data.signedUrl) {
+                showToast('Could not retrieve document. Try re-uploading.', 'error');
+              } else {
+                window.open(result.data.signedUrl, '_blank');
+              }
+            })
+            .catch(function() {
+              showToast('Could not retrieve document. Try re-uploading.', 'error');
+            });
+        } else {
+          showToast('Upload your actual document to view it', 'info');
+        }
+      }
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── MY QUOTATIONS (from Supabase requests table) ────────────────
+  // ══════════════════════════════════════════════════════════════════
+
+  function loadQuotations() {
+    if (!window.supabaseClient) return;
+    var sb = window.supabaseClient;
+    sb.from('requests')
+      .select('*')
+      .eq('customer_email', session.email)
+      .in('status', ['Quoted', 'Accepted', 'Declined'])
+      .order('quoted_at', { ascending: false })
+      .then(function(result) {
+        var quotes = result.data || [];
+        if (quotes.length === 0) return;
+
+        document.getElementById('quotationsSection').style.display = 'block';
+        var html = '';
+
+        quotes.forEach(function(q) {
+          var badgeClass = q.status.toLowerCase();
+          var items = q.quote_items || [];
+
+          var tableHtml = '';
+          items.forEach(function(item) {
+            tableHtml +=
+              '<tr>' +
+                '<td>' + item.description + '</td>' +
+                '<td>\u20B9' + (item.amount || 0).toLocaleString('en-IN') + '</td>' +
+              '</tr>';
+          });
+
+          var actionsHtml = '';
+          if (q.status === 'Quoted') {
+            actionsHtml =
+              '<div class="dash-quote-actions">' +
+                '<button class="dash-quote-btn dash-quote-accept" data-qid="' + q.id + '">Accept Quotation</button>' +
+                '<button class="dash-quote-btn dash-quote-decline" data-qid="' + q.id + '">Decline</button>' +
+              '</div>';
+          } else {
+            var responseLabel = q.status === 'Accepted' ? 'You accepted this quotation' : 'You declined this quotation';
+            actionsHtml = '<div style="font-size:0.82rem;color:var(--text-muted);margin-top:10px;">' + responseLabel + '</div>';
+          }
+
+          html +=
+            '<div class="dash-quote-card">' +
+              '<div class="dash-quote-head">' +
+                '<span class="dash-quote-badge ' + badgeClass + '">' + q.status + '</span>' +
+                '<h4>Custom Service Request</h4>' +
+              '</div>' +
+              '<div class="dash-quote-desc">' + (q.description || '') + '</div>' +
+              '<table class="dash-quote-table">' +
+                '<thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>' +
+                '<tbody>' + tableHtml + '</tbody>' +
+              '</table>' +
+              '<div class="dash-quote-total">' +
+                '<span>Total</span>' +
+                '<span>\u20B9' + (q.quoted_amount || 0).toLocaleString('en-IN') + '</span>' +
+              '</div>' +
+              actionsHtml +
+            '</div>';
+        });
+
+        document.getElementById('quotationsList').innerHTML = html;
+
+        // Attach accept/decline handlers
+        document.querySelectorAll('.dash-quote-accept').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            respondToQuote(this.getAttribute('data-qid'), 'accepted');
+          });
+        });
+        document.querySelectorAll('.dash-quote-decline').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            respondToQuote(this.getAttribute('data-qid'), 'declined');
+          });
+        });
+      });
+  }
+
+  function respondToQuote(quoteId, response) {
+    if (!window.supabaseClient) return;
+    var sb = window.supabaseClient;
+    var newStatus = response === 'accepted' ? 'Accepted' : 'Declined';
+
+    sb.from('requests').update({
+      status: newStatus,
+      customer_response: response,
+      responded_at: new Date().toISOString()
+    }).eq('id', quoteId).then(function(result) {
+      if (result.error) {
+        showToast('Failed to respond', 'error');
+        return;
+      }
+
+      if (response === 'accepted') {
+        showToast('Quotation accepted! We\'ll get started shortly.', 'success');
+      } else {
+        showToast('Quotation declined', 'info');
+      }
+      loadQuotations();
+    });
+  }
+
+  // Load quotations on page ready
+  loadQuotations();
 
 })();
 </script>

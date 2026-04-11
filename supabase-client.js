@@ -1,6 +1,12 @@
 // c:\Users\Arfan\jeffy\jeffy-jeff\supabase-client.js
 // IMPORTANT: Replace the empty strings below with your actual Supabase project URL and anon key.
 // You can find these in your Supabase Dashboard under Settings > API.
+//
+// STORAGE SETUP (for document uploads on the dashboard):
+// 1. Go to Supabase Dashboard > Storage > Create a new bucket named "documents"
+// 2. Set the bucket to private (not public)
+// 3. Add RLS policy: authenticated users can INSERT/SELECT files where path starts with their email prefix
+//    e.g. (auth.email() = split_part(name, '/', 1))
 
 const SUPABASE_URL = "https://rrplwtzskrutjvdskfmz.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJycGx3dHpza3J1dGp2ZHNrZm16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5Mzk1NjksImV4cCI6MjA5MDUxNTU2OX0.CFK0J0cilUO15dfj7ZH1odvVODsIdecNP_8HZ0GoJbA";
@@ -19,6 +25,20 @@ window.supabaseClient.auth.onAuthStateChange((event, session) => {
       const name = meta.full_name || session.user.email;
       
       localStorage.setItem('nri_session', JSON.stringify({ name: name, email: session.user.email }));
+
+      // Dual-write: upsert into clients table for admin dashboard
+      window.supabaseClient.from('clients').select('id').eq('email', session.user.email).then(function(res) {
+        if (!res.data || res.data.length === 0) {
+          window.supabaseClient.from('clients').insert({
+            name: name,
+            email: session.user.email,
+            country: meta.country || '',
+            city: '',
+            services: [],
+            status: 'Pending'
+          });
+        }
+      });
       
       // Check if this is a login missing phone or country (e.g. from Google OAuth)
       const currentPath = window.location.pathname.split('/').pop() || '';

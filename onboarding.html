@@ -762,6 +762,58 @@
         localStorage.setItem('nri_users', JSON.stringify(usersList));
       }
 
+      // ── Dual-write to Supabase for admin dashboard ──
+      if (window.supabaseClient) {
+        var sb = window.supabaseClient;
+        // Update client record with services and country
+        var svcNames = selectedServices.map(function(s) {
+          return {home:'Property',vehicle:'Vehicle',parental:'Parental Care',legal:'Legal'}[s] || s;
+        });
+        sb.from('clients').select('id').eq('email', session.email).then(function(res) {
+          if (res.data && res.data.length > 0) {
+            sb.from('clients').update({
+              services: svcNames,
+              country: session.country || '',
+              status: 'Active'
+            }).eq('email', session.email).then(function() {});
+          } else {
+            sb.from('clients').insert({
+              name: session.name, email: session.email,
+              country: session.country || '', city: '',
+              services: svcNames, status: 'Active'
+            }).then(function() {});
+          }
+          // Insert tasks for each service item
+          var clientId = (res.data && res.data[0]) ? res.data[0].id : null;
+          var taskInserts = [];
+          selectedServices.forEach(function(svc) {
+            var svcName = {home:'Property Management',vehicle:'Vehicle Management',parental:'Parental Care',legal:'Legal & Documentation'}[svc] || svc;
+            var items = [];
+            if (svc === 'home') items = (serviceDetails.home || {}).properties || [];
+            else if (svc === 'vehicle') items = (serviceDetails.vehicle || {}).vehicles || [];
+            else if (svc === 'parental') items = (serviceDetails.parental || {}).members || [];
+            else if (svc === 'legal') items = (serviceDetails.legal || {}).cases || [];
+            if (items.length === 0) items = [{}];
+            items.forEach(function(item) {
+              var desc = '';
+              if (svc === 'home') desc = (item.type || 'Property') + ' in ' + (item.city || 'India');
+              else if (svc === 'vehicle') desc = (item.model || 'Vehicle') + ' (' + (item.reg || '') + ')';
+              else if (svc === 'parental') desc = 'Care for ' + (item.name || 'family member');
+              else if (svc === 'legal') desc = (item.type || 'Case') + ' in ' + (item.city || 'India');
+              taskInserts.push({
+                client_id: clientId,
+                service: svcName,
+                status: 'Pending',
+                progress: 0,
+                deadline: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+                description: desc || svcName
+              });
+            });
+          });
+          if (taskInserts.length > 0) sb.from('tasks').insert(taskInserts).then(function() {});
+        });
+      }
+
       document.querySelectorAll('.onboard-step').forEach(function(el){el.classList.remove('active')});
       document.getElementById('stepSuccess').classList.add('active');
       document.querySelectorAll('.progress-dot').forEach(function(d){d.classList.remove('active');d.classList.add('done')});

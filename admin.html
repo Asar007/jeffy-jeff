@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Founder Portal — NRI Bridge India</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body class="adm-page">
+
+<!-- ── SIDEBAR ──────────────────────────────────────────────────── -->
+<aside class="adm-sidebar" id="admSidebar">
+  <div class="adm-logo">
+    <div class="adm-logo-sub">Founder Portal</div>
+    <div class="adm-logo-main">NRI Bridge<br><span>India</span></div>
+  </div>
+
+  <div class="adm-nav-group">
+    <div class="adm-nav-label">Overview</div>
+    <a class="adm-nav-item active" data-section="dashboard">Dashboard</a>
+    <a class="adm-nav-item" data-section="analytics">Analytics</a>
+  </div>
+
+  <div class="adm-nav-group">
+    <div class="adm-nav-label">Clients</div>
+    <a class="adm-nav-item" data-section="clients">All Clients <span class="adm-nav-badge" id="badgeClients">—</span></a>
+    <a class="adm-nav-item" data-section="byservice">By Service</a>
+    <a class="adm-nav-item" id="navAddClient">Add Client</a>
+  </div>
+
+  <div class="adm-nav-group">
+    <div class="adm-nav-label">Work</div>
+    <a class="adm-nav-item" data-section="tasks">All Tasks <span class="adm-nav-badge orange" id="badgeTasks">—</span></a>
+    <a class="adm-nav-item" data-section="pending">Pending</a>
+    <a class="adm-nav-item" data-section="completed">Completed</a>
+  </div>
+
+  <div class="adm-nav-group">
+    <div class="adm-nav-label">Requests</div>
+    <a class="adm-nav-item" data-section="requests">Custom Requests <span class="adm-nav-badge red" id="badgeRequests">—</span></a>
+    <a class="adm-nav-item" data-section="onetime">One-time Payment</a>
+  </div>
+</aside>
+
+<!-- ── MAIN BODY ───────────────────────────────────────────────── -->
+<div class="adm-body">
+  <main class="adm-main">
+
+    <!-- Header -->
+    <div class="adm-header">
+      <div class="adm-greeting">
+        <h1 id="admGreeting">Good morning</h1>
+        <p id="admDate"></p>
+      </div>
+      <div class="adm-header-actions">
+        <button class="adm-btn-export" id="btnExport">Export</button>
+        <button class="adm-btn-add" id="btnAddClient">+ Add Client</button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="adm-stats" id="admStats">
+      <div class="adm-stat-card">
+        <div class="adm-stat-bar green"></div>
+        <div class="adm-stat-label">Active Clients</div>
+        <div class="adm-stat-num" id="statClients">—</div>
+        <div class="adm-stat-sub green" id="statClientsSub"></div>
+      </div>
+      <div class="adm-stat-card">
+        <div class="adm-stat-bar orange"></div>
+        <div class="adm-stat-label">Pending Works</div>
+        <div class="adm-stat-num" id="statPending">—</div>
+        <div class="adm-stat-sub orange" id="statPendingSub"></div>
+      </div>
+      <div class="adm-stat-card">
+        <div class="adm-stat-bar blue"></div>
+        <div class="adm-stat-label">Completed Tasks</div>
+        <div class="adm-stat-num" id="statCompleted">—</div>
+        <div class="adm-stat-sub" id="statCompletedSub"></div>
+      </div>
+      <div class="adm-stat-card">
+        <div class="adm-stat-bar red"></div>
+        <div class="adm-stat-label">Custom Requests</div>
+        <div class="adm-stat-num" id="statRequests">—</div>
+        <div class="adm-stat-sub" id="statRequestsSub"></div>
+      </div>
+    </div>
+
+    <!-- Client Work Status Tracker -->
+    <div id="sectionTasks">
+      <div class="adm-section-head">
+        <h2>Client Work Status Tracker</h2>
+        <a class="adm-link" id="linkViewAllTasks">View all &rarr;</a>
+      </div>
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Service</th>
+              <th>Status</th>
+              <th>Progress</th>
+              <th>Deadline</th>
+            </tr>
+          </thead>
+          <tbody id="taskTableBody">
+            <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Clients by Service -->
+    <div class="adm-clients-section" id="sectionClients">
+      <div class="adm-section-head">
+        <h2>Clients by Service</h2>
+        <a class="adm-link">All clients &rarr;</a>
+      </div>
+      <div class="adm-filter-tabs" id="filterTabs"></div>
+      <div class="adm-client-list" id="clientList"></div>
+    </div>
+
+  </main>
+
+  <!-- ── RIGHT PANEL ─────────────────────────────────────────────── -->
+  <aside class="adm-right">
+
+    <!-- Pending by Category -->
+    <div id="sectionPending">
+      <div class="adm-section-head">
+        <h2>Pending by Category</h2>
+        <a class="adm-link">Assign &rarr;</a>
+      </div>
+      <div class="adm-pending-list" id="pendingByCategory"></div>
+    </div>
+
+    <!-- Custom Requests -->
+    <div style="margin-top:12px;" id="sectionRequests">
+      <div class="adm-section-head">
+        <h2>Custom One-time Requests</h2>
+        <a class="adm-link">View all &rarr;</a>
+      </div>
+      <div class="adm-requests-list" id="requestsList"></div>
+    </div>
+
+    <!-- Call Appointments -->
+    <div style="margin-top:24px;" id="sectionOnetime">
+      <div class="adm-section-head">
+        <h2>Call Appointments</h2>
+        <a class="adm-link">View all &rarr;</a>
+      </div>
+      <div class="adm-requests-list" id="appointmentsList"></div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- ── Add Client Modal ──────────────────────────────────────────── -->
+<div class="adm-modal-overlay" id="addClientModal">
+  <div class="adm-modal">
+    <h3>Add New Client</h3>
+    <div class="adm-form-group">
+      <label>Full Name</label>
+      <input type="text" id="acName" placeholder="e.g. Rajan Mehta">
+    </div>
+    <div class="adm-form-group">
+      <label>Email</label>
+      <input type="email" id="acEmail" placeholder="e.g. rajan@example.com">
+    </div>
+    <div class="adm-form-group" style="display:flex;gap:12px;">
+      <div style="flex:1;">
+        <label>City</label>
+        <input type="text" id="acCity" placeholder="e.g. Dubai">
+      </div>
+      <div style="flex:1;">
+        <label>Country</label>
+        <input type="text" id="acCountry" placeholder="e.g. UAE">
+      </div>
+    </div>
+    <div class="adm-form-group">
+      <label>Services</label>
+      <div class="adm-form-checks">
+        <label><input type="checkbox" value="Property"> Property</label>
+        <label><input type="checkbox" value="Tax Filing"> Tax Filing</label>
+        <label><input type="checkbox" value="Banking"> Banking</label>
+        <label><input type="checkbox" value="Aadhaar/OCI"> Aadhaar/OCI</label>
+        <label><input type="checkbox" value="Legal"> Legal</label>
+      </div>
+    </div>
+    <div class="adm-form-group">
+      <label>Status</label>
+      <select id="acStatus">
+        <option value="Active">Active</option>
+        <option value="Pending" selected>Pending</option>
+        <option value="In Review">In Review</option>
+      </select>
+    </div>
+    <div class="adm-modal-actions">
+      <button class="adm-btn-add" id="acSubmit">Add Client</button>
+      <button class="adm-btn-export" id="acCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Quotation Modal ───────────────────────────────────────────── -->
+<div class="adm-modal-overlay" id="quoteModal">
+  <div class="adm-modal" style="max-width:540px;">
+    <h3>Review & Send Quotation</h3>
+    <div style="background:var(--bg-cream);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">Request from</div>
+      <div style="font-weight:600;" id="qClientName"></div>
+      <div style="font-size:0.84rem;color:var(--text-mid);margin-top:6px;" id="qDescription"></div>
+    </div>
+    <div class="adm-form-group">
+      <label>Line Items</label>
+      <div id="qLineItems"></div>
+      <button class="adm-btn-export" type="button" id="qAddItem" style="margin-top:8px;font-size:0.78rem;padding:6px 14px;">+ Add Item</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid #eae7dc;margin-top:8px;">
+      <span style="font-weight:600;color:var(--text-mid);">Total</span>
+      <span style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--text-dark);" id="qTotal">&#x20B9;0</span>
+    </div>
+    <div class="adm-modal-actions">
+      <button class="adm-btn-add" id="qSubmit">Send Quotation</button>
+      <button class="adm-btn-export" id="qCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── Admin email whitelist ──
+  var ADMIN_EMAILS = [
+    'iqbalahmedkm@gmail.com',
+    'arfan@nribridgeindia.com',
+    'admin@nribridgeindia.com',
+    'admin@gmail.com'
+  ];
+
+  // ── Toast helper ──
+  function showToast(message, type) {
+    var existing = document.querySelector('.nbi-toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'nbi-toast nbi-toast-' + (type || 'success');
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    void toast.offsetHeight;
+    toast.classList.add('show');
+    setTimeout(function() {
+      toast.classList.remove('show');
+      setTimeout(function() { toast.remove(); }, 400);
+    }, 3000);
+  }
+
+  // ── Wait for Supabase client ──
+  var sb = null;
+  var clients = [];
+  var tasks = [];
+  var requests = [];
+
+  function waitForSupabase(cb) {
+    if (window.supabaseClient) { sb = window.supabaseClient; cb(); }
+    else setTimeout(function() { waitForSupabase(cb); }, 50);
+  }
+
+  waitForSupabase(function() {
+    // Auth check — try Supabase session first, fall back to localStorage
+    sb.auth.getSession().then(function(result) {
+      var s = result.data && result.data.session;
+      var email = '';
+
+      if (s && s.user) {
+        email = (s.user.email || '').toLowerCase();
+      } else {
+        // Fallback: check localStorage session (for email/password signups)
+        var local = JSON.parse(localStorage.getItem('nri_session') || 'null');
+        if (local && local.email) {
+          email = local.email.toLowerCase();
+        }
+      }
+
+      if (!email) {
+        window.location.href = 'login.html';
+        return;
+      }
+      if (ADMIN_EMAILS.indexOf(email) === -1) {
+        window.location.href = 'login.html';
+        return;
+      }
+      loadDashboard();
+    });
+  });
+
+  // ── Greeting ──
+  var hour = new Date().getHours();
+  var greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('admGreeting').textContent = greet + ' \uD83D\uDC4B Here\'s your overview';
+  var now = new Date();
+  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('admDate').textContent =
+    days[now.getDay()] + ', ' + String(now.getDate()).padStart(2,'0') + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+
+  var appointments = [];
+
+  // ── Load all data ──
+  function loadDashboard() {
+    Promise.all([
+      sb.from('clients').select('*').order('created_at', { ascending: false }),
+      sb.from('tasks').select('*, clients(name, city, country)').order('deadline', { ascending: true }),
+      sb.from('requests').select('*').order('created_at', { ascending: false }),
+      sb.from('appointments').select('*').order('created_at', { ascending: false })
+    ]).then(function(results) {
+      clients = results[0].data || [];
+      tasks = results[1].data || [];
+      requests = results[2].data || [];
+      appointments = results[3].data || [];
+      renderStats();
+      renderTaskTable();
+      renderClientsByService();
+      renderPendingByCategory();
+      renderRequests();
+      renderAppointments();
+      renderBadges();
+    });
+  }
+
+  // ── Stats ──
+  function renderStats() {
+    var activeCount = clients.filter(function(c) { return c.status === 'Active'; }).length;
+    var pendingTasks = tasks.filter(function(t) { return t.status === 'Pending' || t.status === 'In Progress'; }).length;
+    var completedTasks = tasks.filter(function(t) { return t.status === 'Completed'; }).length;
+    var openRequests = requests.filter(function(r) { return r.status === 'New' || r.status === 'In Review'; }).length;
+
+    document.getElementById('statClients').textContent = clients.length;
+    document.getElementById('statClientsSub').textContent = '+' + activeCount + ' active';
+    document.getElementById('statPending').textContent = pendingTasks;
+    document.getElementById('statPendingSub').textContent = pendingTasks > 0 ? 'Needs attention' : 'All clear';
+    document.getElementById('statCompleted').textContent = completedTasks;
+    document.getElementById('statCompletedSub').textContent = 'Total completed';
+    document.getElementById('statRequests').textContent = openRequests;
+    document.getElementById('statRequestsSub').textContent = openRequests > 0 ? 'Awaiting review' : 'All handled';
+  }
+
+  // ── Badges ──
+  function renderBadges() {
+    document.getElementById('badgeClients').textContent = clients.length;
+    var pendingTasks = tasks.filter(function(t) { return t.status !== 'Completed'; }).length;
+    document.getElementById('badgeTasks').textContent = pendingTasks;
+    var openReqs = requests.filter(function(r) { return r.status === 'New' || r.status === 'In Review'; }).length;
+    document.getElementById('badgeRequests').textContent = openReqs;
+  }
+
+  // ── Task Table ──
+  function statusClass(s) {
+    return s.toLowerCase().replace(/\s+/g, '-');
+  }
+
+  function progressColor(status) {
+    if (status === 'In Progress') return 'green';
+    if (status === 'Pending') return 'orange';
+    if (status === 'In Review') return 'blue';
+    return 'muted';
+  }
+
+  function formatDate(d) {
+    if (!d) return '—';
+    var dt = new Date(d);
+    return months[dt.getMonth()] + ' ' + String(dt.getDate()).padStart(2, '0');
+  }
+
+  var activeTaskFilter = 'all';
+
+  function renderTaskTable(filter) {
+    filter = filter || 'all';
+    activeTaskFilter = filter;
+    var tbody = document.getElementById('taskTableBody');
+    var filtered = tasks;
+    if (filter === 'pending') {
+      filtered = tasks.filter(function(t) { return t.status !== 'Completed'; });
+    } else if (filter === 'completed') {
+      filtered = tasks.filter(function(t) { return t.status === 'Completed'; });
+    }
+    if (filtered.length === 0) {
+      var msg = filter === 'all' ? 'No tasks yet' : 'No ' + filter + ' tasks';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px;">' + msg + '</td></tr>';
+      return;
+    }
+    var html = '';
+    filtered.forEach(function(t) {
+      var client = t.clients || {};
+      html +=
+        '<tr>' +
+          '<td><div class="adm-client-cell"><span class="adm-client-name">' + (client.name || '—') + '</span><span class="adm-client-loc">' + (client.city || '') + (client.country ? ', ' + client.country : '') + '</span></div></td>' +
+          '<td>' + t.service + '</td>' +
+          '<td><span class="adm-status-badge ' + statusClass(t.status) + '">' + t.status + '</span></td>' +
+          '<td><div class="adm-progress-bar"><div class="adm-progress-fill ' + progressColor(t.status) + '" style="width:' + t.progress + '%;"></div></div></td>' +
+          '<td class="adm-deadline">' + formatDate(t.deadline) + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  // ── Clients by Service ──
+  var SERVICE_CATEGORIES = ['All', 'Property', 'Tax Filing', 'Banking', 'Aadhaar/OCI', 'Legal'];
+  var AVATAR_COLORS = ['green', 'orange', 'blue', 'red', 'muted'];
+
+  function getInitials(name) {
+    return name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+  }
+
+  function renderClientsByService(filter) {
+    filter = filter || 'All';
+
+    // Tabs
+    var tabsHtml = '';
+    SERVICE_CATEGORIES.forEach(function(cat) {
+      tabsHtml += '<button class="adm-filter-tab' + (cat === filter ? ' active' : '') + '" data-filter="' + cat + '">' + cat + '</button>';
+    });
+    document.getElementById('filterTabs').innerHTML = tabsHtml;
+
+    // Attach tab clicks
+    document.querySelectorAll('.adm-filter-tab').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        renderClientsByService(this.getAttribute('data-filter'));
+      });
+    });
+
+    // Filter clients
+    var filtered = clients;
+    if (filter !== 'All') {
+      filtered = clients.filter(function(c) {
+        return c.services && c.services.indexOf(filter) !== -1;
+      });
+    }
+
+    var listHtml = '';
+    filtered.forEach(function(c, i) {
+      var color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+      var svcStr = (c.services || []).join(' \u00B7 ');
+      var stClass = statusClass(c.status);
+      listHtml +=
+        '<div class="adm-client-row">' +
+          '<div class="adm-avatar ' + color + '">' + getInitials(c.name) + '</div>' +
+          '<div class="adm-client-info">' +
+            '<strong>' + c.name + '</strong>' +
+            '<span>' + (c.city || '') + ' \u00B7 ' + svcStr + '</span>' +
+          '</div>' +
+          '<div class="adm-client-status ' + stClass + '">' + c.status + '</div>' +
+        '</div>';
+    });
+
+    if (filtered.length === 0) {
+      listHtml = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.88rem;">No clients in this category</div>';
+    }
+    document.getElementById('clientList').innerHTML = listHtml;
+  }
+
+  // ── Pending by Category ──
+  function renderPendingByCategory() {
+    var counts = {};
+    var notes = {};
+    tasks.forEach(function(t) {
+      if (t.status === 'Completed') return;
+      var svc = t.service.replace(/\s*(Legal|Reg\.)/, ' & $1').split(' ')[0];
+      // Normalize
+      if (t.service.indexOf('Property') !== -1 || t.service.indexOf('Legal') !== -1) svc = 'Property & Legal';
+      else if (t.service.indexOf('Tax') !== -1) svc = 'Tax Filing';
+      else if (t.service.indexOf('Bank') !== -1) svc = 'Bank & Finance';
+      else if (t.service.indexOf('Aadhaar') !== -1) svc = 'Aadhaar / OCI';
+      else svc = t.service;
+
+      counts[svc] = (counts[svc] || 0) + 1;
+    });
+
+    // Context notes
+    notes['Property & Legal'] = 'Docs missing for clients';
+    notes['Tax Filing'] = 'Due this week';
+    notes['Bank & Finance'] = 'Awaiting KYC upload';
+    notes['Aadhaar / OCI'] = 'Govt. portal processing';
+
+    var html = '';
+    Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; }).forEach(function(cat) {
+      html +=
+        '<div class="adm-pending-item">' +
+          '<div class="adm-pending-num">' + counts[cat] + '</div>' +
+          '<div class="adm-pending-info">' +
+            '<strong>' + cat + '</strong>' +
+            '<span>' + (notes[cat] || '') + '</span>' +
+          '</div>' +
+        '</div>';
+    });
+
+    if (Object.keys(counts).length === 0) {
+      html = '<div style="color:var(--text-muted);font-size:0.88rem;">All caught up!</div>';
+    }
+    document.getElementById('pendingByCategory').innerHTML = html;
+  }
+
+  // ── Custom Requests ──
+  function renderRequests() {
+    var html = '';
+    requests.forEach(function(r) {
+      var stClass = statusClass(r.status);
+      var actionsHtml = '';
+      var amountDisplay = '';
+
+      if (r.status === 'New') {
+        actionsHtml =
+          '<div class="adm-request-actions">' +
+            '<button class="adm-req-btn adm-req-accept" data-id="' + r.id + '">Review &amp; Quote</button>' +
+            '<button class="adm-req-btn adm-req-decline" data-id="' + r.id + '">Decline</button>' +
+          '</div>';
+      } else if (r.status === 'Quoted') {
+        amountDisplay = '\u20B9' + (r.quoted_amount || 0).toLocaleString('en-IN');
+        var responseNote = r.customer_response
+          ? ' \u00B7 Customer ' + r.customer_response
+          : ' \u00B7 Awaiting customer response';
+        actionsHtml = '<span style="font-size:0.75rem;color:var(--text-muted);">' + responseNote + '</span>';
+      } else if (r.status === 'Accepted') {
+        amountDisplay = '\u20B9' + (r.quoted_amount || r.amount || 0).toLocaleString('en-IN');
+        actionsHtml = '<span class="adm-status-badge accepted" style="font-size:0.72rem;">Accepted</span>';
+      } else if (r.status === 'Declined') {
+        actionsHtml = '<span class="adm-status-badge declined" style="font-size:0.72rem;">Declined</span>';
+      } else {
+        actionsHtml = '<span class="adm-status-badge ' + stClass + '" style="font-size:0.72rem;">' + r.status + '</span>';
+      }
+
+      if (!amountDisplay && r.amount) {
+        amountDisplay = '\u20B9' + r.amount.toLocaleString('en-IN');
+      }
+
+      html +=
+        '<div class="adm-request-card">' +
+          '<div class="adm-request-head">' +
+            '<span class="adm-status-badge ' + stClass + '" style="font-size:0.7rem;">' + r.status + '</span>' +
+            '<strong>' + r.client_name + '</strong>' +
+            (amountDisplay ? '<span class="adm-request-amount">' + amountDisplay + '</span>' : '') +
+          '</div>' +
+          '<div class="adm-request-desc">' + (r.description || '') + '</div>' +
+          '<div class="adm-request-foot">' +
+            '<span class="adm-request-date">Received: ' + formatDate(r.received_at) + '</span>' +
+            actionsHtml +
+          '</div>' +
+        '</div>';
+    });
+
+    if (requests.length === 0) {
+      html = '<div style="color:var(--text-muted);font-size:0.88rem;padding:16px 0;">No requests yet</div>';
+    }
+    document.getElementById('requestsList').innerHTML = html;
+
+    // Attach Review & Quote handler
+    document.querySelectorAll('.adm-req-accept').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var id = this.getAttribute('data-id');
+        openQuoteModal(id);
+      });
+    });
+    // Attach Decline handler
+    document.querySelectorAll('.adm-req-decline').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var id = this.getAttribute('data-id');
+        sb.from('requests').update({ status: 'Declined' }).eq('id', id).then(function(result) {
+          if (result.error) { showToast('Failed to decline', 'error'); return; }
+          showToast('Request declined', 'info');
+          loadDashboard();
+        });
+      });
+    });
+  }
+
+  // ── Quotation Modal Logic ──
+  var quoteModalEl = document.getElementById('quoteModal');
+  var currentQuoteId = null;
+
+  function createLineItemRow(desc, amt) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center;';
+    row.innerHTML =
+      '<input type="text" class="q-desc" placeholder="Description (e.g. Document fee)" value="' + (desc || '') + '" style="flex:2;padding:9px 12px;border:1.5px solid #d4d2c8;border-radius:10px;font-family:DM Sans,sans-serif;font-size:0.84rem;background:var(--bg-cream);outline:none;">' +
+      '<input type="number" class="q-amt" placeholder="Amount" value="' + (amt || '') + '" style="flex:1;padding:9px 12px;border:1.5px solid #d4d2c8;border-radius:10px;font-family:DM Sans,sans-serif;font-size:0.84rem;background:var(--bg-cream);outline:none;min-width:90px;">' +
+      '<button type="button" style="background:none;border:none;color:#dc3545;cursor:pointer;font-size:1.1rem;padding:4px;" onclick="this.parentElement.remove();updateQuoteTotal();">\u00D7</button>';
+    row.querySelectorAll('.q-amt').forEach(function(inp) {
+      inp.addEventListener('input', updateQuoteTotal);
+    });
+    return row;
+  }
+
+  window.updateQuoteTotal = function() {
+    var total = 0;
+    document.querySelectorAll('#qLineItems .q-amt').forEach(function(inp) {
+      total += parseInt(inp.value) || 0;
+    });
+    document.getElementById('qTotal').textContent = '\u20B9' + total.toLocaleString('en-IN');
+  };
+
+  function openQuoteModal(requestId) {
+    currentQuoteId = requestId;
+    var req = requests.find(function(r) { return r.id === requestId; });
+    if (!req) return;
+
+    document.getElementById('qClientName').textContent = req.client_name + (req.customer_email ? ' (' + req.customer_email + ')' : '');
+    document.getElementById('qDescription').textContent = req.description || '';
+
+    // Reset line items
+    var container = document.getElementById('qLineItems');
+    container.innerHTML = '';
+    container.appendChild(createLineItemRow('', ''));
+    document.getElementById('qTotal').textContent = '\u20B90';
+
+    // Mark as In Review
+    sb.from('requests').update({ status: 'In Review' }).eq('id', requestId).then(function() {});
+
+    quoteModalEl.style.display = 'flex';
+    void quoteModalEl.offsetHeight;
+    quoteModalEl.classList.add('show');
+  }
+
+  function closeQuoteModal() {
+    quoteModalEl.classList.remove('show');
+    setTimeout(function() { quoteModalEl.style.display = 'none'; }, 300);
+    currentQuoteId = null;
+  }
+
+  document.getElementById('qAddItem').addEventListener('click', function() {
+    document.getElementById('qLineItems').appendChild(createLineItemRow('', ''));
+  });
+
+  document.getElementById('qCancel').addEventListener('click', closeQuoteModal);
+  quoteModalEl.addEventListener('click', function(e) { if (e.target === quoteModalEl) closeQuoteModal(); });
+
+  document.getElementById('qSubmit').addEventListener('click', function() {
+    if (!currentQuoteId) return;
+
+    var items = [];
+    var total = 0;
+    document.querySelectorAll('#qLineItems > div').forEach(function(row) {
+      var desc = row.querySelector('.q-desc').value.trim();
+      var amt = parseInt(row.querySelector('.q-amt').value) || 0;
+      if (desc && amt > 0) {
+        items.push({ description: desc, amount: amt });
+        total += amt;
+      }
+    });
+
+    if (items.length === 0) {
+      showToast('Add at least one line item with a price', 'error');
+      return;
+    }
+
+    sb.from('requests').update({
+      status: 'Quoted',
+      quoted_amount: total,
+      quote_items: items,
+      quoted_at: new Date().toISOString()
+    }).eq('id', currentQuoteId).then(function(result) {
+      if (result.error) {
+        showToast('Failed to send quotation: ' + result.error.message, 'error');
+        return;
+      }
+      showToast('Quotation sent to customer', 'success');
+      closeQuoteModal();
+      loadDashboard();
+    });
+  });
+
+  // ── Call Appointments ──
+  function renderAppointments() {
+    var html = '';
+    appointments.forEach(function(a) {
+      var stClass = statusClass(a.status);
+      var actionsHtml = '';
+      if (a.status === 'New') {
+        actionsHtml =
+          '<div class="adm-request-actions">' +
+            '<button class="adm-req-btn adm-req-accept appt-done" data-id="' + a.id + '">Mark Contacted</button>' +
+          '</div>';
+      } else {
+        actionsHtml = '<span class="adm-status-badge ' + stClass + '" style="font-size:0.72rem;">' + a.status + '</span>';
+      }
+
+      html +=
+        '<div class="adm-request-card">' +
+          '<div class="adm-request-head">' +
+            '<span class="adm-status-badge ' + stClass + '" style="font-size:0.7rem;">' + a.status + '</span>' +
+            '<strong>' + a.name + '</strong>' +
+          '</div>' +
+          '<div class="adm-request-desc">' +
+            (a.email ? a.email + '<br>' : '') +
+            (a.phone ? a.phone + '<br>' : '') +
+            (a.message || '') +
+          '</div>' +
+          '<div class="adm-request-foot">' +
+            '<span class="adm-request-date">' + formatDate(a.created_at) + '</span>' +
+            actionsHtml +
+          '</div>' +
+        '</div>';
+    });
+
+    if (appointments.length === 0) {
+      html = '<div style="color:var(--text-muted);font-size:0.88rem;padding:16px 0;">No appointments yet</div>';
+    }
+    document.getElementById('appointmentsList').innerHTML = html;
+
+    document.querySelectorAll('.appt-done').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var id = this.getAttribute('data-id');
+        sb.from('appointments').update({ status: 'Contacted' }).eq('id', id).then(function(result) {
+          if (result.error) { showToast('Failed to update', 'error'); return; }
+          showToast('Marked as contacted', 'success');
+          loadDashboard();
+        });
+      });
+    });
+  }
+
+  // ── Add Client Modal ──
+  var modal = document.getElementById('addClientModal');
+
+  function openAddClient() {
+    modal.style.display = 'flex';
+    void modal.offsetHeight;
+    modal.classList.add('show');
+  }
+  function closeAddClient() {
+    modal.classList.remove('show');
+    setTimeout(function() { modal.style.display = 'none'; }, 300);
+  }
+
+  document.getElementById('btnAddClient').addEventListener('click', openAddClient);
+  document.getElementById('navAddClient').addEventListener('click', openAddClient);
+  document.getElementById('acCancel').addEventListener('click', closeAddClient);
+  modal.addEventListener('click', function(e) { if (e.target === modal) closeAddClient(); });
+
+  document.getElementById('acSubmit').addEventListener('click', function() {
+    var name = document.getElementById('acName').value.trim();
+    var email = document.getElementById('acEmail').value.trim();
+    var city = document.getElementById('acCity').value.trim();
+    var country = document.getElementById('acCountry').value.trim();
+    var status = document.getElementById('acStatus').value;
+
+    if (!name) { showToast('Please enter a name', 'error'); return; }
+
+    var services = [];
+    document.querySelectorAll('.adm-form-checks input:checked').forEach(function(cb) {
+      services.push(cb.value);
+    });
+
+    sb.from('clients').insert({
+      name: name, email: email, city: city, country: country,
+      services: services, status: status
+    }).then(function(result) {
+      if (result.error) {
+        showToast('Failed to add client: ' + result.error.message, 'error');
+        return;
+      }
+      showToast('Client added successfully', 'success');
+      closeAddClient();
+      // Reset form
+      document.getElementById('acName').value = '';
+      document.getElementById('acEmail').value = '';
+      document.getElementById('acCity').value = '';
+      document.getElementById('acCountry').value = '';
+      document.querySelectorAll('.adm-form-checks input:checked').forEach(function(cb) { cb.checked = false; });
+      loadDashboard();
+    });
+  });
+
+  // ── Export (placeholder) ──
+  document.getElementById('btnExport').addEventListener('click', function() {
+    showToast('Export coming soon', 'info');
+  });
+
+  // ── Sidebar navigation — scroll to sections ──
+  document.querySelectorAll('.adm-nav-item[data-section]').forEach(function(item) {
+    item.addEventListener('click', function() {
+      document.querySelectorAll('.adm-nav-item').forEach(function(i) { i.classList.remove('active'); });
+      this.classList.add('active');
+      var section = this.getAttribute('data-section');
+
+      switch (section) {
+        case 'dashboard':
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          renderTaskTable('all');
+          break;
+        case 'analytics':
+          showToast('Analytics dashboard coming soon', 'info');
+          break;
+        case 'clients':
+        case 'byservice':
+          var el = document.getElementById('sectionClients');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          break;
+        case 'tasks':
+          renderTaskTable('all');
+          var tasksEl = document.getElementById('sectionTasks');
+          if (tasksEl) tasksEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          break;
+        case 'pending':
+          renderTaskTable('pending');
+          var pendingTasks = document.getElementById('sectionTasks');
+          if (pendingTasks) pendingTasks.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          break;
+        case 'completed':
+          renderTaskTable('completed');
+          var completedTasks = document.getElementById('sectionTasks');
+          if (completedTasks) completedTasks.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          break;
+        case 'requests':
+          var reqEl = document.getElementById('sectionRequests');
+          if (reqEl) reqEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          break;
+        case 'onetime':
+          var oneEl = document.getElementById('sectionOnetime');
+          if (oneEl) oneEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          break;
+        default:
+          var target = document.getElementById('section' + section.charAt(0).toUpperCase() + section.slice(1));
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+})();
+</script>
+</body>
+</html>
