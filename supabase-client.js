@@ -47,14 +47,6 @@ window.supabaseClient.auth.onAuthStateChange((event, session) => {
           return;
       }
       
-      // Update the navigation UI immediately to fix the lag (no page refresh required)
-      var navActions = document.getElementById('navActions');
-      if (navActions) {
-        navActions.innerHTML =
-          '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;margin-right:12px;">Hi, ' + name.split(' ')[0] + '</span>' +
-          '<a href="account.html" class="btn-outline" style="border-color: rgba(255,255,255,0.4); color: white;">My Account</a>';
-      }
-      
       // If we just came back from an OAuth redirect, cleanly remove the bulky URL hash
       if (window.location.hash.includes('access_token=')) {
         window.history.replaceState(null, null, window.location.pathname + window.location.search);
