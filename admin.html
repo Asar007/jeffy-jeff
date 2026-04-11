@@ -410,15 +410,26 @@
   }
 
   // ── Clients by Service ──
-  var SERVICE_CATEGORIES = ['All', 'Property', 'Tax Filing', 'Banking', 'Aadhaar/OCI', 'Legal'];
   var AVATAR_COLORS = ['green', 'orange', 'blue', 'red', 'muted'];
 
   function getInitials(name) {
+    if (!name) return '?';
     return name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+  }
+
+  function getServiceCategories() {
+    var cats = ['All'];
+    clients.forEach(function(c) {
+      (c.services || []).forEach(function(s) {
+        if (cats.indexOf(s) === -1) cats.push(s);
+      });
+    });
+    return cats;
   }
 
   function renderClientsByService(filter) {
     filter = filter || 'All';
+    var SERVICE_CATEGORIES = getServiceCategories();
 
     // Tabs
     var tabsHtml = '';
@@ -445,16 +456,18 @@
     var listHtml = '';
     filtered.forEach(function(c, i) {
       var color = AVATAR_COLORS[i % AVATAR_COLORS.length];
-      var svcStr = (c.services || []).join(' \u00B7 ');
+      var svcStr = (c.services || []).join(' · ');
       var stClass = statusClass(c.status);
+      var location = [c.city, c.country].filter(Boolean).join(', ') || '—';
       listHtml +=
         '<div class="adm-client-row">' +
           '<div class="adm-avatar ' + color + '">' + getInitials(c.name) + '</div>' +
           '<div class="adm-client-info">' +
-            '<strong>' + c.name + '</strong>' +
-            '<span>' + (c.city || '') + ' \u00B7 ' + svcStr + '</span>' +
+            '<strong>' + (c.name || 'Unknown') + '</strong>' +
+            '<span class="adm-client-email">' + (c.email || '') + '</span>' +
+            '<span>' + location + (svcStr ? ' · ' + svcStr : '') + '</span>' +
           '</div>' +
-          '<div class="adm-client-status ' + stClass + '">' + c.status + '</div>' +
+          '<div class="adm-client-status ' + stClass + '">' + (c.status || 'Pending') + '</div>' +
         '</div>';
     });
 
