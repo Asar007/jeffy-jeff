@@ -755,12 +755,13 @@
       services.push(cb.value);
     });
 
-    sb.from('clients').insert({
+    sb.from('clients').insert([{
       name: name, email: email, city: city, country: country,
       services: services, status: status
-    }).then(function(result) {
+    }]).select().then(function(result) {
       if (result.error) {
         showToast('Failed to add client: ' + result.error.message, 'error');
+        console.error('Insert error:', result.error);
         return;
       }
       showToast('Client added successfully', 'success');
@@ -772,6 +773,9 @@
       document.getElementById('acCountry').value = '';
       document.querySelectorAll('.adm-form-checks input:checked').forEach(function(cb) { cb.checked = false; });
       loadDashboard();
+    }).catch(function(err) {
+      showToast('Error: ' + err.message, 'error');
+      console.error('Insert exception:', err);
     });
   });
 

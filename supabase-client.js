@@ -29,13 +29,15 @@ window.supabaseClient.auth.onAuthStateChange((event, session) => {
       // Dual-write: upsert into clients table for admin dashboard
       window.supabaseClient.from('clients').select('id').eq('email', session.user.email).then(function(res) {
         if (!res.data || res.data.length === 0) {
-          window.supabaseClient.from('clients').insert({
+          window.supabaseClient.from('clients').insert([{
             name: name,
             email: session.user.email,
             country: meta.country || '',
             city: '',
             services: [],
             status: 'Pending'
+          }]).select().then(function(r) {
+            if (r.error) console.error('Client insert failed:', r.error);
           });
         }
       });
