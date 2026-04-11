@@ -241,7 +241,8 @@
     'arfan@nribridgeindia.com',
     'admin@nribridgeindia.com',
     'admin@gmail.com',
-    'asif.mohamed1616@gmail.com'
+    'asif.mohamed1616@gmail.com',
+    'jeffrinmac@gmail.com'
   ];
 
   // ── Toast helper ──
@@ -319,10 +320,17 @@
       sb.from('requests').select('*').order('created_at', { ascending: false }),
       sb.from('appointments').select('*').order('created_at', { ascending: false })
     ]).then(function(results) {
+      if (results[0].error) console.error('Clients fetch error:', results[0].error);
+      if (results[1].error) console.error('Tasks fetch error:', results[1].error);
+      if (results[2].error) console.error('Requests fetch error:', results[2].error);
+      if (results[3].error) console.error('Appointments fetch error:', results[3].error);
+
       clients = results[0].data || [];
       tasks = results[1].data || [];
       requests = results[2].data || [];
       appointments = results[3].data || [];
+
+      console.log('Dashboard loaded:', { clients: clients.length, tasks: tasks.length, requests: requests.length, appointments: appointments.length });
       renderStats();
       renderTaskTable();
       renderClientsByService();
@@ -341,11 +349,11 @@
     var openRequests = requests.filter(function(r) { return r.status === 'New' || r.status === 'In Review'; }).length;
 
     document.getElementById('statClients').textContent = clients.length;
-    document.getElementById('statClientsSub').textContent = '+' + activeCount + ' active';
+    document.getElementById('statClientsSub').textContent = '+' + activeCount + ' this month';
     document.getElementById('statPending').textContent = pendingTasks;
     document.getElementById('statPendingSub').textContent = pendingTasks > 0 ? 'Needs attention' : 'All clear';
     document.getElementById('statCompleted').textContent = completedTasks;
-    document.getElementById('statCompletedSub').textContent = 'Total completed';
+    document.getElementById('statCompletedSub').textContent = '+' + completedTasks + ' this month';
     document.getElementById('statRequests').textContent = openRequests;
     document.getElementById('statRequestsSub').textContent = openRequests > 0 ? 'Awaiting review' : 'All handled';
   }
@@ -419,8 +427,12 @@
     return name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
   }
 
+  // Always include standard service categories
+  var STANDARD_SERVICES = ['Property', 'Tax Filing', 'Banking', 'Aadhaar/OCI', 'Legal'];
+
   function getServiceCategories() {
     var cats = ['All'];
+    STANDARD_SERVICES.forEach(function(s) { cats.push(s); });
     clients.forEach(function(c) {
       (c.services || []).forEach(function(s) {
         if (cats.indexOf(s) === -1) cats.push(s);
@@ -461,29 +473,21 @@
       var services = c.services || [];
       var stClass = statusClass(c.status || 'Pending');
       var location = [c.city, c.country].filter(Boolean).join(', ');
-      var joinedDate = c.created_at ? formatDate(c.created_at) : '';
 
-      var svcBadges = '';
-      services.forEach(function(s) {
-        svcBadges += '<span class="adm-svc-tag">' + s + '</span>';
-      });
-      if (!svcBadges) svcBadges = '<span class="adm-svc-tag none">No services yet</span>';
+      // Build inline service + location subtitle
+      var subtitleParts = [];
+      if (location) subtitleParts.push(location);
+      if (services.length > 0) subtitleParts.push(services.join(' + '));
+      var subtitle = subtitleParts.join(' · ') || 'No services yet';
 
       listHtml +=
-        '<div class="adm-client-card">' +
-          '<div class="adm-client-card-top">' +
-            '<div class="adm-avatar ' + color + '">' + getInitials(c.name) + '</div>' +
-            '<div class="adm-client-main">' +
-              '<strong>' + (c.name || 'Unknown') + '</strong>' +
-              '<span class="adm-client-email">' + (c.email || 'No email') + '</span>' +
-            '</div>' +
-            '<div class="adm-client-status ' + stClass + '">' + (c.status || 'Pending') + '</div>' +
+        '<div class="adm-client-row">' +
+          '<div class="adm-avatar ' + color + '">' + getInitials(c.name) + '</div>' +
+          '<div class="adm-client-info">' +
+            '<strong>' + (c.name || 'Unknown') + '</strong>' +
+            '<span>' + subtitle + '</span>' +
           '</div>' +
-          '<div class="adm-client-card-details">' +
-            (location ? '<div class="adm-client-detail"><span class="adm-detail-label">Location</span><span>' + location + '</span></div>' : '') +
-            (joinedDate ? '<div class="adm-client-detail"><span class="adm-detail-label">Joined</span><span>' + joinedDate + '</span></div>' : '') +
-          '</div>' +
-          '<div class="adm-client-card-services">' + svcBadges + '</div>' +
+          '<div class="adm-client-status ' + stClass + '">' + (c.status || 'Pending') + '</div>' +
         '</div>';
     });
 

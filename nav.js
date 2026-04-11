@@ -56,7 +56,7 @@
     }
   }
 
-  var ADMIN_EMAILS = ['iqbalahmedkm@gmail.com', 'arfan@nribridgeindia.com', 'admin@nribridgeindia.com', 'admin@gmail.com', 'asif.mohamed1616@gmail.com'];
+  var ADMIN_EMAILS = ['iqbalahmedkm@gmail.com', 'arfan@nribridgeindia.com', 'admin@nribridgeindia.com', 'admin@gmail.com', 'asif.mohamed1616@gmail.com', 'jeffrinmac@gmail.com'];
 
   // ── Helper: render the logged-in nav state ────────────────────────────────
   function renderLoggedIn(name, email) {
