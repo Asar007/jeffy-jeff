@@ -397,12 +397,14 @@
     var html = '';
     filtered.forEach(function(t) {
       var client = t.clients || {};
+      var clientName = client.name || t.description || '—';
+      var clientLoc = [client.city, client.country].filter(Boolean).join(', ');
       html +=
         '<tr>' +
-          '<td><div class="adm-client-cell"><span class="adm-client-name">' + (client.name || '—') + '</span><span class="adm-client-loc">' + (client.city || '') + (client.country ? ', ' + client.country : '') + '</span></div></td>' +
-          '<td>' + t.service + '</td>' +
+          '<td><div class="adm-client-cell"><span class="adm-client-name">' + clientName + '</span><span class="adm-client-loc">' + clientLoc + '</span></div></td>' +
+          '<td>' + (t.service || '—') + '</td>' +
           '<td><span class="adm-status-badge ' + statusClass(t.status) + '">' + t.status + '</span></td>' +
-          '<td><div class="adm-progress-bar"><div class="adm-progress-fill ' + progressColor(t.status) + '" style="width:' + t.progress + '%;"></div></div></td>' +
+          '<td><div class="adm-progress-bar"><div class="adm-progress-fill ' + progressColor(t.status) + '" style="width:' + (t.progress || 0) + '%;"></div></div></td>' +
           '<td class="adm-deadline">' + formatDate(t.deadline) + '</td>' +
         '</tr>';
     });
@@ -456,18 +458,32 @@
     var listHtml = '';
     filtered.forEach(function(c, i) {
       var color = AVATAR_COLORS[i % AVATAR_COLORS.length];
-      var svcStr = (c.services || []).join(' · ');
-      var stClass = statusClass(c.status);
-      var location = [c.city, c.country].filter(Boolean).join(', ') || '—';
+      var services = c.services || [];
+      var stClass = statusClass(c.status || 'Pending');
+      var location = [c.city, c.country].filter(Boolean).join(', ');
+      var joinedDate = c.created_at ? formatDate(c.created_at) : '';
+
+      var svcBadges = '';
+      services.forEach(function(s) {
+        svcBadges += '<span class="adm-svc-tag">' + s + '</span>';
+      });
+      if (!svcBadges) svcBadges = '<span class="adm-svc-tag none">No services yet</span>';
+
       listHtml +=
-        '<div class="adm-client-row">' +
-          '<div class="adm-avatar ' + color + '">' + getInitials(c.name) + '</div>' +
-          '<div class="adm-client-info">' +
-            '<strong>' + (c.name || 'Unknown') + '</strong>' +
-            '<span class="adm-client-email">' + (c.email || '') + '</span>' +
-            '<span>' + location + (svcStr ? ' · ' + svcStr : '') + '</span>' +
+        '<div class="adm-client-card">' +
+          '<div class="adm-client-card-top">' +
+            '<div class="adm-avatar ' + color + '">' + getInitials(c.name) + '</div>' +
+            '<div class="adm-client-main">' +
+              '<strong>' + (c.name || 'Unknown') + '</strong>' +
+              '<span class="adm-client-email">' + (c.email || 'No email') + '</span>' +
+            '</div>' +
+            '<div class="adm-client-status ' + stClass + '">' + (c.status || 'Pending') + '</div>' +
           '</div>' +
-          '<div class="adm-client-status ' + stClass + '">' + (c.status || 'Pending') + '</div>' +
+          '<div class="adm-client-card-details">' +
+            (location ? '<div class="adm-client-detail"><span class="adm-detail-label">Location</span><span>' + location + '</span></div>' : '') +
+            (joinedDate ? '<div class="adm-client-detail"><span class="adm-detail-label">Joined</span><span>' + joinedDate + '</span></div>' : '') +
+          '</div>' +
+          '<div class="adm-client-card-services">' + svcBadges + '</div>' +
         '</div>';
     });
 
