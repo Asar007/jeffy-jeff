@@ -39,7 +39,7 @@
   <div class="adm-nav-group">
     <div class="adm-nav-label">Requests</div>
     <a class="adm-nav-item" data-section="requests">Custom Requests <span class="adm-nav-badge red" id="badgeRequests">—</span></a>
-    <a class="adm-nav-item" data-section="onetime">One-time Payment</a>
+    <a class="adm-nav-item" data-section="onetime">Appointments <span class="adm-nav-badge orange" id="badgeAppts">—</span></a>
   </div>
 </aside>
 
@@ -54,7 +54,12 @@
         <p id="admDate"></p>
       </div>
       <div class="adm-header-actions">
-        <button class="adm-btn-export" id="btnExport">Export</button>
+        <div class="adm-search-wrap">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="admSearch" placeholder="Search clients, tasks..." class="adm-search-input">
+        </div>
+        <button class="adm-btn-export" id="btnExport">Export CSV</button>
+        <button class="adm-btn-export" id="btnRefresh" title="Refresh data">↻</button>
         <button class="adm-btn-add" id="btnAddClient">+ Add Client</button>
       </div>
     </div>
@@ -228,6 +233,78 @@
   </div>
 </div>
 
+<!-- ── Task Edit Modal ────────────────────────────────────────────── -->
+<div class="adm-modal-overlay" id="taskEditModal">
+  <div class="adm-modal" style="max-width:440px;">
+    <h3>Update Task</h3>
+    <div style="background:var(--bg-cream);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:2px;">Task</div>
+      <div style="font-weight:600;" id="teService"></div>
+      <div style="font-size:0.82rem;color:var(--text-mid);margin-top:4px;" id="teDescription"></div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;" id="teClient"></div>
+    </div>
+    <div class="adm-form-group">
+      <label>Status</label>
+      <select id="teStatus">
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="In Review">In Review</option>
+        <option value="Completed">Completed</option>
+      </select>
+    </div>
+    <div class="adm-form-group">
+      <label>Progress (%)</label>
+      <input type="range" id="teProgress" min="0" max="100" step="5" style="width:100%;">
+      <div style="text-align:center;font-size:0.82rem;font-weight:600;color:var(--text-mid);" id="teProgressLabel">0%</div>
+    </div>
+    <div class="adm-form-group">
+      <label>Deadline</label>
+      <input type="date" id="teDeadline" style="width:100%;padding:9px 12px;border:1.5px solid #d4d2c8;border-radius:10px;font-family:inherit;font-size:0.84rem;background:var(--bg-cream);">
+    </div>
+    <div class="adm-modal-actions">
+      <button class="adm-btn-add" id="teSubmit">Save Changes</button>
+      <button class="adm-btn-export" id="teCancel">Cancel</button>
+      <button class="adm-btn-export" id="teDelete" style="color:#dc3545;border-color:#dc3545;margin-left:auto;">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Client Detail Modal ──────────────────────────────────────── -->
+<div class="adm-modal-overlay" id="clientDetailModal">
+  <div class="adm-modal" style="max-width:520px;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div class="adm-avatar green" id="cdAvatar" style="width:52px;height:52px;font-size:1rem;"></div>
+      <div style="flex:1;">
+        <h3 style="margin:0;" id="cdName"></h3>
+        <div style="font-size:0.82rem;color:var(--text-mid);" id="cdEmail"></div>
+      </div>
+      <div id="cdStatusBadge"></div>
+    </div>
+    <div style="display:flex;gap:16px;margin-bottom:16px;">
+      <div style="flex:1;background:var(--bg-cream);border-radius:var(--radius-md);padding:12px 14px;">
+        <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.04em;">Location</div>
+        <div style="font-size:0.88rem;color:var(--text-dark);margin-top:2px;" id="cdLocation">—</div>
+      </div>
+      <div style="flex:1;background:var(--bg-cream);border-radius:var(--radius-md);padding:12px 14px;">
+        <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.04em;">Joined</div>
+        <div style="font-size:0.88rem;color:var(--text-dark);margin-top:2px;" id="cdJoined">—</div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.04em;margin-bottom:8px;">Services</div>
+      <div id="cdServices" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    </div>
+    <div>
+      <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.04em;margin-bottom:8px;">Tasks</div>
+      <div id="cdTasks"></div>
+    </div>
+    <div class="adm-modal-actions" style="margin-top:20px;">
+      <button class="adm-btn-export" id="cdClose">Close</button>
+      <button class="adm-btn-export" id="cdDelete" style="color:#dc3545;border-color:#dc3545;margin-left:auto;">Delete Client</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 
@@ -365,6 +442,8 @@
     document.getElementById('badgeTasks').textContent = pendingTasks;
     var openReqs = requests.filter(function(r) { return r.status === 'New' || r.status === 'In Review'; }).length;
     document.getElementById('badgeRequests').textContent = openReqs;
+    var newAppts = appointments.filter(function(a) { return a.status === 'New'; }).length;
+    document.getElementById('badgeAppts').textContent = newAppts;
   }
 
   // ── Task Table ──
@@ -408,15 +487,22 @@
       var clientName = client.name || t.description || '—';
       var clientLoc = [client.city, client.country].filter(Boolean).join(', ');
       html +=
-        '<tr>' +
+        '<tr class="adm-task-row" data-task-id="' + t.id + '" style="cursor:pointer;" title="Click to edit">' +
           '<td><div class="adm-client-cell"><span class="adm-client-name">' + clientName + '</span><span class="adm-client-loc">' + clientLoc + '</span></div></td>' +
           '<td>' + (t.service || '—') + '</td>' +
           '<td><span class="adm-status-badge ' + statusClass(t.status) + '">' + t.status + '</span></td>' +
-          '<td><div class="adm-progress-bar"><div class="adm-progress-fill ' + progressColor(t.status) + '" style="width:' + (t.progress || 0) + '%;"></div></div></td>' +
+          '<td><div class="adm-progress-bar"><div class="adm-progress-fill ' + progressColor(t.status) + '" style="width:' + (t.progress || 0) + '%;"></div></div><span class="adm-progress-pct">' + (t.progress || 0) + '%</span></td>' +
           '<td class="adm-deadline">' + formatDate(t.deadline) + '</td>' +
         '</tr>';
     });
     tbody.innerHTML = html;
+
+    // Attach click handlers
+    document.querySelectorAll('.adm-task-row').forEach(function(row) {
+      row.addEventListener('click', function() {
+        openTaskEdit(this.getAttribute('data-task-id'));
+      });
+    });
   }
 
   // ── Clients by Service ──
@@ -481,7 +567,7 @@
       var subtitle = subtitleParts.join(' · ') || 'No services yet';
 
       listHtml +=
-        '<div class="adm-client-row">' +
+        '<div class="adm-client-row" data-client-id="' + c.id + '" style="cursor:pointer;" title="Click for details">' +
           '<div class="adm-avatar ' + color + '">' + getInitials(c.name) + '</div>' +
           '<div class="adm-client-info">' +
             '<strong>' + (c.name || 'Unknown') + '</strong>' +
@@ -495,6 +581,13 @@
       listHtml = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.88rem;">No clients in this category</div>';
     }
     document.getElementById('clientList').innerHTML = listHtml;
+
+    // Attach click handlers for client detail
+    document.querySelectorAll('.adm-client-row[data-client-id]').forEach(function(row) {
+      row.addEventListener('click', function() {
+        openClientDetail(this.getAttribute('data-client-id'));
+      });
+    });
   }
 
   // ── Pending by Category ──
@@ -812,9 +905,217 @@
     });
   });
 
-  // ── Export (placeholder) ──
+  // ── Task Edit Modal ──
+  var teModal = document.getElementById('taskEditModal');
+  var currentTaskId = null;
+
+  function openTaskEdit(taskId) {
+    var t = tasks.find(function(x) { return x.id === taskId; });
+    if (!t) return;
+    currentTaskId = taskId;
+    var client = t.clients || {};
+    document.getElementById('teService').textContent = t.service || '—';
+    document.getElementById('teDescription').textContent = t.description || '';
+    document.getElementById('teClient').textContent = client.name ? 'Client: ' + client.name : '';
+    document.getElementById('teStatus').value = t.status;
+    document.getElementById('teProgress').value = t.progress || 0;
+    document.getElementById('teProgressLabel').textContent = (t.progress || 0) + '%';
+    document.getElementById('teDeadline').value = t.deadline || '';
+    teModal.style.display = 'flex';
+    void teModal.offsetHeight;
+    teModal.classList.add('show');
+  }
+
+  function closeTaskEdit() {
+    teModal.classList.remove('show');
+    setTimeout(function() { teModal.style.display = 'none'; }, 300);
+    currentTaskId = null;
+  }
+
+  document.getElementById('teProgress').addEventListener('input', function() {
+    document.getElementById('teProgressLabel').textContent = this.value + '%';
+  });
+
+  document.getElementById('teStatus').addEventListener('change', function() {
+    if (this.value === 'Completed') {
+      document.getElementById('teProgress').value = 100;
+      document.getElementById('teProgressLabel').textContent = '100%';
+    }
+  });
+
+  document.getElementById('teCancel').addEventListener('click', closeTaskEdit);
+  teModal.addEventListener('click', function(e) { if (e.target === teModal) closeTaskEdit(); });
+
+  document.getElementById('teSubmit').addEventListener('click', function() {
+    if (!currentTaskId) return;
+    var updates = {
+      status: document.getElementById('teStatus').value,
+      progress: parseInt(document.getElementById('teProgress').value) || 0,
+      deadline: document.getElementById('teDeadline').value || null
+    };
+    sb.from('tasks').update(updates).eq('id', currentTaskId).select().then(function(r) {
+      if (r.error) { showToast('Failed to update: ' + r.error.message, 'error'); return; }
+      showToast('Task updated', 'success');
+      closeTaskEdit();
+      loadDashboard();
+    });
+  });
+
+  document.getElementById('teDelete').addEventListener('click', function() {
+    if (!currentTaskId || !confirm('Delete this task?')) return;
+    sb.from('tasks').delete().eq('id', currentTaskId).then(function(r) {
+      if (r.error) { showToast('Failed to delete', 'error'); return; }
+      showToast('Task deleted', 'info');
+      closeTaskEdit();
+      loadDashboard();
+    });
+  });
+
+  // ── Client Detail Modal ──
+  var cdModal = document.getElementById('clientDetailModal');
+  var currentClientId = null;
+
+  function openClientDetail(clientId) {
+    var c = clients.find(function(x) { return x.id === clientId; });
+    if (!c) return;
+    currentClientId = clientId;
+    document.getElementById('cdAvatar').textContent = getInitials(c.name);
+    document.getElementById('cdName').textContent = c.name || 'Unknown';
+    document.getElementById('cdEmail').textContent = c.email || 'No email';
+    document.getElementById('cdStatusBadge').innerHTML = '<span class="adm-status-badge ' + statusClass(c.status || 'Pending') + '" style="font-size:0.78rem;">' + (c.status || 'Pending') + '</span>';
+    document.getElementById('cdLocation').textContent = [c.city, c.country].filter(Boolean).join(', ') || '—';
+    document.getElementById('cdJoined').textContent = c.created_at ? formatDate(c.created_at) : '—';
+
+    var svcHtml = '';
+    (c.services || []).forEach(function(s) {
+      svcHtml += '<span class="adm-svc-tag">' + s + '</span>';
+    });
+    document.getElementById('cdServices').innerHTML = svcHtml || '<span style="font-size:0.82rem;color:var(--text-muted);">No services assigned</span>';
+
+    var clientTasks = tasks.filter(function(t) { return t.client_id === clientId; });
+    var tasksHtml = '';
+    if (clientTasks.length === 0) {
+      tasksHtml = '<div style="font-size:0.82rem;color:var(--text-muted);">No tasks assigned</div>';
+    } else {
+      clientTasks.forEach(function(t) {
+        tasksHtml +=
+          '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eae7dc;">' +
+            '<span style="flex:1;font-size:0.84rem;">' + t.service + '</span>' +
+            '<span class="adm-status-badge ' + statusClass(t.status) + '" style="font-size:0.7rem;">' + t.status + '</span>' +
+            '<span style="font-size:0.78rem;color:var(--text-muted);">' + (t.progress || 0) + '%</span>' +
+          '</div>';
+      });
+    }
+    document.getElementById('cdTasks').innerHTML = tasksHtml;
+
+    cdModal.style.display = 'flex';
+    void cdModal.offsetHeight;
+    cdModal.classList.add('show');
+  }
+
+  function closeClientDetail() {
+    cdModal.classList.remove('show');
+    setTimeout(function() { cdModal.style.display = 'none'; }, 300);
+    currentClientId = null;
+  }
+
+  document.getElementById('cdClose').addEventListener('click', closeClientDetail);
+  cdModal.addEventListener('click', function(e) { if (e.target === cdModal) closeClientDetail(); });
+
+  document.getElementById('cdDelete').addEventListener('click', function() {
+    if (!currentClientId || !confirm('Delete this client and all their tasks?')) return;
+    sb.from('tasks').delete().eq('client_id', currentClientId).then(function() {
+      sb.from('clients').delete().eq('id', currentClientId).then(function(r) {
+        if (r.error) { showToast('Failed to delete', 'error'); return; }
+        showToast('Client deleted', 'info');
+        closeClientDetail();
+        loadDashboard();
+      });
+    });
+  });
+
+  // ── Export CSV ──
   document.getElementById('btnExport').addEventListener('click', function() {
-    showToast('Export coming soon', 'info');
+    if (clients.length === 0) { showToast('No data to export', 'info'); return; }
+    var csv = 'Name,Email,City,Country,Services,Status,Joined\n';
+    clients.forEach(function(c) {
+      csv += '"' + (c.name || '') + '","' + (c.email || '') + '","' + (c.city || '') + '","' + (c.country || '') + '","' + (c.services || []).join('; ') + '","' + (c.status || '') + '","' + (c.created_at ? new Date(c.created_at).toLocaleDateString() : '') + '"\n';
+    });
+    var blob = new Blob([csv], { type: 'text/csv' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'nri-clients-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    showToast('CSV downloaded', 'success');
+  });
+
+  // ── Refresh Button ──
+  document.getElementById('btnRefresh').addEventListener('click', function() {
+    showToast('Refreshing...', 'info');
+    loadDashboard();
+  });
+
+  // ── Auto-refresh every 30s ──
+  setInterval(function() { loadDashboard(); }, 30000);
+
+  // ── Search ──
+  document.getElementById('admSearch').addEventListener('input', function() {
+    var q = this.value.toLowerCase().trim();
+    if (!q) { renderTaskTable(activeTaskFilter); renderClientsByService(); return; }
+
+    // Filter tasks
+    var tbody = document.getElementById('taskTableBody');
+    var matchedTasks = tasks.filter(function(t) {
+      var client = t.clients || {};
+      return (client.name || '').toLowerCase().indexOf(q) !== -1 ||
+             (t.service || '').toLowerCase().indexOf(q) !== -1 ||
+             (t.description || '').toLowerCase().indexOf(q) !== -1 ||
+             (t.status || '').toLowerCase().indexOf(q) !== -1;
+    });
+    if (matchedTasks.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px;">No matching tasks</td></tr>';
+    } else {
+      var html = '';
+      matchedTasks.forEach(function(t) {
+        var client = t.clients || {};
+        var clientName = client.name || t.description || '—';
+        var clientLoc = [client.city, client.country].filter(Boolean).join(', ');
+        html += '<tr class="adm-task-row" data-task-id="' + t.id + '" style="cursor:pointer;">' +
+          '<td><div class="adm-client-cell"><span class="adm-client-name">' + clientName + '</span><span class="adm-client-loc">' + clientLoc + '</span></div></td>' +
+          '<td>' + (t.service || '—') + '</td>' +
+          '<td><span class="adm-status-badge ' + statusClass(t.status) + '">' + t.status + '</span></td>' +
+          '<td><div class="adm-progress-bar"><div class="adm-progress-fill ' + progressColor(t.status) + '" style="width:' + (t.progress || 0) + '%;"></div></div><span class="adm-progress-pct">' + (t.progress || 0) + '%</span></td>' +
+          '<td class="adm-deadline">' + formatDate(t.deadline) + '</td></tr>';
+      });
+      tbody.innerHTML = html;
+      document.querySelectorAll('.adm-task-row').forEach(function(row) {
+        row.addEventListener('click', function() { openTaskEdit(this.getAttribute('data-task-id')); });
+      });
+    }
+
+    // Filter clients
+    var matchedClients = clients.filter(function(c) {
+      return (c.name || '').toLowerCase().indexOf(q) !== -1 ||
+             (c.email || '').toLowerCase().indexOf(q) !== -1 ||
+             (c.city || '').toLowerCase().indexOf(q) !== -1 ||
+             (c.country || '').toLowerCase().indexOf(q) !== -1 ||
+             (c.services || []).join(' ').toLowerCase().indexOf(q) !== -1;
+    });
+    var listHtml = '';
+    matchedClients.forEach(function(c, i) {
+      var color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+      var subtitle = [c.city, c.country].filter(Boolean).join(', ');
+      if (c.services && c.services.length) subtitle += (subtitle ? ' · ' : '') + c.services.join(' + ');
+      listHtml += '<div class="adm-client-row" data-client-id="' + c.id + '" style="cursor:pointer;">' +
+        '<div class="adm-avatar ' + color + '">' + getInitials(c.name) + '</div>' +
+        '<div class="adm-client-info"><strong>' + (c.name || 'Unknown') + '</strong><span>' + (subtitle || 'No details') + '</span></div>' +
+        '<div class="adm-client-status ' + statusClass(c.status || 'Pending') + '">' + (c.status || 'Pending') + '</div></div>';
+    });
+    if (matchedClients.length === 0) listHtml = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.88rem;">No matching clients</div>';
+    document.getElementById('clientList').innerHTML = listHtml;
+    document.querySelectorAll('.adm-client-row[data-client-id]').forEach(function(row) {
+      row.addEventListener('click', function() { openClientDetail(this.getAttribute('data-client-id')); });
+    });
   });
 
   // ── Sidebar navigation — scroll to sections ──
