@@ -317,7 +317,12 @@
         phone: phone,
         message: (message || '') + timeNote,
         status: 'New'
-      }]).then(function(){}).catch(function(){});
+      }]).select().then(function(result){
+        if (result.error) console.error('Appointment insert failed:', result.error);
+        else console.log('Appointment saved to Supabase');
+      }).catch(function(err){ console.error('Appointment insert exception:', err); });
+    } else {
+      console.warn('Supabase client not available — appointment saved to localStorage only');
     }
 
     // Show success modal
