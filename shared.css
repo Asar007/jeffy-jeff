@@ -2664,50 +2664,72 @@ footer {
 /* ── Pipeline Stepper (Task Edit Modal) ──────────────────────────── */
 .te-pipeline {
   display: flex; flex-direction: column; gap: 0;
-  border: 1.5px solid #e8e5db; border-radius: var(--radius-md);
-  overflow: hidden; background: var(--white);
+  padding: 4px 0; position: relative;
 }
 .te-pipe-step {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 16px; cursor: pointer; transition: all 0.2s;
-  border-bottom: 1px solid #eae7dc; position: relative;
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 16px; cursor: pointer; transition: all 0.2s;
+  border-radius: 10px; position: relative; margin: 0 2px;
 }
-.te-pipe-step:last-child { border-bottom: none; }
-.te-pipe-step:hover { background: rgba(74,106,46,0.04); }
+.te-pipe-step:hover { background: rgba(74,106,46,0.05); }
 .te-pipe-step.active {
-  background: rgba(74,106,46,0.06);
-  border-left: 3px solid var(--green-pop);
+  background: rgba(74,106,46,0.07);
+  box-shadow: inset 3px 0 0 var(--green-pop);
 }
-.te-pipe-step.done {
-  background: rgba(74,106,46,0.03);
+.te-pipe-step.done { opacity: 0.85; }
+.te-pipe-step.done:hover { opacity: 1; }
+
+/* Vertical connector line between steps */
+.te-pipe-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 28px; /* center of indicator: 16px padding + 13px half of 26px */
+  top: 40px; /* below indicator */
+  width: 2px;
+  bottom: -2px;
+  background: #ddd8cc;
+  z-index: 0;
 }
+.te-pipe-step.done:not(:last-child)::after {
+  background: var(--green-pop); opacity: 0.35;
+}
+.te-pipe-step.active:not(:last-child)::after {
+  background: var(--green-pop); opacity: 0.2;
+}
+
 .te-pipe-indicator {
-  width: 26px; height: 26px; border-radius: 50%;
+  width: 28px; height: 28px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; margin-top: 1px;
+  flex-shrink: 0; position: relative; z-index: 1;
   background: #eae7dc; color: var(--text-muted);
   font-size: 0.72rem; font-weight: 700;
-  transition: all 0.2s;
+  transition: all 0.25s; border: 2px solid transparent;
 }
 .te-pipe-step.active .te-pipe-indicator {
   background: var(--green-pop); color: #fff;
+  border-color: var(--green-pop);
+  box-shadow: 0 0 0 4px rgba(74,106,46,0.15);
 }
 .te-pipe-step.done .te-pipe-indicator {
-  background: rgba(74,106,46,0.15); color: var(--green-pop);
+  background: #fff; color: var(--green-pop);
+  border-color: var(--green-pop);
 }
-.te-pipe-num { font-size: 0.72rem; }
-.te-pipe-content { flex: 1; min-width: 0; }
+.te-pipe-num { font-size: 0.72rem; line-height: 1; }
+.te-pipe-content { flex: 1; min-width: 0; padding-top: 2px; }
 .te-pipe-label {
   font-size: 0.84rem; font-weight: 600; color: var(--text-dark);
   line-height: 1.3;
 }
 .te-pipe-step.done .te-pipe-label { color: var(--green-pop); }
-.te-pipe-step.active .te-pipe-label { color: var(--text-dark); }
+.te-pipe-step.active .te-pipe-label { color: var(--text-dark); font-weight: 700; }
 .te-pipe-desc {
-  font-size: 0.74rem; color: var(--text-muted); line-height: 1.45;
-  margin-top: 3px;
+  font-size: 0.73rem; color: var(--text-muted); line-height: 1.5;
+  margin-top: 4px; display: none;
 }
-.te-pipe-step.active .te-pipe-desc { color: var(--text-mid); }
+/* Only show description for active step */
+.te-pipe-step.active .te-pipe-desc {
+  display: block; color: var(--text-mid);
+}
 
 /* ── Admin Documents Table ───────────────────────────────────────── */
 .adm-doc-row { transition: background 0.15s; }
