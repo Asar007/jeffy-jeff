@@ -18,6 +18,7 @@ if (!SUPABASE_URL || SUPABASE_URL === "YOUR_SUPABASE_URL") {
 window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Sync Supabase Auth state with existing UI logic
+var _clientInsertDone = {};
 window.supabaseClient.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
     if (session && session.user) {
@@ -26,12 +27,15 @@ window.supabaseClient.auth.onAuthStateChange((event, session) => {
       
       localStorage.setItem('nri_session', JSON.stringify({ name: name, email: session.user.email }));
 
-      // Dual-write: upsert into clients table for admin dashboard
-      window.supabaseClient.from('clients').select('id').eq('email', session.user.email).then(function(res) {
-        if (!res.data || res.data.length === 0) {
+      // Dual-write: insert into clients table for admin dashboard (deduplicated)
+      var userEmail = session.user.email;
+      if (!_clientInsertDone[userEmail]) {
+        _clientInsertDone[userEmail] = true;
+        window.supabaseClient.from('clients').select('id').eq('email', userEmail).then(function(res) {
+          if (res.data && res.data.length > 0) return;
           window.supabaseClient.from('clients').insert([{
             name: name,
-            email: session.user.email,
+            email: userEmail,
             country: meta.country || '',
             city: '',
             services: [],
@@ -39,8 +43,8 @@ window.supabaseClient.auth.onAuthStateChange((event, session) => {
           }]).select().then(function(r) {
             if (r.error) console.error('Client insert failed:', r.error);
           });
-        }
-      });
+        });
+      }
       
       // Check if this is a login missing phone or country (e.g. from Google OAuth)
       const currentPath = window.location.pathname.split('/').pop() || '';
