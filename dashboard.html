@@ -1381,11 +1381,16 @@
             if (pct) pct.textContent = realProgress + '% complete';
           }
 
-          // Update step tracker based on real progress
+          // Update step tracker based on real progress or saved current_step
           if (realProgress !== null && svc.steps) {
             var totalSteps = svc.steps.length;
-            var realStep = Math.min(Math.floor((realProgress / 100) * totalSteps), totalSteps - 1);
-            if (realProgress >= 100) realStep = totalSteps - 1;
+            var realStep;
+            if (typeof task.current_step === 'number' && task.current_step >= 0) {
+              realStep = Math.min(task.current_step, totalSteps - 1);
+            } else {
+              realStep = Math.min(Math.floor((realProgress / 100) * totalSteps), totalSteps - 1);
+              if (realProgress >= 100) realStep = totalSteps - 1;
+            }
 
             // Update description to match real step
             var pipeline = SERVICE_PIPELINES[svcKey];

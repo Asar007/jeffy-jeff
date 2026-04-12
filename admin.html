@@ -235,7 +235,7 @@
 
 <!-- ── Task Edit Modal ────────────────────────────────────────────── -->
 <div class="adm-modal-overlay" id="taskEditModal">
-  <div class="adm-modal" style="max-width:440px;">
+  <div class="adm-modal" style="max-width:520px;">
     <h3>Update Task</h3>
     <div style="background:var(--bg-cream);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:16px;">
       <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:2px;">Task</div>
@@ -243,6 +243,15 @@
       <div style="font-size:0.82rem;color:var(--text-mid);margin-top:4px;" id="teDescription"></div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;" id="teClient"></div>
     </div>
+
+    <!-- Pipeline Steps -->
+    <div class="adm-form-group" id="tePipelineGroup">
+      <label>Pipeline Progress <span style="font-weight:400;color:var(--text-muted);font-size:0.76rem;">— click a step to set current stage</span></label>
+      <div class="te-pipeline" id="tePipeline">
+        <!-- JS renders pipeline steps here -->
+      </div>
+    </div>
+
     <div class="adm-form-group">
       <label>Status</label>
       <select id="teStatus">
@@ -905,9 +914,131 @@
     });
   });
 
+  // ── Service Pipelines (matching customer dashboard) ──
+  var SERVICE_PIPELINES = {
+    home: {
+      steps: ['Onboarding & PoA', 'Property Inspection', 'Tenant Acquisition', 'Lease & Registration', 'Rent Collection'],
+      descriptions: [
+        'Collecting property documents. Power of Attorney execution initiated.',
+        'Physical inspection underway. Condition report & society NOC being obtained.',
+        'Property listed. Screening tenants — ID verification, background check.',
+        'Drafting rental agreement on stamp paper. Sub-Registrar registration scheduled.',
+        'First rent collected. TDS compliance handled. Monthly reports begun.'
+      ]
+    },
+    vehicle: {
+      steps: ['Document Verification', 'Insurance Assessment', 'Owner Approval', 'Policy Issuance', 'Ongoing Monitoring'],
+      descriptions: [
+        'Collecting RC, previous insurance, PUC. Verifying ownership chain.',
+        'Gathering quotes from 3+ insurers. Comparing coverage options.',
+        'Insurance comparison sheet ready. Awaiting owner approval.',
+        'KYC completed, payment processed. Digital policy issued.',
+        'Calendar reminders set for renewals. Periodic checks scheduled.'
+      ]
+    },
+    parental: {
+      steps: ['Health Profile Setup', 'Coordinator Assigned', 'Initial Check-up', 'Ongoing Care Active'],
+      descriptions: [
+        'Building digital health vault — medical history, medications, insurance.',
+        'Dedicated local coordinator assigned. Emergency contacts verified.',
+        'Doctor visit scheduled. Vitals recorded, baseline health report created.',
+        'Regular check-ups scheduled. Medicine tracking active. 24/7 helpline live.'
+      ]
+    },
+    legal: {
+      steps: ['Document Collection', 'Review & Computation', 'Filing & Submission', 'Verification & Closure'],
+      descriptions: [
+        'Gathering PAN, Passport, bank statements, Form 16/26AS.',
+        'Verifying residential status. Selecting ITR form. Computing tax liability.',
+        'E-filing on incometax.gov.in in progress. E-verification initiated.',
+        'CPC processed return. ITR-V received. Refund processed if applicable.'
+      ]
+    }
+  };
+
+  // Map service name strings to pipeline keys
+  function getPipelineKey(serviceName) {
+    if (!serviceName) return null;
+    var s = serviceName.toLowerCase();
+    if (s.indexOf('home') !== -1 || s.indexOf('property') !== -1) return 'home';
+    if (s.indexOf('vehicle') !== -1) return 'vehicle';
+    if (s.indexOf('parental') !== -1 || s.indexOf('care') !== -1) return 'parental';
+    if (s.indexOf('legal') !== -1 || s.indexOf('tax') !== -1 || s.indexOf('document') !== -1) return 'legal';
+    return null;
+  }
+
   // ── Task Edit Modal ──
   var teModal = document.getElementById('taskEditModal');
   var currentTaskId = null;
+  var currentPipelineStep = -1;
+
+  function renderPipeline(pipelineKey, currentStep) {
+    var container = document.getElementById('tePipeline');
+    var pipelineGroup = document.getElementById('tePipelineGroup');
+
+    if (!pipelineKey || !SERVICE_PIPELINES[pipelineKey]) {
+      pipelineGroup.style.display = 'none';
+      container.innerHTML = '';
+      return;
+    }
+
+    pipelineGroup.style.display = '';
+    var pipeline = SERVICE_PIPELINES[pipelineKey];
+    var html = '';
+
+    pipeline.steps.forEach(function(step, si) {
+      var stepClass = 'te-pipe-step';
+      if (si < currentStep) stepClass += ' done';
+      else if (si === currentStep) stepClass += ' active';
+
+      var checkIcon = '<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>';
+      var dotIcon = '<span class="te-pipe-num">' + (si + 1) + '</span>';
+
+      html += '<div class="' + stepClass + '" data-step="' + si + '">' +
+        '<div class="te-pipe-indicator">' + (si < currentStep ? checkIcon : dotIcon) + '</div>' +
+        '<div class="te-pipe-content">' +
+          '<div class="te-pipe-label">' + step + '</div>' +
+          '<div class="te-pipe-desc">' + pipeline.descriptions[si] + '</div>' +
+        '</div>' +
+      '</div>';
+    });
+
+    container.innerHTML = html;
+
+    // Attach click handlers to each step
+    container.querySelectorAll('.te-pipe-step').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var stepIdx = parseInt(this.getAttribute('data-step'));
+        selectPipelineStep(pipelineKey, stepIdx);
+      });
+    });
+  }
+
+  function selectPipelineStep(pipelineKey, stepIdx) {
+    var pipeline = SERVICE_PIPELINES[pipelineKey];
+    if (!pipeline) return;
+
+    currentPipelineStep = stepIdx;
+    var totalSteps = pipeline.steps.length;
+    var progress = Math.round(((stepIdx + 1) / totalSteps) * 100);
+
+    // Auto-set progress
+    document.getElementById('teProgress').value = progress;
+    document.getElementById('teProgressLabel').textContent = progress + '%';
+
+    // Auto-set status
+    var statusEl = document.getElementById('teStatus');
+    if (stepIdx === 0 && progress <= 20) {
+      statusEl.value = 'Pending';
+    } else if (stepIdx >= totalSteps - 1) {
+      statusEl.value = 'Completed';
+    } else {
+      statusEl.value = 'In Progress';
+    }
+
+    // Re-render pipeline visual
+    renderPipeline(pipelineKey, stepIdx);
+  }
 
   function openTaskEdit(taskId) {
     var t = tasks.find(function(x) { return x.id === taskId; });
@@ -921,6 +1052,23 @@
     document.getElementById('teProgress').value = t.progress || 0;
     document.getElementById('teProgressLabel').textContent = (t.progress || 0) + '%';
     document.getElementById('teDeadline').value = t.deadline || '';
+
+    // Render pipeline stepper
+    var pipelineKey = getPipelineKey(t.service);
+    if (pipelineKey && SERVICE_PIPELINES[pipelineKey]) {
+      var pipeline = SERVICE_PIPELINES[pipelineKey];
+      var totalSteps = pipeline.steps.length;
+      // Derive current step from saved current_step or from progress %
+      var step = typeof t.current_step === 'number' ? t.current_step :
+                 Math.min(Math.floor(((t.progress || 0) / 100) * totalSteps), totalSteps - 1);
+      if (t.progress >= 100) step = totalSteps - 1;
+      currentPipelineStep = step;
+      renderPipeline(pipelineKey, step);
+    } else {
+      currentPipelineStep = -1;
+      renderPipeline(null, -1);
+    }
+
     teModal.style.display = 'flex';
     void teModal.offsetHeight;
     teModal.classList.add('show');
@@ -930,16 +1078,38 @@
     teModal.classList.remove('show');
     setTimeout(function() { teModal.style.display = 'none'; }, 300);
     currentTaskId = null;
+    currentPipelineStep = -1;
   }
 
   document.getElementById('teProgress').addEventListener('input', function() {
     document.getElementById('teProgressLabel').textContent = this.value + '%';
+    // Sync pipeline visual with manual slider change
+    var t = tasks.find(function(x) { return x.id === currentTaskId; });
+    if (t) {
+      var pKey = getPipelineKey(t.service);
+      if (pKey && SERVICE_PIPELINES[pKey]) {
+        var total = SERVICE_PIPELINES[pKey].steps.length;
+        var val = parseInt(this.value);
+        var step = val >= 100 ? total - 1 : Math.min(Math.floor((val / 100) * total), total - 1);
+        currentPipelineStep = step;
+        renderPipeline(pKey, step);
+      }
+    }
   });
 
   document.getElementById('teStatus').addEventListener('change', function() {
     if (this.value === 'Completed') {
       document.getElementById('teProgress').value = 100;
       document.getElementById('teProgressLabel').textContent = '100%';
+      // Move pipeline to last step
+      var t = tasks.find(function(x) { return x.id === currentTaskId; });
+      if (t) {
+        var pKey = getPipelineKey(t.service);
+        if (pKey && SERVICE_PIPELINES[pKey]) {
+          currentPipelineStep = SERVICE_PIPELINES[pKey].steps.length - 1;
+          renderPipeline(pKey, currentPipelineStep);
+        }
+      }
     }
   });
 
@@ -951,10 +1121,24 @@
     var updates = {
       status: document.getElementById('teStatus').value,
       progress: parseInt(document.getElementById('teProgress').value) || 0,
-      deadline: document.getElementById('teDeadline').value || null
+      deadline: document.getElementById('teDeadline').value || null,
+      current_step: currentPipelineStep >= 0 ? currentPipelineStep : null
     };
     sb.from('tasks').update(updates).eq('id', currentTaskId).select().then(function(r) {
-      if (r.error) { showToast('Failed to update: ' + r.error.message, 'error'); return; }
+      if (r.error) {
+        // If current_step column doesn't exist yet, retry without it
+        if (r.error.message && r.error.message.indexOf('current_step') !== -1) {
+          delete updates.current_step;
+          sb.from('tasks').update(updates).eq('id', currentTaskId).select().then(function(r2) {
+            if (r2.error) { showToast('Failed to update: ' + r2.error.message, 'error'); return; }
+            showToast('Task updated (add current_step column to tasks table for step tracking)', 'info');
+            closeTaskEdit();
+            loadDashboard();
+          });
+          return;
+        }
+        showToast('Failed to update: ' + r.error.message, 'error'); return;
+      }
       showToast('Task updated', 'success');
       closeTaskEdit();
       loadDashboard();
