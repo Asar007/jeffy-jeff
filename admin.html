@@ -131,6 +131,20 @@
       <div class="adm-client-list" id="clientList"></div>
     </div>
 
+    <!-- Client Documents -->
+    <div id="sectionDocuments" style="display:none; margin-top:32px;">
+      <div class="adm-section-head" style="margin-bottom:18px;">
+        <h2>Client Documents</h2>
+        <span style="font-size:0.78rem;color:var(--text-muted);" id="docCountLabel"></span>
+      </div>
+      <div class="adm-docs-filters" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="adm-filter-tab active" data-doc-filter="all">All</button>
+      </div>
+      <div class="adm-docs-grid" id="docsGrid">
+        <div style="text-align:center;color:var(--text-muted);padding:40px;">Loading documents…</div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ── RIGHT PANEL ─────────────────────────────────────────────── -->
@@ -161,31 +175,6 @@
         <a class="adm-link">View all &rarr;</a>
       </div>
       <div class="adm-requests-list" id="appointmentsList"></div>
-    </div>
-
-    <!-- Documents -->
-    <div style="margin-top:24px;" id="sectionDocuments">
-      <div class="adm-section-head">
-        <h2>Client Documents</h2>
-        <span style="font-size:0.78rem;color:var(--text-muted);" id="docCountLabel"></span>
-      </div>
-      <div class="adm-docs-filters" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-        <button class="adm-filter-tab active" data-doc-filter="all">All</button>
-      </div>
-      <table class="adm-table" id="docsTable">
-        <thead>
-          <tr>
-            <th>Client</th>
-            <th>Document</th>
-            <th>Service</th>
-            <th>Uploaded</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="docsTableBody">
-          <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">Loading documents…</td></tr>
-        </tbody>
-      </table>
     </div>
 
   </aside>
@@ -1381,6 +1370,28 @@
   var adminDocs = [];
   var activeDocFilter = 'all';
 
+  var DOC_TYPE_ICONS = {
+    pdf: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    image: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+    doc: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+  };
+
+  function getDocIcon(fileName) {
+    if (!fileName) return DOC_TYPE_ICONS.doc;
+    var ext = fileName.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return DOC_TYPE_ICONS.pdf;
+    if (['jpg','jpeg','png','gif','webp','svg'].indexOf(ext) !== -1) return DOC_TYPE_ICONS.image;
+    return DOC_TYPE_ICONS.doc;
+  }
+
+  function getDocColorClass(fileName) {
+    if (!fileName) return 'doc-type-other';
+    var ext = fileName.split('.').pop().toLowerCase();
+    if (ext === 'pdf') return 'doc-type-pdf';
+    if (['jpg','jpeg','png','gif','webp','svg'].indexOf(ext) !== -1) return 'doc-type-image';
+    return 'doc-type-other';
+  }
+
   function loadDocuments() {
     sb.from('documents')
       .select('*')
@@ -1388,15 +1399,15 @@
       .then(function(result) {
         if (result.error) {
           console.error('Documents fetch error:', result.error);
-          document.getElementById('docsTableBody').innerHTML =
-            '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">Could not load documents</td></tr>';
+          document.getElementById('docsGrid').innerHTML =
+            '<div style="text-align:center;color:var(--text-muted);padding:40px;">Could not load documents</div>';
           return;
         }
         adminDocs = result.data || [];
         document.getElementById('badgeDocs').textContent = adminDocs.length;
-        document.getElementById('docCountLabel').textContent = adminDocs.length + ' document' + (adminDocs.length !== 1 ? 's' : '');
+        document.getElementById('docCountLabel').textContent = adminDocs.length + ' document' + (adminDocs.length !== 1 ? 's' : '') + ' uploaded';
 
-        // Build filter tabs from unique service types
+        // Build filter tabs
         var serviceTypes = {};
         adminDocs.forEach(function(d) {
           var svc = d.service_type || 'Other';
@@ -1414,64 +1425,80 @@
             document.querySelectorAll('[data-doc-filter]').forEach(function(b) { b.classList.remove('active'); });
             this.classList.add('active');
             activeDocFilter = this.getAttribute('data-doc-filter');
-            renderDocsTable();
+            renderDocsGrid();
           });
         });
 
-        renderDocsTable();
+        renderDocsGrid();
       });
   }
 
-  function renderDocsTable() {
+  function renderDocsGrid() {
     var filtered = activeDocFilter === 'all'
       ? adminDocs
       : adminDocs.filter(function(d) { return (d.service_type || 'Other') === activeDocFilter; });
 
-    var tbody = document.getElementById('docsTableBody');
+    var grid = document.getElementById('docsGrid');
     if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No documents uploaded yet</td></tr>';
+      grid.innerHTML =
+        '<div class="adm-docs-empty">' +
+          '<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color:#ccc;margin-bottom:12px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+          '<h4>No documents yet</h4>' +
+          '<p>Documents uploaded by clients from their dashboard will appear here.</p>' +
+        '</div>';
       return;
     }
 
     var html = '';
-    filtered.forEach(function(doc) {
+    filtered.forEach(function(doc, idx) {
       var uploadDate = doc.created_at
         ? new Date(doc.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : '—';
       var clientEmail = doc.client_email || '—';
-      // Try to find client name from clients list
       var clientObj = clients.find(function(c) { return c.email === doc.client_email; });
       var clientName = clientObj ? clientObj.name : clientEmail;
+      var initials = clientName.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+      var colorClass = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+      var fileExt = (doc.file_name || '').split('.').pop().toUpperCase() || '—';
 
-      var viewBtn = doc.storage_path
-        ? '<button class="adm-doc-view-btn" data-path="' + doc.storage_path + '" data-doc-name="' + (doc.doc_name || '') + '" data-file-name="' + (doc.file_name || '') + '" data-client="' + clientName + '" data-service="' + (doc.service_type || '') + '" data-date="' + uploadDate + '">View</button>'
-        : '<span style="font-size:0.75rem;color:var(--text-muted);">Local only</span>';
+      var viewAttr = doc.storage_path
+        ? 'data-path="' + doc.storage_path + '" data-doc-name="' + (doc.doc_name || '') + '" data-file-name="' + (doc.file_name || '') + '" data-client="' + clientName + '" data-service="' + (doc.service_type || '') + '" data-date="' + uploadDate + '"'
+        : '';
+      var cardClickable = doc.storage_path ? ' adm-dcard-clickable' : '';
 
       html +=
-        '<tr class="adm-doc-row">' +
-          '<td><div class="adm-client-cell"><span class="adm-client-name">' + clientName + '</span><span class="adm-client-loc">' + clientEmail + '</span></div></td>' +
-          '<td>' +
-            '<div style="font-weight:600;font-size:0.84rem;">' + (doc.doc_name || '—') + '</div>' +
-            '<div style="font-size:0.72rem;color:var(--text-muted);">' + (doc.file_name || '') + '</div>' +
-          '</td>' +
-          '<td><span class="adm-svc-tag">' + (doc.service_type || '—') + '</span></td>' +
-          '<td class="adm-deadline">' + uploadDate + '</td>' +
-          '<td>' + viewBtn + '</td>' +
-        '</tr>';
+        '<div class="adm-dcard' + cardClickable + '" ' + viewAttr + '>' +
+          '<div class="adm-dcard-top">' +
+            '<div class="adm-dcard-icon ' + getDocColorClass(doc.file_name) + '">' + getDocIcon(doc.file_name) + '</div>' +
+            '<span class="adm-dcard-ext">' + fileExt + '</span>' +
+          '</div>' +
+          '<div class="adm-dcard-name">' + (doc.doc_name || 'Untitled') + '</div>' +
+          '<div class="adm-dcard-file">' + (doc.file_name || '') + '</div>' +
+          '<div class="adm-dcard-meta">' +
+            '<div class="adm-dcard-client">' +
+              '<div class="adm-avatar-sm ' + colorClass + '">' + initials + '</div>' +
+              '<span>' + clientName + '</span>' +
+            '</div>' +
+            '<div class="adm-dcard-details">' +
+              '<span class="adm-svc-tag" style="font-size:0.68rem;padding:2px 8px;">' + (doc.service_type || '—') + '</span>' +
+              '<span class="adm-dcard-date">' + uploadDate + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
     });
-    tbody.innerHTML = html;
+    grid.innerHTML = html;
 
-    // Attach view handlers — open in preview modal
-    document.querySelectorAll('.adm-doc-view-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
+    // Attach click handlers for clickable cards
+    grid.querySelectorAll('.adm-dcard-clickable').forEach(function(card) {
+      card.addEventListener('click', function() {
         var path = this.getAttribute('data-path');
         var docName = this.getAttribute('data-doc-name') || 'Document';
         var fileName = this.getAttribute('data-file-name') || '';
-        var clientName = this.getAttribute('data-client') || '';
+        var client = this.getAttribute('data-client') || '';
         var service = this.getAttribute('data-service') || '';
         var date = this.getAttribute('data-date') || '';
         if (!path) return;
-        openDocPreview(path, docName, fileName, clientName, service, date);
+        openDocPreview(path, docName, fileName, client, service, date);
       });
     });
   }
@@ -1592,6 +1619,14 @@
       document.querySelectorAll('.adm-nav-item').forEach(function(i) { i.classList.remove('active'); });
       this.classList.add('active');
       var section = this.getAttribute('data-section');
+
+      // Toggle documents section visibility
+      var docSection = document.getElementById('sectionDocuments');
+      if (section === 'documents') {
+        docSection.style.display = 'block';
+      } else {
+        docSection.style.display = 'none';
+      }
 
       switch (section) {
         case 'dashboard':

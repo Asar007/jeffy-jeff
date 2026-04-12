@@ -2731,15 +2731,7 @@ footer {
   display: block; color: var(--text-mid);
 }
 
-/* ── Admin Documents Table ───────────────────────────────────────── */
-.adm-doc-row { transition: background 0.15s; }
-.adm-doc-row:hover { background: rgba(74,106,46,0.03); }
-.adm-doc-view-btn {
-  padding: 5px 14px; border-radius: var(--radius-pill); border: 1.5px solid var(--green-pop);
-  background: transparent; color: var(--green-pop); font-family: 'DM Sans', sans-serif;
-  font-size: 0.76rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
-}
-.adm-doc-view-btn:hover { background: var(--green-pop); color: #fff; }
+/* ── Admin Documents Section ─────────────────────────────────────── */
 .adm-filter-tab {
   padding: 5px 14px; border-radius: var(--radius-pill); border: 1.5px solid #d4d2c8;
   background: transparent; color: var(--text-mid); font-family: 'DM Sans', sans-serif;
@@ -2748,6 +2740,84 @@ footer {
 .adm-filter-tab:hover { border-color: var(--green-pop); color: var(--green-pop); }
 .adm-filter-tab.active {
   background: var(--green-pop); color: #fff; border-color: var(--green-pop);
+}
+
+/* Document Card Grid */
+.adm-docs-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+.adm-docs-empty {
+  grid-column: 1 / -1; text-align: center; padding: 60px 20px;
+  color: var(--text-muted);
+}
+.adm-docs-empty h4 {
+  font-family: 'Playfair Display', serif; font-size: 1.1rem;
+  color: var(--text-mid); margin: 0 0 6px;
+}
+.adm-docs-empty p {
+  font-size: 0.84rem; max-width: 320px; margin: 0 auto; line-height: 1.55;
+}
+
+.adm-dcard {
+  background: var(--white); border: 1.5px solid #eae7dc; border-radius: 12px;
+  padding: 18px; transition: all 0.2s; position: relative;
+}
+.adm-dcard-clickable { cursor: pointer; }
+.adm-dcard-clickable:hover {
+  border-color: var(--green-pop); transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+.adm-dcard-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.adm-dcard-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.adm-dcard-icon.doc-type-pdf { background: rgba(220,53,69,0.08); color: #dc3545; }
+.adm-dcard-icon.doc-type-image { background: rgba(59,130,246,0.08); color: #3b82f6; }
+.adm-dcard-icon.doc-type-other { background: rgba(74,106,46,0.08); color: var(--green-pop); }
+.adm-dcard-ext {
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  color: var(--text-muted); letter-spacing: 0.04em;
+  padding: 2px 8px; background: var(--bg-cream); border-radius: 6px;
+}
+.adm-dcard-name {
+  font-size: 0.9rem; font-weight: 700; color: var(--text-dark);
+  line-height: 1.3; margin-bottom: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.adm-dcard-file {
+  font-size: 0.72rem; color: var(--text-muted); margin-bottom: 14px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.adm-dcard-meta {
+  display: flex; flex-direction: column; gap: 8px;
+  padding-top: 12px; border-top: 1px solid #f0ede4;
+}
+.adm-dcard-client {
+  display: flex; align-items: center; gap: 8px;
+}
+.adm-dcard-client span {
+  font-size: 0.78rem; font-weight: 600; color: var(--text-dark);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.adm-avatar-sm {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.55rem; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.adm-dcard-details {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px;
+}
+.adm-dcard-date {
+  font-size: 0.7rem; color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .adm-docs-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Document Preview Modal ──────────────────────────────────────── */
