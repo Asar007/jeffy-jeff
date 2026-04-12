@@ -2171,6 +2171,25 @@ footer {
   background: rgba(220,53,69,0.1); color: #dc3545;
 }
 
+/* ── Live Status Badge (real-time admin data indicator) ───────────── */
+.dash-live-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: var(--radius-pill);
+  background: rgba(74,106,46,0.08); color: var(--green-pop);
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; margin-left: 8px; vertical-align: middle;
+}
+.dash-live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green-pop);
+  animation: dashLivePulse 2s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes dashLivePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
 /* ── Quotation Cards (customer dashboard) ────────────────────────── */
 .dash-quote-card {
   background: var(--white); border: 1px solid #eae7dc; border-radius: var(--radius-md);
@@ -2187,6 +2206,8 @@ footer {
   padding: 3px 10px; border-radius: var(--radius-pill);
   font-size: 0.7rem; font-weight: 600;
 }
+.dash-quote-badge.new { background: rgba(59,130,246,0.1); color: #2563eb; }
+.dash-quote-badge.in-review { background: rgba(168,85,247,0.1); color: #7c3aed; }
 .dash-quote-badge.quoted { background: rgba(232,168,58,0.12); color: #b8860b; }
 .dash-quote-badge.accepted { background: rgba(74,106,46,0.1); color: var(--green-pop); }
 .dash-quote-badge.declined { background: rgba(220,53,69,0.08); color: #b0444f; }
@@ -2228,6 +2249,56 @@ footer {
   background: transparent; color: #dc3545; border-color: #dc3545;
 }
 .dash-quote-decline:hover { background: #dc3545; color: #fff; }
+
+/* ── Custom Request Service Cards (inline in My Services) ────────── */
+.dash-svc-icon.cat-custom {
+  background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(168,85,247,0.12));
+  color: #6366f1;
+}
+.dash-custom-quote-detail {
+  margin-top: 14px; padding: 16px; border-radius: var(--radius-md);
+  background: var(--bg-cream); border: 1px solid rgba(0,0,0,0.06);
+}
+.dash-quote-line-items {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;
+}
+.dash-quote-line-item {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.84rem; color: var(--text-dark); padding: 6px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.06);
+}
+.dash-quote-line-item:last-child { border-bottom: none; }
+.dash-quote-line-item span:last-child { font-weight: 600; color: var(--text-dark); }
+.dash-quote-line-total {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.92rem; font-weight: 700; color: var(--text-dark);
+  padding: 10px 0 14px; border-top: 1.5px solid rgba(0,0,0,0.1);
+  margin-bottom: 4px;
+}
+.custom-request-card .dash-quote-actions {
+  padding-top: 6px;
+}
+.dash-custom-pending-note {
+  display: flex; align-items: center; gap: 8px; margin-top: 14px;
+  font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;
+  padding: 12px 14px; border-radius: var(--radius-md);
+  background: rgba(232,168,58,0.06); border: 1px solid rgba(232,168,58,0.15);
+}
+.dash-custom-pending-note svg { flex-shrink: 0; color: #b8860b; }
+.dash-custom-resolved-note {
+  display: flex; align-items: center; gap: 8px; margin-top: 14px;
+  font-size: 0.84rem; font-weight: 600; line-height: 1.5;
+  padding: 12px 14px; border-radius: var(--radius-md);
+}
+.dash-custom-resolved-note.accepted {
+  color: var(--green-pop); background: rgba(74,106,46,0.06);
+  border: 1px solid rgba(74,106,46,0.15);
+}
+.dash-custom-resolved-note.declined {
+  color: #b0444f; background: rgba(220,53,69,0.04);
+  border: 1px solid rgba(220,53,69,0.1);
+}
+.dash-custom-resolved-note svg { flex-shrink: 0; }
 
 /* ══════════════════════════════════════════════════════════════════
    ADMIN DASHBOARD (Founder Portal)

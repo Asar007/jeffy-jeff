@@ -74,15 +74,7 @@
         </div>
       </div>
 
-      <!-- My Quotations -->
-      <div class="dash-payments" id="quotationsSection" style="display:none;">
-        <div class="dash-section-header">
-          <h2>My Quotations</h2>
-        </div>
-        <div id="quotationsList">
-          <!-- JS renders quotation cards here -->
-        </div>
-      </div>
+      <!-- Quotations now rendered as service cards in My Services -->
     </div>
 
     <!-- RIGHT: SIDEBAR -->
@@ -112,7 +104,7 @@
       <div class="dash-request-card">
         <h3>Request Additional Service</h3>
         <p>Need something specific? Tell us what you need and we'll handle it.</p>
-        <a href="onboarding.html" class="btn-hero">Submit Request →</a>
+        <a href="quote-builder.html" class="btn-hero">Submit Request →</a>
       </div>
 
     </aside>
@@ -146,6 +138,8 @@
 <footer></footer>
 <script src="footer.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="invoice-generator.js"></script>
 
@@ -1126,8 +1120,10 @@
   });
 
   // ══════════════════════════════════════════════════════════════════
-  // ── MY QUOTATIONS (from Supabase requests table) ────────────────
+  // ── CUSTOM QUOTATIONS (rendered as service cards in My Services) ─
   // ══════════════════════════════════════════════════════════════════
+
+  var customRequestIcon = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>';
 
   function loadQuotations() {
     if (!window.supabaseClient) return;
@@ -1135,68 +1131,135 @@
     sb.from('requests')
       .select('*')
       .eq('customer_email', session.email)
-      .in('status', ['Quoted', 'Accepted', 'Declined'])
-      .order('quoted_at', { ascending: false })
+      .in('status', ['New', 'In Review', 'Quoted', 'Accepted', 'Declined'])
+      .order('created_at', { ascending: false })
       .then(function(result) {
         var quotes = result.data || [];
         if (quotes.length === 0) return;
 
-        document.getElementById('quotationsSection').style.display = 'block';
-        var html = '';
+        // Remove old custom-request cards (for re-render)
+        document.querySelectorAll('.dash-svc-card.custom-request-card').forEach(function(el) { el.remove(); });
 
-        quotes.forEach(function(q) {
-          var badgeClass = q.status.toLowerCase();
+        var servicesList = document.getElementById('servicesList');
+        var cardsHtml = '';
+
+        quotes.forEach(function(q, qi) {
           var items = q.quote_items || [];
+          var isPending = q.status === 'New' || q.status === 'In Review';
+          var isQuoted = q.status === 'Quoted';
+          var isAccepted = q.status === 'Accepted';
+          var isDeclined = q.status === 'Declined';
 
-          var tableHtml = '';
-          items.forEach(function(item) {
-            tableHtml +=
-              '<tr>' +
-                '<td>' + item.description + '</td>' +
-                '<td>\u20B9' + (item.amount || 0).toLocaleString('en-IN') + '</td>' +
-              '</tr>';
-          });
-
-          var actionsHtml = '';
-          if (q.status === 'Quoted') {
-            actionsHtml =
-              '<div class="dash-quote-actions">' +
-                '<button class="dash-quote-btn dash-quote-accept" data-qid="' + q.id + '">Accept Quotation</button>' +
-                '<button class="dash-quote-btn dash-quote-decline" data-qid="' + q.id + '">Decline</button>' +
-              '</div>';
+          // Map request status to dashboard status style
+          var statusClass, statusText, progress;
+          if (isPending) {
+            statusClass = 'status-pending'; statusText = 'Under Review'; progress = 15;
+          } else if (isQuoted) {
+            statusClass = 'status-in-progress'; statusText = 'Quotation Ready'; progress = 50;
+          } else if (isAccepted) {
+            statusClass = 'status-completed'; statusText = 'Accepted'; progress = 100;
           } else {
-            var responseLabel = q.status === 'Accepted' ? 'You accepted this quotation' : 'You declined this quotation';
-            actionsHtml = '<div style="font-size:0.82rem;color:var(--text-muted);margin-top:10px;">' + responseLabel + '</div>';
+            statusClass = 'status-pending'; statusText = 'Declined'; progress = 0;
           }
 
-          html +=
-            '<div class="dash-quote-card">' +
-              '<div class="dash-quote-head">' +
-                '<span class="dash-quote-badge ' + badgeClass + '">' + q.status + '</span>' +
-                '<h4>Custom Service Request</h4>' +
+          // Step tracker for custom requests
+          var customSteps = ['Request Sent', 'Under Review', 'Quotation', 'Approval'];
+          var currentStep = isPending ? 1 : isQuoted ? 2 : (isAccepted || isDeclined) ? 3 : 0;
+
+          var stepsHtml = '';
+          customSteps.forEach(function(step, si) {
+            var dotClass = '', dotContent = '';
+            if (si < currentStep) { dotClass = 'done'; dotContent = checkSvg; }
+            else if (si === currentStep) { dotClass = 'active'; dotContent = dotSvg; }
+            stepsHtml += '<div class="dash-progress-step">' +
+              '<div class="dash-progress-dot ' + dotClass + '">' + dotContent + '</div>' +
+              '<div class="dash-progress-label ' + (si < currentStep ? 'done' : si === currentStep ? 'active' : '') + '">' + step + '</div>' +
+              '</div>';
+            if (si < customSteps.length - 1) {
+              stepsHtml += '<div class="dash-progress-connector ' + (si < currentStep ? 'done' : '') + '"></div>';
+            }
+          });
+
+          // Description text
+          var descText = q.description || 'Custom service request';
+
+          // Action area — depends on status
+          var actionHtml = '';
+          if (isQuoted) {
+            // Show line items + accept/decline
+            var tableRows = '';
+            items.forEach(function(item) {
+              tableRows += '<div class="dash-quote-line-item">' +
+                '<span>' + item.description + '</span>' +
+                '<span>\u20B9' + (item.amount || 0).toLocaleString('en-IN') + '</span>' +
+              '</div>';
+            });
+            actionHtml =
+              '<div class="dash-custom-quote-detail">' +
+                '<div class="dash-quote-line-items">' + tableRows + '</div>' +
+                '<div class="dash-quote-line-total">' +
+                  '<span>Total</span>' +
+                  '<span>\u20B9' + (q.quoted_amount || 0).toLocaleString('en-IN') + '</span>' +
+                '</div>' +
+                '<div class="dash-quote-actions">' +
+                  '<button class="dash-quote-btn dash-quote-accept" data-qid="' + q.id + '">Accept Quotation</button>' +
+                  '<button class="dash-quote-btn dash-quote-decline" data-qid="' + q.id + '">Decline</button>' +
+                '</div>' +
+              '</div>';
+          } else if (isPending) {
+            actionHtml = '<div class="dash-custom-pending-note">' +
+              '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+              'Our team is reviewing your request. You\u2019ll receive a quotation shortly.' +
+            '</div>';
+          } else if (isAccepted) {
+            actionHtml = '<div class="dash-custom-resolved-note accepted">' +
+              '<svg viewBox="0 0 12 12" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>' +
+              'Quotation accepted — \u20B9' + (q.quoted_amount || 0).toLocaleString('en-IN') + '. Work will begin shortly.' +
+            '</div>';
+          } else if (isDeclined) {
+            actionHtml = '<div class="dash-custom-resolved-note declined">' +
+              '<svg viewBox="0 0 12 12" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>' +
+              'You declined this quotation.' +
+            '</div>';
+          }
+
+          // Date
+          var reqDate = q.created_at ? new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+
+          cardsHtml +=
+            '<div class="dash-svc-card custom-request-card" style="animation:fadeUp 0.5s ease both;animation-delay:' + ((serviceEntries.length + qi) * 0.1) + 's;opacity:0;">' +
+              '<div class="dash-svc-header">' +
+                '<div class="dash-svc-icon cat-custom">' + customRequestIcon + '</div>' +
+                '<div>' +
+                  '<div class="dash-svc-title-row">' +
+                    '<h3>Custom Request</h3>' +
+                    '<span class="dash-status ' + statusClass + '">' + statusText + '</span>' +
+                  '</div>' +
+                '</div>' +
               '</div>' +
-              '<div class="dash-quote-desc">' + (q.description || '') + '</div>' +
-              '<table class="dash-quote-table">' +
-                '<thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>' +
-                '<tbody>' + tableHtml + '</tbody>' +
-              '</table>' +
-              '<div class="dash-quote-total">' +
-                '<span>Total</span>' +
-                '<span>\u20B9' + (q.quoted_amount || 0).toLocaleString('en-IN') + '</span>' +
+              '<p class="dash-svc-desc">' + descText + '</p>' +
+              '<div class="dash-progress">' +
+                '<div class="dash-progress-steps">' + stepsHtml + '</div>' +
+                '<div class="dash-progress-track"><div class="dash-progress-fill" style="width:' + progress + '%;"></div></div>' +
+                '<div class="dash-progress-meta">' +
+                  '<span class="dash-progress-pct">' + progress + '% complete</span>' +
+                  '<span class="dash-progress-eta">' + (reqDate ? 'Requested ' + reqDate : '') + '</span>' +
+                '</div>' +
               '</div>' +
-              actionsHtml +
+              actionHtml +
             '</div>';
         });
 
-        document.getElementById('quotationsList').innerHTML = html;
+        // Append custom request cards to services list
+        servicesList.insertAdjacentHTML('beforeend', cardsHtml);
 
         // Attach accept/decline handlers
-        document.querySelectorAll('.dash-quote-accept').forEach(function(btn) {
+        servicesList.querySelectorAll('.dash-quote-accept').forEach(function(btn) {
           btn.addEventListener('click', function() {
             respondToQuote(this.getAttribute('data-qid'), 'accepted');
           });
         });
-        document.querySelectorAll('.dash-quote-decline').forEach(function(btn) {
+        servicesList.querySelectorAll('.dash-quote-decline').forEach(function(btn) {
           btn.addEventListener('click', function() {
             respondToQuote(this.getAttribute('data-qid'), 'declined');
           });
@@ -1224,12 +1287,178 @@
       } else {
         showToast('Quotation declined', 'info');
       }
+      // Re-render custom cards
       loadQuotations();
     });
   }
 
-  // Load quotations on page ready
-  loadQuotations();
+  // Quotations loaded after Supabase is ready (see waitForSupabaseAndLoad below)
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── REAL-TIME TASK STATUS FROM SUPABASE ─────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+  // Fetches admin-updated tasks and overlays real progress onto service cards
+
+  function loadRealTimeStatus() {
+    if (!window.supabaseClient) return;
+    var sb = window.supabaseClient;
+    var userEmail = session.email;
+
+    // Fetch tasks for this client via the clients table join
+    sb.from('tasks')
+      .select('*, clients!inner(email)')
+      .eq('clients.email', userEmail)
+      .then(function(result) {
+        if (result.error) {
+          console.error('Task fetch error:', result.error);
+          return;
+        }
+        var realTasks = result.data || [];
+        if (realTasks.length === 0) return;
+
+        // Map service names to category keys for matching
+        var SVC_NAME_TO_KEY = {};
+        Object.keys(SVC_NAMES).forEach(function(key) {
+          SVC_NAME_TO_KEY[SVC_NAMES[key].toLowerCase()] = key;
+        });
+
+        // Group tasks by service type
+        var tasksByService = {};
+        realTasks.forEach(function(t) {
+          var svcName = (t.service || '').toLowerCase().trim();
+          // Normalize common variants
+          if (svcName.indexOf('home') !== -1) svcName = 'home management';
+          else if (svcName.indexOf('vehicle') !== -1) svcName = 'vehicle management';
+          else if (svcName.indexOf('parental') !== -1) svcName = 'parental care';
+          else if (svcName.indexOf('legal') !== -1) svcName = 'legal & documentation';
+
+          if (!tasksByService[svcName]) tasksByService[svcName] = [];
+          tasksByService[svcName].push(t);
+        });
+
+        // For each service card, find matching task and overlay real data
+        serviceEntries.forEach(function(svc, idx) {
+          var svcKey = svc.category;
+          var svcNameLower = SVC_NAMES[svcKey].toLowerCase();
+          var matchingTasks = tasksByService[svcNameLower] || [];
+
+          if (matchingTasks.length === 0) return;
+
+          // Use the first (or most relevant) task for this service
+          var task = matchingTasks[0];
+          var realProgress = typeof task.progress === 'number' ? task.progress : null;
+          var realStatus = task.status || null;
+
+          if (realProgress === null && realStatus === null) return;
+
+          var cardEl = document.getElementById('svc-card-' + idx);
+          if (!cardEl) return;
+
+          // Map admin status to dashboard status class
+          var statusMap = {
+            'Pending': 'pending',
+            'In Progress': 'in-progress',
+            'Completed': 'completed'
+          };
+          var mappedStatus = statusMap[realStatus] || svc.status;
+          var statusText = realStatus === 'In Progress' ? 'In Progress' :
+                           realStatus === 'Completed' ? 'Completed' :
+                           realStatus === 'Pending' ? 'Pending' : svc.status;
+
+          // Update status badge
+          var badge = cardEl.querySelector('.dash-status');
+          if (badge && realStatus) {
+            badge.className = 'dash-status status-' + mappedStatus;
+            badge.textContent = statusText;
+          }
+
+          // Update progress bar
+          if (realProgress !== null) {
+            var fill = cardEl.querySelector('.dash-progress-fill');
+            if (fill) fill.style.width = realProgress + '%';
+
+            var pct = cardEl.querySelector('.dash-progress-pct');
+            if (pct) pct.textContent = realProgress + '% complete';
+          }
+
+          // Update step tracker based on real progress
+          if (realProgress !== null && svc.steps) {
+            var totalSteps = svc.steps.length;
+            var realStep = Math.min(Math.floor((realProgress / 100) * totalSteps), totalSteps - 1);
+            if (realProgress >= 100) realStep = totalSteps - 1;
+
+            // Update description to match real step
+            var pipeline = SERVICE_PIPELINES[svcKey];
+            if (pipeline && pipeline.descriptions[realStep]) {
+              var descEl = cardEl.querySelector('.dash-svc-desc');
+              if (descEl) descEl.textContent = pipeline.descriptions[realStep];
+            }
+
+            // Re-render step dots
+            var dots = cardEl.querySelectorAll('.dash-progress-dot');
+            var labels = cardEl.querySelectorAll('.dash-progress-label');
+            var connectors = cardEl.querySelectorAll('.dash-progress-connector');
+
+            dots.forEach(function(dot, si) {
+              dot.className = 'dash-progress-dot';
+              dot.innerHTML = '';
+              if (si < realStep) {
+                dot.classList.add('done');
+                dot.innerHTML = checkSvg;
+              } else if (si === realStep) {
+                dot.classList.add('active');
+                dot.innerHTML = dotSvg;
+              }
+            });
+
+            labels.forEach(function(label, si) {
+              label.className = 'dash-progress-label';
+              if (si < realStep) label.classList.add('done');
+              else if (si === realStep) label.classList.add('active');
+            });
+
+            connectors.forEach(function(conn, si) {
+              conn.className = 'dash-progress-connector';
+              if (si < realStep) conn.classList.add('done');
+            });
+
+            // Update ETA
+            var etaEl = cardEl.querySelector('.dash-progress-eta');
+            if (etaEl) {
+              if (realProgress >= 100) {
+                etaEl.textContent = 'Complete';
+              } else if (task.deadline) {
+                var dl = new Date(task.deadline);
+                etaEl.textContent = 'Est. ' + dl.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              }
+            }
+          }
+
+          // Add a "Live" indicator to show this is real admin data
+          if (!cardEl.querySelector('.dash-live-badge')) {
+            var liveEl = document.createElement('span');
+            liveEl.className = 'dash-live-badge';
+            liveEl.innerHTML = '<span class="dash-live-dot"></span> Live';
+            var titleRow = cardEl.querySelector('.dash-svc-title-row');
+            if (titleRow) titleRow.appendChild(liveEl);
+          }
+        });
+      });
+  }
+
+  // Wait for Supabase client to be ready, then load real-time status
+  function waitForSupabaseAndLoad() {
+    if (window.supabaseClient) {
+      loadRealTimeStatus();
+      loadQuotations();
+    } else {
+      setTimeout(waitForSupabaseAndLoad, 100);
+    }
+  }
+  waitForSupabaseAndLoad();
+
+  // Auto-refresh every 60 seconds
+  setInterval(function() { loadRealTimeStatus(); }, 60000);
 
 })();
 </script>
