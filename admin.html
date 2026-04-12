@@ -238,6 +238,51 @@
   </div>
 </div>
 
+<!-- ── Document Preview Modal ───────────────────────────────────── -->
+<div class="adm-modal-overlay" id="docPreviewModal">
+  <div class="adm-doc-preview-modal">
+    <div class="adm-doc-preview-header">
+      <div class="adm-doc-preview-info">
+        <div class="adm-doc-preview-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div>
+          <h3 id="docPreviewTitle">Document</h3>
+          <div class="adm-doc-preview-meta">
+            <span id="docPreviewClient"></span>
+            <span id="docPreviewService"></span>
+            <span id="docPreviewDate"></span>
+          </div>
+        </div>
+      </div>
+      <div class="adm-doc-preview-actions">
+        <a id="docPreviewNewTab" href="#" target="_blank" class="adm-doc-action-btn" title="Open in new tab">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <a id="docPreviewDownload" href="#" download class="adm-doc-action-btn" title="Download">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </a>
+        <button id="docPreviewClose" class="adm-doc-action-btn adm-doc-close-btn" title="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="adm-doc-preview-body" id="docPreviewBody">
+      <div class="adm-doc-preview-loading" id="docPreviewLoading">
+        <div class="adm-doc-spinner"></div>
+        <span>Loading document…</span>
+      </div>
+      <iframe id="docPreviewFrame" class="adm-doc-preview-frame"></iframe>
+      <div class="adm-doc-preview-error" id="docPreviewError" style="display:none;">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h4>Could not load preview</h4>
+        <p>The document may not be available or the format isn't supported for inline preview.</p>
+        <a id="docPreviewFallbackLink" href="#" target="_blank" class="adm-doc-fallback-btn">Open in New Tab Instead</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── Quotation Modal ───────────────────────────────────────────── -->
 <div class="adm-modal-overlay" id="quoteModal">
   <div class="adm-modal" style="max-width:540px;">
@@ -1399,7 +1444,7 @@
       var clientName = clientObj ? clientObj.name : clientEmail;
 
       var viewBtn = doc.storage_path
-        ? '<button class="adm-doc-view-btn" data-path="' + doc.storage_path + '">View</button>'
+        ? '<button class="adm-doc-view-btn" data-path="' + doc.storage_path + '" data-doc-name="' + (doc.doc_name || '') + '" data-file-name="' + (doc.file_name || '') + '" data-client="' + clientName + '" data-service="' + (doc.service_type || '') + '" data-date="' + uploadDate + '">View</button>'
         : '<span style="font-size:0.75rem;color:var(--text-muted);">Local only</span>';
 
       html +=
@@ -1416,24 +1461,130 @@
     });
     tbody.innerHTML = html;
 
-    // Attach view handlers
+    // Attach view handlers — open in preview modal
     document.querySelectorAll('.adm-doc-view-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var path = this.getAttribute('data-path');
+        var docName = this.getAttribute('data-doc-name') || 'Document';
+        var fileName = this.getAttribute('data-file-name') || '';
+        var clientName = this.getAttribute('data-client') || '';
+        var service = this.getAttribute('data-service') || '';
+        var date = this.getAttribute('data-date') || '';
         if (!path) return;
-        sb.storage.from('documents').createSignedUrl(path, 3600).then(function(result) {
-          if (result.error || !result.data || !result.data.signedUrl) {
-            showToast('Could not retrieve document', 'error');
-          } else {
-            window.open(result.data.signedUrl, '_blank');
-          }
-        }).catch(function() { showToast('Could not retrieve document', 'error'); });
+        openDocPreview(path, docName, fileName, clientName, service, date);
       });
     });
   }
 
   // Load documents on page load
   loadDocuments();
+
+  // ── Document Preview Modal ──
+  var docModal = document.getElementById('docPreviewModal');
+  var docFrame = document.getElementById('docPreviewFrame');
+  var docLoading = document.getElementById('docPreviewLoading');
+  var docError = document.getElementById('docPreviewError');
+
+  function openDocPreview(storagePath, docName, fileName, clientName, service, date) {
+    // Set header info
+    document.getElementById('docPreviewTitle').textContent = docName;
+    document.getElementById('docPreviewClient').textContent = clientName;
+    document.getElementById('docPreviewService').textContent = service;
+    document.getElementById('docPreviewDate').textContent = date;
+
+    // Reset state
+    docFrame.style.display = 'none';
+    docFrame.src = '';
+    docError.style.display = 'none';
+    docLoading.style.display = 'flex';
+
+    // Show modal
+    docModal.style.display = 'flex';
+    void docModal.offsetHeight;
+    docModal.classList.add('show');
+
+    // Get signed URL
+    sb.storage.from('documents').createSignedUrl(storagePath, 3600).then(function(result) {
+      if (result.error || !result.data || !result.data.signedUrl) {
+        docLoading.style.display = 'none';
+        docError.style.display = 'flex';
+        return;
+      }
+
+      var url = result.data.signedUrl;
+      var ext = (fileName || storagePath).split('.').pop().toLowerCase();
+      var isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].indexOf(ext) !== -1;
+      var isPdf = ext === 'pdf';
+
+      // Set action links
+      document.getElementById('docPreviewNewTab').href = url;
+      document.getElementById('docPreviewDownload').href = url;
+      document.getElementById('docPreviewFallbackLink').href = url;
+
+      if (isImage) {
+        // Render image directly instead of iframe
+        docLoading.style.display = 'none';
+        docFrame.style.display = 'none';
+        // Remove any previous image
+        var oldImg = document.getElementById('docPreviewImage');
+        if (oldImg) oldImg.remove();
+        var img = document.createElement('img');
+        img.id = 'docPreviewImage';
+        img.src = url;
+        img.className = 'adm-doc-preview-image';
+        img.alt = docName;
+        img.onload = function() { docLoading.style.display = 'none'; };
+        img.onerror = function() {
+          docLoading.style.display = 'none';
+          docError.style.display = 'flex';
+          img.remove();
+        };
+        document.getElementById('docPreviewBody').appendChild(img);
+      } else if (isPdf) {
+        // PDF in iframe
+        docFrame.src = url;
+        docFrame.onload = function() {
+          docLoading.style.display = 'none';
+          docFrame.style.display = 'block';
+        };
+        docFrame.onerror = function() {
+          docLoading.style.display = 'none';
+          docError.style.display = 'flex';
+        };
+        // Timeout fallback in case onload doesn't fire
+        setTimeout(function() {
+          if (docLoading.style.display !== 'none') {
+            docLoading.style.display = 'none';
+            docFrame.style.display = 'block';
+          }
+        }, 3000);
+      } else {
+        // Unsupported format — show error with link
+        docLoading.style.display = 'none';
+        docError.style.display = 'flex';
+      }
+    }).catch(function() {
+      docLoading.style.display = 'none';
+      docError.style.display = 'flex';
+    });
+  }
+
+  function closeDocPreview() {
+    docModal.classList.remove('show');
+    setTimeout(function() {
+      docModal.style.display = 'none';
+      docFrame.src = '';
+      docFrame.style.display = 'none';
+      var oldImg = document.getElementById('docPreviewImage');
+      if (oldImg) oldImg.remove();
+    }, 300);
+  }
+
+  document.getElementById('docPreviewClose').addEventListener('click', closeDocPreview);
+  docModal.addEventListener('click', function(e) { if (e.target === docModal) closeDocPreview(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && docModal.classList.contains('show')) closeDocPreview();
+  });
 
   // ── Sidebar navigation — scroll to sections ──
   document.querySelectorAll('.adm-nav-item[data-section]').forEach(function(item) {
