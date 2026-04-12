@@ -2709,6 +2709,25 @@ footer {
 }
 .te-pipe-step.active .te-pipe-desc { color: var(--text-mid); }
 
+/* ── Admin Documents Table ───────────────────────────────────────── */
+.adm-doc-row { transition: background 0.15s; }
+.adm-doc-row:hover { background: rgba(74,106,46,0.03); }
+.adm-doc-view-btn {
+  padding: 5px 14px; border-radius: var(--radius-pill); border: 1.5px solid var(--green-pop);
+  background: transparent; color: var(--green-pop); font-family: 'DM Sans', sans-serif;
+  font-size: 0.76rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
+}
+.adm-doc-view-btn:hover { background: var(--green-pop); color: #fff; }
+.adm-filter-tab {
+  padding: 5px 14px; border-radius: var(--radius-pill); border: 1.5px solid #d4d2c8;
+  background: transparent; color: var(--text-mid); font-family: 'DM Sans', sans-serif;
+  font-size: 0.76rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
+}
+.adm-filter-tab:hover { border-color: var(--green-pop); color: var(--green-pop); }
+.adm-filter-tab.active {
+  background: var(--green-pop); color: #fff; border-color: var(--green-pop);
+}
+
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 1200px) {
   .adm-right { width: 300px; min-width: 300px; padding: 24px 18px; }

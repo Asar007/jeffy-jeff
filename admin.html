@@ -41,6 +41,11 @@
     <a class="adm-nav-item" data-section="requests">Custom Requests <span class="adm-nav-badge red" id="badgeRequests">—</span></a>
     <a class="adm-nav-item" data-section="onetime">Appointments <span class="adm-nav-badge orange" id="badgeAppts">—</span></a>
   </div>
+
+  <div class="adm-nav-group">
+    <div class="adm-nav-label">Files</div>
+    <a class="adm-nav-item" data-section="documents">Documents <span class="adm-nav-badge" id="badgeDocs">—</span></a>
+  </div>
 </aside>
 
 <!-- ── MAIN BODY ───────────────────────────────────────────────── -->
@@ -156,6 +161,31 @@
         <a class="adm-link">View all &rarr;</a>
       </div>
       <div class="adm-requests-list" id="appointmentsList"></div>
+    </div>
+
+    <!-- Documents -->
+    <div style="margin-top:24px;" id="sectionDocuments">
+      <div class="adm-section-head">
+        <h2>Client Documents</h2>
+        <span style="font-size:0.78rem;color:var(--text-muted);" id="docCountLabel"></span>
+      </div>
+      <div class="adm-docs-filters" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="adm-filter-tab active" data-doc-filter="all">All</button>
+      </div>
+      <table class="adm-table" id="docsTable">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Document</th>
+            <th>Service</th>
+            <th>Uploaded</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="docsTableBody">
+          <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">Loading documents…</td></tr>
+        </tbody>
+      </table>
     </div>
 
   </aside>
@@ -1302,6 +1332,109 @@
     });
   });
 
+  // ── Documents Section ──
+  var adminDocs = [];
+  var activeDocFilter = 'all';
+
+  function loadDocuments() {
+    sb.from('documents')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .then(function(result) {
+        if (result.error) {
+          console.error('Documents fetch error:', result.error);
+          document.getElementById('docsTableBody').innerHTML =
+            '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">Could not load documents</td></tr>';
+          return;
+        }
+        adminDocs = result.data || [];
+        document.getElementById('badgeDocs').textContent = adminDocs.length;
+        document.getElementById('docCountLabel').textContent = adminDocs.length + ' document' + (adminDocs.length !== 1 ? 's' : '');
+
+        // Build filter tabs from unique service types
+        var serviceTypes = {};
+        adminDocs.forEach(function(d) {
+          var svc = d.service_type || 'Other';
+          serviceTypes[svc] = (serviceTypes[svc] || 0) + 1;
+        });
+        var filtersHtml = '<button class="adm-filter-tab' + (activeDocFilter === 'all' ? ' active' : '') + '" data-doc-filter="all">All (' + adminDocs.length + ')</button>';
+        Object.keys(serviceTypes).forEach(function(svc) {
+          filtersHtml += '<button class="adm-filter-tab' + (activeDocFilter === svc ? ' active' : '') + '" data-doc-filter="' + svc + '">' + svc + ' (' + serviceTypes[svc] + ')</button>';
+        });
+        document.querySelector('.adm-docs-filters').innerHTML = filtersHtml;
+
+        // Attach filter handlers
+        document.querySelectorAll('[data-doc-filter]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            document.querySelectorAll('[data-doc-filter]').forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            activeDocFilter = this.getAttribute('data-doc-filter');
+            renderDocsTable();
+          });
+        });
+
+        renderDocsTable();
+      });
+  }
+
+  function renderDocsTable() {
+    var filtered = activeDocFilter === 'all'
+      ? adminDocs
+      : adminDocs.filter(function(d) { return (d.service_type || 'Other') === activeDocFilter; });
+
+    var tbody = document.getElementById('docsTableBody');
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No documents uploaded yet</td></tr>';
+      return;
+    }
+
+    var html = '';
+    filtered.forEach(function(doc) {
+      var uploadDate = doc.created_at
+        ? new Date(doc.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : '—';
+      var clientEmail = doc.client_email || '—';
+      // Try to find client name from clients list
+      var clientObj = clients.find(function(c) { return c.email === doc.client_email; });
+      var clientName = clientObj ? clientObj.name : clientEmail;
+
+      var viewBtn = doc.storage_path
+        ? '<button class="adm-doc-view-btn" data-path="' + doc.storage_path + '">View</button>'
+        : '<span style="font-size:0.75rem;color:var(--text-muted);">Local only</span>';
+
+      html +=
+        '<tr class="adm-doc-row">' +
+          '<td><div class="adm-client-cell"><span class="adm-client-name">' + clientName + '</span><span class="adm-client-loc">' + clientEmail + '</span></div></td>' +
+          '<td>' +
+            '<div style="font-weight:600;font-size:0.84rem;">' + (doc.doc_name || '—') + '</div>' +
+            '<div style="font-size:0.72rem;color:var(--text-muted);">' + (doc.file_name || '') + '</div>' +
+          '</td>' +
+          '<td><span class="adm-svc-tag">' + (doc.service_type || '—') + '</span></td>' +
+          '<td class="adm-deadline">' + uploadDate + '</td>' +
+          '<td>' + viewBtn + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+
+    // Attach view handlers
+    document.querySelectorAll('.adm-doc-view-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var path = this.getAttribute('data-path');
+        if (!path) return;
+        sb.storage.from('documents').createSignedUrl(path, 3600).then(function(result) {
+          if (result.error || !result.data || !result.data.signedUrl) {
+            showToast('Could not retrieve document', 'error');
+          } else {
+            window.open(result.data.signedUrl, '_blank');
+          }
+        }).catch(function() { showToast('Could not retrieve document', 'error'); });
+      });
+    });
+  }
+
+  // Load documents on page load
+  loadDocuments();
+
   // ── Sidebar navigation — scroll to sections ──
   document.querySelectorAll('.adm-nav-item[data-section]').forEach(function(item) {
     item.addEventListener('click', function() {
@@ -1344,6 +1477,11 @@
         case 'onetime':
           var oneEl = document.getElementById('sectionOnetime');
           if (oneEl) oneEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          break;
+        case 'documents':
+          loadDocuments();
+          var docEl = document.getElementById('sectionDocuments');
+          if (docEl) docEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
           break;
         default:
           var target = document.getElementById('section' + section.charAt(0).toUpperCase() + section.slice(1));
