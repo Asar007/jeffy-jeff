@@ -2558,11 +2558,11 @@ footer {
   font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 700;
   color: #fff; flex-shrink: 0;
 }
-.adm-avatar.green { background: var(--green-pop); }
-.adm-avatar.orange { background: #e8a83a; }
-.adm-avatar.blue { background: #5b7fb5; }
-.adm-avatar.red { background: #dc3545; }
-.adm-avatar.muted { background: #8b9060; }
+.adm-avatar.green, .adm-avatar-sm.green { background: var(--green-pop); }
+.adm-avatar.orange, .adm-avatar-sm.orange { background: #e8a83a; }
+.adm-avatar.blue, .adm-avatar-sm.blue { background: #5b7fb5; }
+.adm-avatar.red, .adm-avatar-sm.red { background: #dc3545; }
+.adm-avatar.muted, .adm-avatar-sm.muted { background: #8b9060; }
 
 .adm-client-info { flex: 1; min-width: 0; }
 .adm-client-info strong { display: block; font-size: 0.92rem; color: var(--text-dark); }

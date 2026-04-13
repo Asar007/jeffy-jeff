@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Founder Portal — NRI Bridge India</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css?v=2">
+<link rel="stylesheet" href="shared.css?v=3">
 </head>
 <body class="adm-page">
 
@@ -1503,8 +1503,7 @@
     });
   }
 
-  // Load documents on page load
-  loadDocuments();
+  // Documents loaded on-demand when nav item is clicked
 
   // ── Document Preview Modal ──
   var docModal = document.getElementById('docPreviewModal');
@@ -1620,11 +1619,27 @@
       this.classList.add('active');
       var section = this.getAttribute('data-section');
 
-      // Toggle documents section visibility
+      // Elements that form the default dashboard view
+      var defaultSections = [
+        document.querySelector('.adm-search-wrap'),
+        document.querySelector('.adm-stats'),
+        document.getElementById('sectionTasks'),
+        document.getElementById('sectionClients')
+      ];
+      var rightPanel = document.querySelector('.adm-right');
       var docSection = document.getElementById('sectionDocuments');
+
       if (section === 'documents') {
+        // Hide default dashboard sections and right panel
+        defaultSections.forEach(function(el) { if (el) el.style.display = 'none'; });
+        if (rightPanel) rightPanel.style.display = 'none';
         docSection.style.display = 'block';
+        loadDocuments();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
+        // Restore default dashboard sections and right panel
+        defaultSections.forEach(function(el) { if (el) el.style.display = ''; });
+        if (rightPanel) rightPanel.style.display = '';
         docSection.style.display = 'none';
       }
 
@@ -1665,9 +1680,7 @@
           if (oneEl) oneEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
           break;
         case 'documents':
-          loadDocuments();
-          var docEl = document.getElementById('sectionDocuments');
-          if (docEl) docEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Already handled above
           break;
         default:
           var target = document.getElementById('section' + section.charAt(0).toUpperCase() + section.slice(1));
