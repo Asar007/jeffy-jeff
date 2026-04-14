@@ -1395,7 +1395,7 @@
   function loadDocuments() {
     sb.from('documents')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('uploaded_at', { ascending: false })
       .then(function(result) {
         if (result.error) {
           console.error('Documents fetch error:', result.error);
@@ -1451,8 +1451,8 @@
 
     var html = '';
     filtered.forEach(function(doc, idx) {
-      var uploadDate = doc.created_at
-        ? new Date(doc.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      var uploadDate = doc.uploaded_at
+        ? new Date(doc.uploaded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : '—';
       var clientEmail = doc.client_email || '—';
       var clientObj = clients.find(function(c) { return c.email === doc.client_email; });
@@ -1461,10 +1461,10 @@
       var colorClass = AVATAR_COLORS[idx % AVATAR_COLORS.length];
       var fileExt = (doc.file_name || '').split('.').pop().toUpperCase() || '—';
 
-      var viewAttr = doc.storage_path
-        ? 'data-path="' + doc.storage_path + '" data-doc-name="' + (doc.doc_name || '') + '" data-file-name="' + (doc.file_name || '') + '" data-client="' + clientName + '" data-service="' + (doc.service_type || '') + '" data-date="' + uploadDate + '"'
-        : '';
-      var cardClickable = doc.storage_path ? ' adm-dcard-clickable' : '';
+      // Documents are clickable if they have a storage_path OR file_data (base64)
+      var hasViewableContent = doc.storage_path || doc.file_data;
+      var viewAttr = 'data-doc-id="' + doc.id + '" data-path="' + (doc.storage_path || '') + '" data-doc-name="' + (doc.doc_name || '') + '" data-file-name="' + (doc.file_name || '') + '" data-client="' + clientName + '" data-service="' + (doc.service_type || '') + '" data-date="' + uploadDate + '"';
+      var cardClickable = hasViewableContent ? ' adm-dcard-clickable' : '';
 
       html +=
         '<div class="adm-dcard' + cardClickable + '" ' + viewAttr + '>' +
@@ -1491,14 +1491,24 @@
     // Attach click handlers for clickable cards
     grid.querySelectorAll('.adm-dcard-clickable').forEach(function(card) {
       card.addEventListener('click', function() {
+        var docId = this.getAttribute('data-doc-id');
         var path = this.getAttribute('data-path');
         var docName = this.getAttribute('data-doc-name') || 'Document';
         var fileName = this.getAttribute('data-file-name') || '';
         var client = this.getAttribute('data-client') || '';
         var service = this.getAttribute('data-service') || '';
         var date = this.getAttribute('data-date') || '';
-        if (!path) return;
-        openDocPreview(path, docName, fileName, client, service, date);
+
+        // Find the doc object to check for file_data
+        var docObj = adminDocs.find(function(d) { return d.id === docId; });
+
+        if (path) {
+          // Use Supabase Storage signed URL
+          openDocPreview(path, docName, fileName, client, service, date, null);
+        } else if (docObj && docObj.file_data) {
+          // Use base64 data URL directly
+          openDocPreview(null, docName, fileName, client, service, date, docObj.file_data);
+        }
       });
     });
   }
@@ -1511,7 +1521,7 @@
   var docLoading = document.getElementById('docPreviewLoading');
   var docError = document.getElementById('docPreviewError');
 
-  function openDocPreview(storagePath, docName, fileName, clientName, service, date) {
+  function openDocPreview(storagePath, docName, fileName, clientName, service, date, fileDataUrl) {
     // Set header info
     document.getElementById('docPreviewTitle').textContent = docName;
     document.getElementById('docPreviewClient').textContent = clientName;
@@ -1523,37 +1533,42 @@
     docFrame.src = '';
     docError.style.display = 'none';
     docLoading.style.display = 'flex';
+    var oldImg = document.getElementById('docPreviewImage');
+    if (oldImg) oldImg.remove();
 
     // Show modal
     docModal.style.display = 'flex';
     void docModal.offsetHeight;
     docModal.classList.add('show');
 
-    // Get signed URL
-    sb.storage.from('documents').createSignedUrl(storagePath, 3600).then(function(result) {
-      if (result.error || !result.data || !result.data.signedUrl) {
-        docLoading.style.display = 'none';
-        docError.style.display = 'flex';
-        return;
-      }
-
-      var url = result.data.signedUrl;
-      var ext = (fileName || storagePath).split('.').pop().toLowerCase();
+    // Helper to render content once we have a URL
+    function renderPreview(url, ext) {
       var isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].indexOf(ext) !== -1;
       var isPdf = ext === 'pdf';
+      var isDataUrl = url.indexOf('data:') === 0;
+
+      // Detect image from data URL mime type if ext doesn't help
+      if (isDataUrl && !isImage && !isPdf) {
+        if (url.indexOf('data:image/') === 0) isImage = true;
+        else if (url.indexOf('data:application/pdf') === 0) isPdf = true;
+      }
 
       // Set action links
       document.getElementById('docPreviewNewTab').href = url;
-      document.getElementById('docPreviewDownload').href = url;
       document.getElementById('docPreviewFallbackLink').href = url;
 
+      // For base64 data URLs, create a download link with proper filename
+      if (isDataUrl) {
+        var dlLink = document.getElementById('docPreviewDownload');
+        dlLink.href = url;
+        dlLink.setAttribute('download', fileName || docName || 'document');
+      } else {
+        document.getElementById('docPreviewDownload').href = url;
+      }
+
       if (isImage) {
-        // Render image directly instead of iframe
         docLoading.style.display = 'none';
         docFrame.style.display = 'none';
-        // Remove any previous image
-        var oldImg = document.getElementById('docPreviewImage');
-        if (oldImg) oldImg.remove();
         var img = document.createElement('img');
         img.id = 'docPreviewImage';
         img.src = url;
@@ -1567,7 +1582,6 @@
         };
         document.getElementById('docPreviewBody').appendChild(img);
       } else if (isPdf) {
-        // PDF in iframe
         docFrame.src = url;
         docFrame.onload = function() {
           docLoading.style.display = 'none';
@@ -1577,7 +1591,6 @@
           docLoading.style.display = 'none';
           docError.style.display = 'flex';
         };
-        // Timeout fallback in case onload doesn't fire
         setTimeout(function() {
           if (docLoading.style.display !== 'none') {
             docLoading.style.display = 'none';
@@ -1589,6 +1602,24 @@
         docLoading.style.display = 'none';
         docError.style.display = 'flex';
       }
+    }
+
+    // If we have a base64 data URL, use it directly (no Storage needed)
+    if (fileDataUrl) {
+      var ext = (fileName || '').split('.').pop().toLowerCase();
+      renderPreview(fileDataUrl, ext);
+      return;
+    }
+
+    // Otherwise get signed URL from Supabase Storage
+    sb.storage.from('documents').createSignedUrl(storagePath, 3600).then(function(result) {
+      if (result.error || !result.data || !result.data.signedUrl) {
+        docLoading.style.display = 'none';
+        docError.style.display = 'flex';
+        return;
+      }
+      var ext = (fileName || storagePath).split('.').pop().toLowerCase();
+      renderPreview(result.data.signedUrl, ext);
     }).catch(function() {
       docLoading.style.display = 'none';
       docError.style.display = 'flex';

@@ -1033,34 +1033,52 @@
     var ext = file.name.split('.').pop();
     var storagePath = sanitizePath(session.email) + '/' + sanitizePath(docService) + '/' + sanitizePath(docName) + '-' + Date.now() + '.' + ext;
 
-    // Try Supabase upload, fallback to localStorage-only
-    if (window.supabaseClient && window.supabaseClient.storage) {
-      window.supabaseClient.storage.from('documents').upload(storagePath, file)
-        .then(function(result) {
-          if (result.error) {
-            // Storage bucket may not exist — fallback
-            saveDocLocally(docKey, docName, docService, file.name, null);
-            showToast('Document status updated (offline mode)', 'info');
-          } else {
-            saveDocLocally(docKey, docName, docService, file.name, storagePath);
-            showToast('Document uploaded successfully', 'success');
-          }
-        })
-        .catch(function() {
-          saveDocLocally(docKey, docName, docService, file.name, null);
-          showToast('Document status updated (offline mode)', 'info');
-        });
-    } else {
-      saveDocLocally(docKey, docName, docService, file.name, null);
-      showToast('Document status updated (offline mode)', 'info');
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('File too large. Maximum 10 MB allowed.', 'error');
+      this.value = '';
+      pendingUploadDoc = null;
+      return;
     }
+
+    // Read file as base64 data URL first (for fallback storage)
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var fileDataUrl = e.target.result; // data:mime/type;base64,...
+
+      // Try Supabase Storage upload, with base64 fallback
+      if (window.supabaseClient && window.supabaseClient.storage) {
+        window.supabaseClient.storage.from('documents').upload(storagePath, file)
+          .then(function(result) {
+            if (result.error) {
+              // Storage bucket may not exist — save with base64 content
+              saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl);
+              showToast('Document uploaded successfully', 'success');
+            } else {
+              saveDocLocally(docKey, docName, docService, file.name, storagePath, null);
+              showToast('Document uploaded successfully', 'success');
+            }
+          })
+          .catch(function() {
+            saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl);
+            showToast('Document uploaded successfully', 'success');
+          });
+      } else {
+        saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl);
+        showToast('Document uploaded successfully', 'success');
+      }
+    };
+    reader.onerror = function() {
+      showToast('Failed to read document file', 'error');
+    };
+    reader.readAsDataURL(file);
 
     // Reset file input
     this.value = '';
     pendingUploadDoc = null;
   });
 
-  function saveDocLocally(docKey, docName, docService, fileName, storagePath) {
+  function saveDocLocally(docKey, docName, docService, fileName, storagePath, fileDataUrl) {
     user.uploadedDocs = user.uploadedDocs || {};
     user.uploadedDocs[docKey] = {
       status: 'received',
@@ -1074,14 +1092,27 @@
 
     // Dual-write to Supabase documents table for admin dashboard
     if (window.supabaseClient) {
-      window.supabaseClient.from('documents').insert([{
+      var docRecord = {
         client_email: session.email,
         service_type: docService,
         doc_name: docName,
         file_name: fileName,
         storage_path: storagePath,
         status: 'uploaded'
-      }]).then(function(){}).catch(function(){});
+      };
+      // Store base64 file content when no storage path available
+      if (!storagePath && fileDataUrl) {
+        docRecord.file_data = fileDataUrl;
+      }
+      window.supabaseClient.from('documents').insert([docRecord])
+        .then(function(result) {
+          if (result.error) {
+            console.error('Document insert error:', result.error);
+          }
+        })
+        .catch(function(err) {
+          console.error('Document insert exception:', err);
+        });
     }
   }
 
