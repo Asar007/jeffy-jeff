@@ -140,7 +140,7 @@
       <div class="adm-docs-filters" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
         <button class="adm-filter-tab active" data-doc-filter="all">All</button>
       </div>
-      <div class="adm-docs-grid" id="docsGrid">
+      <div id="docsGrid">
         <div style="text-align:center;color:var(--text-muted);padding:40px;">Loading documents…</div>
       </div>
     </div>
@@ -1449,7 +1449,7 @@
       return;
     }
 
-    var html = '';
+    var groups = {};
     filtered.forEach(function(doc, idx) {
       var uploadDate = doc.uploaded_at
         ? new Date(doc.uploaded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -1466,7 +1466,7 @@
       var viewAttr = 'data-doc-id="' + doc.id + '" data-path="' + (doc.storage_path || '') + '" data-doc-name="' + (doc.doc_name || '') + '" data-file-name="' + (doc.file_name || '') + '" data-client="' + clientName + '" data-service="' + (doc.service_type || '') + '" data-date="' + uploadDate + '"';
       var cardClickable = hasViewableContent ? ' adm-dcard-clickable' : '';
 
-      html +=
+      var htmlCard =
         '<div class="adm-dcard' + cardClickable + '" ' + viewAttr + '>' +
           '<div class="adm-dcard-top">' +
             '<div class="adm-dcard-icon ' + getDocColorClass(doc.file_name) + '">' + getDocIcon(doc.file_name) + '</div>' +
@@ -1475,16 +1475,32 @@
           '<div class="adm-dcard-name">' + (doc.doc_name || 'Untitled') + '</div>' +
           '<div class="adm-dcard-file">' + (doc.file_name || '') + '</div>' +
           '<div class="adm-dcard-meta">' +
-            '<div class="adm-dcard-client">' +
-              '<div class="adm-avatar-sm ' + colorClass + '">' + initials + '</div>' +
-              '<span>' + clientName + '</span>' +
-            '</div>' +
             '<div class="adm-dcard-details">' +
               '<span class="adm-svc-tag" style="font-size:0.68rem;padding:2px 8px;">' + (doc.service_type || '—') + '</span>' +
               '<span class="adm-dcard-date">' + uploadDate + '</span>' +
             '</div>' +
           '</div>' +
         '</div>';
+
+      if (!groups[clientName]) {
+        groups[clientName] = { email: clientEmail, initials: initials, color: colorClass, cards: [] };
+      }
+      groups[clientName].cards.push(htmlCard);
+    });
+
+    var html = '';
+    Object.keys(groups).forEach(function(cName) {
+      var g = groups[cName];
+      html += '<div style="margin-bottom: 32px;">';
+      html +=   '<div class="adm-dcard-client" style="margin-bottom: 16px; align-items: center;">';
+      html +=     '<div class="adm-avatar-sm ' + g.color + '" style="width: 32px; height: 32px; font-size: 0.8rem;">' + g.initials + '</div>';
+      html +=     '<strong style="font-size: 1.05rem; color: var(--text-dark);">' + cName + '</strong>';
+      html +=     '<span style="opacity: 0.5; font-size: 0.85rem; margin-left: 8px;">(' + g.email + ')</span>';
+      html +=   '</div>';
+      html +=   '<div class="adm-docs-grid">';
+      html +=     g.cards.join('');
+      html +=   '</div>';
+      html += '</div>';
     });
     grid.innerHTML = html;
 
