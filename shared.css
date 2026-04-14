@@ -986,8 +986,6 @@ footer {
   content: ''; position: absolute; top: 0; left: 0; right: 0;
   height: 3px; transform: scaleX(0); transform-origin: left; transition: transform 0.4s;
 }
-.service-category-card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,0.07); }
-.service-category-card:hover::before { transform: scaleX(1); }
 .service-category-card.cat-home::before { background: linear-gradient(90deg, var(--service-home), var(--bg-highlight)); }
 .service-category-card.cat-vehicle::before { background: linear-gradient(90deg, var(--service-vehicle), #6aaa9e); }
 .service-category-card.cat-parental::before { background: linear-gradient(90deg, var(--service-parental), #aa8a6e); }
@@ -1027,7 +1025,6 @@ footer {
 .cat-vehicle .learn-more { color: var(--service-vehicle); }
 .cat-parental .learn-more { color: var(--service-parental); }
 .cat-legal .learn-more { color: var(--service-legal); }
-.service-category-card:hover .learn-more { gap: 10px; }
 
 /* ── PRICING TABS ── */
 .pricing-tabs {
