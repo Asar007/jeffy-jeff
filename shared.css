@@ -194,8 +194,9 @@ nav {
 .hero h1 em { font-style: italic; font-weight: 600; color: var(--bg-highlight); }
 .hero h1 strong { font-weight: 700; }
 .hero p {
-  max-width: 560px; font-size: 1.05rem; line-height: 1.7;
+  max-width: 680px; font-size: 1.05rem; line-height: 1.8;
   color: var(--text-muted); margin-bottom: 40px;
+  letter-spacing: 0.01em; font-weight: 300;
   animation: fadeUp 0.8s ease both; animation-delay: 0.5s; opacity: 0;
 }
 .hero-ctas {
