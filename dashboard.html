@@ -132,6 +132,47 @@
   </div>
 </div>
 
+<!-- DOCUMENT PREVIEW MODAL -->
+<div class="dash-doc-preview-overlay" id="dashDocPreview">
+  <div class="dash-doc-preview-panel">
+    <div class="dash-doc-preview-header">
+      <div class="dash-doc-preview-title-area">
+        <div class="dash-doc-preview-icon-wrap">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div>
+          <h3 id="dashDocTitle">Document</h3>
+          <div class="dash-doc-preview-sub" id="dashDocSub"></div>
+        </div>
+      </div>
+      <div class="dash-doc-preview-btns">
+        <a id="dashDocNewTab" href="#" target="_blank" class="dash-doc-ctrl-btn" title="Open in new tab">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <a id="dashDocDownload" href="#" download class="dash-doc-ctrl-btn" title="Download">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </a>
+        <button id="dashDocClose" class="dash-doc-ctrl-btn dash-doc-close" title="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="dash-doc-preview-content" id="dashDocContent">
+      <div class="dash-doc-preview-loader" id="dashDocLoader">
+        <div class="dash-doc-spinner"></div>
+        <span>Loading document…</span>
+      </div>
+      <iframe id="dashDocFrame" class="dash-doc-frame"></iframe>
+      <div class="dash-doc-preview-err" id="dashDocError" style="display:none;">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h4>Could not load preview</h4>
+        <p>The document format may not support inline preview.</p>
+        <a id="dashDocFallback" href="#" target="_blank" class="dash-doc-fallback-link">Open in New Tab Instead</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Hidden file input for document uploads -->
 <input type="file" id="docFileInput" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
 
@@ -1130,24 +1171,183 @@
         pendingUploadDoc = { name: docName, service: docService };
         docFileInput.click();
       } else {
-        // View — try to get signed URL from Supabase
+        // View document
         if (uploaded && uploaded.storagePath && window.supabaseClient && window.supabaseClient.storage) {
+          // Path 1: Supabase Storage signed URL
+          openDashDocPreview(docName, docService, uploaded.fileName || docName);
           window.supabaseClient.storage.from('documents').createSignedUrl(uploaded.storagePath, 3600)
             .then(function(result) {
               if (result.error || !result.data || !result.data.signedUrl) {
-                showToast('Could not retrieve document. Try re-uploading.', 'error');
+                // Storage failed — try fetching file_data from documents table
+                fetchAndPreviewFromDB(docName, docService);
               } else {
-                window.open(result.data.signedUrl, '_blank');
+                renderDashDocPreview(result.data.signedUrl, uploaded.fileName || docName);
               }
             })
             .catch(function() {
-              showToast('Could not retrieve document. Try re-uploading.', 'error');
+              fetchAndPreviewFromDB(docName, docService);
             });
         } else {
-          showToast('Upload your actual document to view it', 'info');
+          // Path 2: Fetch file_data from Supabase documents table
+          openDashDocPreview(docName, docService, uploaded ? uploaded.fileName : docName);
+          fetchAndPreviewFromDB(docName, docService);
         }
       }
     });
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── DOCUMENT PREVIEW MODAL ──────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+
+  var dashPreviewOverlay = document.getElementById('dashDocPreview');
+  var dashDocFrame = document.getElementById('dashDocFrame');
+  var dashDocLoader = document.getElementById('dashDocLoader');
+  var dashDocError = document.getElementById('dashDocError');
+
+  function openDashDocPreview(docName, docService, fileName) {
+    document.getElementById('dashDocTitle').textContent = docName;
+    document.getElementById('dashDocSub').textContent = docService + (fileName ? ' · ' + fileName : '');
+
+    // Reset state
+    dashDocFrame.style.display = 'none';
+    dashDocFrame.src = '';
+    dashDocError.style.display = 'none';
+    dashDocLoader.style.display = 'flex';
+    var oldImg = document.getElementById('dashDocPreviewImg');
+    if (oldImg) oldImg.remove();
+
+    // Show modal
+    dashPreviewOverlay.style.display = 'flex';
+    void dashPreviewOverlay.offsetHeight;
+    dashPreviewOverlay.classList.add('show');
+  }
+
+  function renderDashDocPreview(url, fileName) {
+    var ext = (fileName || '').split('.').pop().toLowerCase();
+    var isImage = ['jpg','jpeg','png','gif','webp','svg'].indexOf(ext) !== -1;
+    var isPdf = ext === 'pdf';
+    var isDataUrl = url.indexOf('data:') === 0;
+
+    // Detect from data URL mime type if ext doesn't help
+    if (isDataUrl && !isImage && !isPdf) {
+      if (url.indexOf('data:image/') === 0) isImage = true;
+      else if (url.indexOf('data:application/pdf') === 0) isPdf = true;
+    }
+
+    // Set action links
+    document.getElementById('dashDocNewTab').href = url;
+    document.getElementById('dashDocFallback').href = url;
+    var dlLink = document.getElementById('dashDocDownload');
+    dlLink.href = url;
+    if (isDataUrl) {
+      dlLink.setAttribute('download', fileName || 'document');
+    }
+
+    if (isImage) {
+      dashDocLoader.style.display = 'none';
+      dashDocFrame.style.display = 'none';
+      var img = document.createElement('img');
+      img.id = 'dashDocPreviewImg';
+      img.src = url;
+      img.className = 'dash-doc-preview-img';
+      img.alt = fileName || 'Document';
+      img.onload = function() { dashDocLoader.style.display = 'none'; };
+      img.onerror = function() {
+        dashDocLoader.style.display = 'none';
+        dashDocError.style.display = 'flex';
+        img.remove();
+      };
+      document.getElementById('dashDocContent').appendChild(img);
+    } else if (isPdf) {
+      dashDocFrame.src = url;
+      dashDocFrame.onload = function() {
+        dashDocLoader.style.display = 'none';
+        dashDocFrame.style.display = 'block';
+      };
+      dashDocFrame.onerror = function() {
+        dashDocLoader.style.display = 'none';
+        dashDocError.style.display = 'flex';
+      };
+      setTimeout(function() {
+        if (dashDocLoader.style.display !== 'none') {
+          dashDocLoader.style.display = 'none';
+          dashDocFrame.style.display = 'block';
+        }
+      }, 3000);
+    } else {
+      // Unsupported — show error with fallback link
+      dashDocLoader.style.display = 'none';
+      dashDocError.style.display = 'flex';
+    }
+  }
+
+  function fetchAndPreviewFromDB(docName, docService) {
+    if (!window.supabaseClient) {
+      dashDocLoader.style.display = 'none';
+      dashDocError.style.display = 'flex';
+      return;
+    }
+    window.supabaseClient.from('documents')
+      .select('file_data, file_name, storage_path')
+      .eq('client_email', session.email)
+      .eq('doc_name', docName)
+      .eq('service_type', docService)
+      .order('uploaded_at', { ascending: false })
+      .limit(1)
+      .then(function(result) {
+        if (result.error || !result.data || result.data.length === 0) {
+          dashDocLoader.style.display = 'none';
+          dashDocError.style.display = 'flex';
+          return;
+        }
+        var doc = result.data[0];
+        if (doc.file_data) {
+          // Render from base64 data URL
+          renderDashDocPreview(doc.file_data, doc.file_name || docName);
+        } else if (doc.storage_path && window.supabaseClient.storage) {
+          // Try storage as last resort
+          window.supabaseClient.storage.from('documents').createSignedUrl(doc.storage_path, 3600)
+            .then(function(r) {
+              if (r.error || !r.data || !r.data.signedUrl) {
+                dashDocLoader.style.display = 'none';
+                dashDocError.style.display = 'flex';
+              } else {
+                renderDashDocPreview(r.data.signedUrl, doc.file_name || docName);
+              }
+            })
+            .catch(function() {
+              dashDocLoader.style.display = 'none';
+              dashDocError.style.display = 'flex';
+            });
+        } else {
+          dashDocLoader.style.display = 'none';
+          dashDocError.style.display = 'flex';
+        }
+      })
+      .catch(function() {
+        dashDocLoader.style.display = 'none';
+        dashDocError.style.display = 'flex';
+      });
+  }
+
+  function closeDashDocPreview() {
+    dashPreviewOverlay.classList.remove('show');
+    setTimeout(function() {
+      dashPreviewOverlay.style.display = 'none';
+      dashDocFrame.src = '';
+      dashDocFrame.style.display = 'none';
+      var oldImg = document.getElementById('dashDocPreviewImg');
+      if (oldImg) oldImg.remove();
+    }, 350);
+  }
+
+  document.getElementById('dashDocClose').addEventListener('click', closeDashDocPreview);
+  dashPreviewOverlay.addEventListener('click', function(e) {
+    if (e.target === dashPreviewOverlay) closeDashDocPreview();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && dashPreviewOverlay.classList.contains('show')) closeDashDocPreview();
   });
 
   // ══════════════════════════════════════════════════════════════════
