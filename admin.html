@@ -40,6 +40,7 @@
     <div class="adm-nav-label">Requests</div>
     <a class="adm-nav-item" data-section="requests">Custom Requests <span class="adm-nav-badge red" id="badgeRequests">—</span></a>
     <a class="adm-nav-item" data-section="onetime">Appointments <span class="adm-nav-badge orange" id="badgeAppts">—</span></a>
+    <a class="adm-nav-item" data-section="disputes">Disputes <span class="adm-nav-badge red" id="badgeDisputes">—</span></a>
   </div>
 
   <div class="adm-nav-group">
@@ -145,6 +146,19 @@
       </div>
     </div>
 
+    <div id="sectionDisputes" style="display:none; margin-top:32px;">
+      <div class="adm-section-head" style="margin-bottom:18px;">
+        <h2>Dispute Center</h2>
+        <span style="font-size:0.78rem;color:var(--text-muted);" id="disputeCountLabel"></span>
+      </div>
+      <div class="adm-docs-filters" id="disputeFilters" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="adm-filter-tab active" data-dispute-filter="all">All</button>
+      </div>
+      <div id="disputesGrid">
+        <div style="text-align:center;color:var(--text-muted);padding:40px;">Loading disputes…</div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ── RIGHT PANEL ─────────────────────────────────────────────── -->
@@ -178,6 +192,44 @@
     </div>
 
   </aside>
+</div>
+
+<!-- ── Dispute Review Modal ─────────────────────────────────────── -->
+<div class="adm-modal-overlay" id="disputeDetailModal">
+  <div class="adm-modal adm-dispute-modal">
+    <h3>Dispute Review</h3>
+    <div class="adm-dispute-headline">
+      <div>
+        <div class="adm-dispute-kicker" id="admDisputeService">—</div>
+        <strong id="admDisputeTitle">—</strong>
+      </div>
+      <span class="adm-client-status pending" id="admDisputeStatusBadge">New</span>
+    </div>
+    <div class="adm-dispute-meta" id="admDisputeMeta"></div>
+    <div class="adm-dispute-copy" id="admDisputeDescription"></div>
+    <div class="adm-form-group">
+      <label>Attachments</label>
+      <div class="adm-dispute-files" id="admDisputeFiles"></div>
+    </div>
+    <div class="adm-form-group">
+      <label>Status</label>
+      <select id="admDisputeStatus">
+        <option value="New">New</option>
+        <option value="In Review">In Review</option>
+        <option value="Waiting for Customer">Waiting for Customer</option>
+        <option value="Resolved">Resolved</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="adm-form-group">
+      <label>Admin Notes</label>
+      <textarea id="admDisputeNotes" rows="5" placeholder="Add the current review status, missing information, or resolution notes."></textarea>
+    </div>
+    <div class="adm-modal-actions">
+      <button class="adm-btn-add" id="admDisputeSave">Save Update</button>
+      <button class="adm-btn-export" id="admDisputeCancel">Close</button>
+    </div>
+  </div>
 </div>
 
 <!-- ── Add Client Modal ──────────────────────────────────────────── -->
@@ -411,11 +463,23 @@
     }, 3000);
   }
 
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // ── Wait for Supabase client ──
   var sb = null;
   var clients = [];
   var tasks = [];
   var requests = [];
+  var disputes = [];
+  var activeDisputeFilter = 'all';
+  var currentDisputeId = null;
 
   function waitForSupabase(cb) {
     if (window.supabaseClient) { sb = window.supabaseClient; cb(); }
@@ -468,19 +532,22 @@
       sb.from('clients').select('*').order('created_at', { ascending: false }),
       sb.from('tasks').select('*, clients(name, city, country)').order('deadline', { ascending: true }),
       sb.from('requests').select('*').order('created_at', { ascending: false }),
-      sb.from('appointments').select('*').order('created_at', { ascending: false })
+      sb.from('appointments').select('*').order('created_at', { ascending: false }),
+      sb.from('disputes').select('*').order('created_at', { ascending: false })
     ]).then(function(results) {
       if (results[0].error) console.error('Clients fetch error:', results[0].error);
       if (results[1].error) console.error('Tasks fetch error:', results[1].error);
       if (results[2].error) console.error('Requests fetch error:', results[2].error);
       if (results[3].error) console.error('Appointments fetch error:', results[3].error);
+      if (results[4].error) console.error('Disputes fetch error:', results[4].error);
 
       clients = results[0].data || [];
       tasks = results[1].data || [];
       requests = results[2].data || [];
       appointments = results[3].data || [];
+      disputes = results[4].data || [];
 
-      console.log('Dashboard loaded:', { clients: clients.length, tasks: tasks.length, requests: requests.length, appointments: appointments.length });
+      console.log('Dashboard loaded:', { clients: clients.length, tasks: tasks.length, requests: requests.length, appointments: appointments.length, disputes: disputes.length });
       renderStats();
       renderTaskTable();
       renderClientsByService();
@@ -488,6 +555,7 @@
       renderRequests();
       renderAppointments();
       renderBadges();
+      renderDisputes();
     });
   }
 
@@ -517,6 +585,10 @@
     document.getElementById('badgeRequests').textContent = openReqs;
     var newAppts = appointments.filter(function(a) { return a.status === 'New'; }).length;
     document.getElementById('badgeAppts').textContent = newAppts;
+    var openDisputes = disputes.filter(function(d) {
+      return ['New', 'In Review', 'Waiting for Customer'].indexOf(d.status) !== -1;
+    }).length;
+    document.getElementById('badgeDisputes').textContent = openDisputes;
   }
 
   // ── Task Table ──
@@ -1529,6 +1601,168 @@
     });
   }
 
+  function buildDisputeFilters() {
+    var counts = { all: disputes.length };
+    disputes.forEach(function(item) {
+      var key = item.status || 'New';
+      counts[key] = (counts[key] || 0) + 1;
+    });
+
+    var filtersHtml = '<button class="adm-filter-tab' + (activeDisputeFilter === 'all' ? ' active' : '') + '" data-dispute-filter="all">All (' + counts.all + ')</button>';
+    ['New', 'In Review', 'Waiting for Customer', 'Resolved', 'Rejected'].forEach(function(status) {
+      filtersHtml += '<button class="adm-filter-tab' + (activeDisputeFilter === status ? ' active' : '') + '" data-dispute-filter="' + status + '">' + status + ' (' + (counts[status] || 0) + ')</button>';
+    });
+    document.getElementById('disputeFilters').innerHTML = filtersHtml;
+    document.querySelectorAll('#disputeFilters [data-dispute-filter]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        activeDisputeFilter = this.getAttribute('data-dispute-filter');
+        renderDisputes();
+      });
+    });
+  }
+
+  function openDisputeAttachment(attachment) {
+    if (attachment.file_data) {
+      window.open(attachment.file_data, '_blank');
+      return;
+    }
+    if (!attachment.storage_path || !sb || !sb.storage) {
+      showToast('Attachment preview unavailable', 'error');
+      return;
+    }
+    sb.storage.from('documents').createSignedUrl(attachment.storage_path, 3600).then(function(result) {
+      if (result.error || !result.data || !result.data.signedUrl) {
+        showToast('Could not open attachment', 'error');
+        return;
+      }
+      window.open(result.data.signedUrl, '_blank');
+    });
+  }
+
+  function renderDisputes() {
+    buildDisputeFilters();
+    var list = activeDisputeFilter === 'all'
+      ? disputes
+      : disputes.filter(function(item) { return item.status === activeDisputeFilter; });
+
+    document.getElementById('disputeCountLabel').textContent = disputes.length + ' dispute' + (disputes.length === 1 ? '' : 's') + ' logged';
+    var grid = document.getElementById('disputesGrid');
+    if (!list.length) {
+      grid.innerHTML = '<div class="adm-docs-empty"><h4>No disputes in this filter</h4><p>New customer disputes will appear here for triage and resolution.</p></div>';
+      return;
+    }
+
+    var html = '<div class="adm-disputes-list">';
+    list.forEach(function(item) {
+      var attachments = Array.isArray(item.attachments) ? item.attachments : [];
+      html +=
+        '<article class="adm-dispute-card" data-dispute-id="' + item.id + '">' +
+          '<div class="adm-dispute-row">' +
+            '<div>' +
+              '<div class="adm-dispute-kicker">' + escapeHtml(item.service_label) + (item.service_item_label ? ' · ' + escapeHtml(item.service_item_label) : '') + '</div>' +
+              '<h3>' + escapeHtml(item.title) + '</h3>' +
+            '</div>' +
+            '<span class="adm-status-badge ' + statusClass(item.status || 'New') + '">' + escapeHtml(item.status || 'New') + '</span>' +
+          '</div>' +
+          '<div class="adm-dispute-tags">' +
+            '<span>' + escapeHtml(item.client_name) + '</span>' +
+            '<span>' + escapeHtml(item.category) + '</span>' +
+            '<span>' + escapeHtml(item.priority || 'Medium') + ' Priority</span>' +
+            '<span>' + new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + '</span>' +
+            '<span>' + attachments.length + ' attachment' + (attachments.length === 1 ? '' : 's') + '</span>' +
+          '</div>' +
+          '<p>' + escapeHtml(item.description) + '</p>' +
+          (item.admin_notes ? '<div class="adm-dispute-note">Admin note: ' + escapeHtml(item.admin_notes) + '</div>' : '') +
+        '</article>';
+    });
+    html += '</div>';
+    grid.innerHTML = html;
+
+    grid.querySelectorAll('.adm-dispute-card[data-dispute-id]').forEach(function(card) {
+      card.addEventListener('click', function() {
+        openDisputeDetail(this.getAttribute('data-dispute-id'));
+      });
+    });
+  }
+
+  var disputeModal = document.getElementById('disputeDetailModal');
+
+  function openDisputeDetail(disputeId) {
+    var dispute = disputes.find(function(item) { return item.id === disputeId; });
+    if (!dispute) return;
+    currentDisputeId = disputeId;
+
+    document.getElementById('admDisputeService').textContent = dispute.service_label + (dispute.service_item_label ? ' · ' + dispute.service_item_label : '');
+    document.getElementById('admDisputeTitle').textContent = dispute.title;
+    document.getElementById('admDisputeDescription').textContent = dispute.description;
+    document.getElementById('admDisputeMeta').innerHTML =
+      '<span>' + escapeHtml(dispute.client_name) + ' (' + escapeHtml(dispute.client_email) + ')</span>' +
+      '<span>' + escapeHtml(dispute.category) + '</span>' +
+      '<span>' + escapeHtml(dispute.priority || 'Medium') + ' Priority</span>' +
+      '<span>Raised ' + new Date(dispute.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + '</span>';
+    document.getElementById('admDisputeStatus').value = dispute.status || 'New';
+    document.getElementById('admDisputeNotes').value = dispute.admin_notes || '';
+    document.getElementById('admDisputeStatusBadge').className = 'adm-client-status ' + statusClass(dispute.status || 'New');
+    document.getElementById('admDisputeStatusBadge').textContent = dispute.status || 'New';
+
+    var filesWrap = document.getElementById('admDisputeFiles');
+    var attachments = Array.isArray(dispute.attachments) ? dispute.attachments : [];
+    if (!attachments.length) {
+      filesWrap.innerHTML = '<div class="adm-dispute-files-empty">No attachments provided</div>';
+    } else {
+      var filesHtml = '';
+      attachments.forEach(function(file, idx) {
+        filesHtml += '<button class="adm-dispute-file" type="button" data-file-idx="' + idx + '">' + escapeHtml(file.file_name || ('Attachment ' + (idx + 1))) + '</button>';
+      });
+      filesWrap.innerHTML = filesHtml;
+      filesWrap.querySelectorAll('.adm-dispute-file').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var attachment = attachments[parseInt(this.getAttribute('data-file-idx'), 10)];
+          if (attachment) openDisputeAttachment(attachment);
+        });
+      });
+    }
+
+    disputeModal.style.display = 'flex';
+    void disputeModal.offsetHeight;
+    disputeModal.classList.add('show');
+  }
+
+  function closeDisputeDetail() {
+    disputeModal.classList.remove('show');
+    setTimeout(function() {
+      disputeModal.style.display = 'none';
+      currentDisputeId = null;
+    }, 220);
+  }
+
+  document.getElementById('admDisputeCancel').addEventListener('click', closeDisputeDetail);
+  disputeModal.addEventListener('click', function(e) {
+    if (e.target === disputeModal) closeDisputeDetail();
+  });
+  document.getElementById('admDisputeSave').addEventListener('click', function() {
+    if (!currentDisputeId) return;
+    var nextStatus = document.getElementById('admDisputeStatus').value;
+    var notes = document.getElementById('admDisputeNotes').value.trim();
+    var payload = {
+      status: nextStatus,
+      admin_notes: notes,
+      updated_at: new Date().toISOString()
+    };
+    payload.resolved_at = nextStatus === 'Resolved' ? new Date().toISOString() : null;
+
+    sb.from('disputes').update(payload).eq('id', currentDisputeId).then(function(result) {
+      if (result.error) {
+        showToast('Failed to update dispute', 'error');
+        return;
+      }
+      showToast('Dispute updated', 'success');
+      closeDisputeDetail();
+      loadDashboard();
+    });
+  });
+
   // Documents loaded on-demand when nav item is clicked
 
   // ── Document Preview Modal ──
@@ -1657,6 +1891,7 @@
   docModal.addEventListener('click', function(e) { if (e.target === docModal) closeDocPreview(); });
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && docModal.classList.contains('show')) closeDocPreview();
+    if (e.key === 'Escape' && disputeModal.classList.contains('show')) closeDisputeDetail();
   });
 
   // ── Sidebar navigation — scroll to sections ──
@@ -1675,19 +1910,23 @@
       ];
       var rightPanel = document.querySelector('.adm-right');
       var docSection = document.getElementById('sectionDocuments');
+      var disputeSection = document.getElementById('sectionDisputes');
 
-      if (section === 'documents') {
+      if (section === 'documents' || section === 'disputes') {
         // Hide default dashboard sections and right panel
         defaultSections.forEach(function(el) { if (el) el.style.display = 'none'; });
         if (rightPanel) rightPanel.style.display = 'none';
-        docSection.style.display = 'block';
-        loadDocuments();
+        docSection.style.display = section === 'documents' ? 'block' : 'none';
+        disputeSection.style.display = section === 'disputes' ? 'block' : 'none';
+        if (section === 'documents') loadDocuments();
+        if (section === 'disputes') renderDisputes();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         // Restore default dashboard sections and right panel
         defaultSections.forEach(function(el) { if (el) el.style.display = ''; });
         if (rightPanel) rightPanel.style.display = '';
         docSection.style.display = 'none';
+        disputeSection.style.display = 'none';
       }
 
       switch (section) {
@@ -1727,6 +1966,9 @@
           if (oneEl) oneEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
           break;
         case 'documents':
+          // Already handled above
+          break;
+        case 'disputes':
           // Already handled above
           break;
         default:
