@@ -245,6 +245,8 @@
       <div class="review-section"><h4>Payment</h4><div class="review-row"><span class="review-label">Method</span><span class="review-value" id="revPayMethod"></span></div></div>
       <div class="review-section">
         <div id="revDiscounts"></div>
+        <div class="review-row"><span class="review-label">Subtotal</span><span class="review-value" id="revSubtotal"></span></div>
+        <div class="review-row"><span class="review-label">GST (18%)</span><span class="review-value" id="revGst"></span></div>
         <div class="review-row" style="border-top:2px solid rgba(0,0,0,.08);padding-top:12px"><span class="review-label" style="font-weight:600">Total Due Today</span><span class="review-total" id="revTotal"></span></div>
         <div style="font-size:.7rem;color:var(--text-mid);margin-top:6px;line-height:1.5" id="revNote"></div>
       </div>
@@ -267,6 +269,8 @@
 <footer></footer>
 <script src="footer.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="invoice-generator.js"></script>
 <script>
@@ -676,7 +680,11 @@
     if(hasAnnual){discountHtml+='<div class="review-row"><span class="review-label" style="color:var(--green-pop)">Annual billing discount (15%)</span><span class="review-value" style="color:var(--green-pop)">Applied ✓</span></div>'}
     document.getElementById('revDiscounts').innerHTML=discountHtml;
 
-    document.getElementById('revTotal').textContent='\u20B9'+total.toLocaleString('en-IN');
+    var gst = Math.round(total * 0.18);
+    var grandTotal = total + gst;
+    document.getElementById('revSubtotal').textContent='\u20B9'+total.toLocaleString('en-IN');
+    document.getElementById('revGst').textContent='\u20B9'+gst.toLocaleString('en-IN');
+    document.getElementById('revTotal').textContent='\u20B9'+grandTotal.toLocaleString('en-IN');
     document.getElementById('revNote').textContent='You can cancel or change plans anytime from your dashboard.';
   }
 
@@ -706,8 +714,20 @@
         u.serviceBilling = Object.assign({}, u.serviceBilling||{}, serviceBilling);
         
         u.paymentDate=new Date().toISOString();
-        localStorage.setItem('nri_users',JSON.stringify(users));
+      } else {
+        // User doesn't exist yet — create a new entry
+        users.push({
+          email: session.email,
+          country: session.country || '',
+          createdAt: session.createdAt || new Date().toISOString(),
+          services: selectedServices.slice(),
+          serviceDetails: JSON.parse(JSON.stringify(serviceDetails)),
+          servicePlans: Object.assign({}, servicePlans),
+          serviceBilling: Object.assign({}, serviceBilling),
+          paymentDate: new Date().toISOString()
+        });
       }
+      localStorage.setItem('nri_users',JSON.stringify(users));
       session.onboarded=true;
       localStorage.setItem('nri_session',JSON.stringify(session));
       localStorage.removeItem('nri_order');
@@ -746,12 +766,85 @@
         invItems.push({ description: title, qty: 1, price: amount });
       });
       
-      localStorage.setItem('nri_invoice', JSON.stringify({
+      var newInvoice = {
         txnId: txnId,
         date: new Date().toISOString(),
         method: selectedPayMethod,
         items: invItems
-      }));
+      };
+      localStorage.setItem('nri_invoice', JSON.stringify(newInvoice));
+      
+      var usersList = JSON.parse(localStorage.getItem('nri_users')||'[]');
+      var idx = usersList.findIndex(function(u){return u.email===session.email});
+      if(idx !== -1) {
+        if(!usersList[idx].invoices) usersList[idx].invoices = [];
+        usersList[idx].invoices.push(newInvoice);
+        localStorage.setItem('nri_users', JSON.stringify(usersList));
+      }
+
+      // ── Dual-write to Supabase for admin dashboard ──
+      if (window.supabaseClient) {
+        var sb = window.supabaseClient;
+        // Update client record with services and country
+        var svcNames = selectedServices.map(function(s) {
+          return {home:'Property',vehicle:'Vehicle',parental:'Parental Care',legal:'Legal'}[s] || s;
+        });
+        sb.from('clients').select('id').eq('email', session.email).then(function(res) {
+          var clientPromise;
+          if (res.data && res.data.length > 0) {
+            clientPromise = sb.from('clients').update({
+              services: svcNames,
+              country: session.country || '',
+              status: 'Active'
+            }).eq('email', session.email).select();
+          } else {
+            clientPromise = sb.from('clients').insert([{
+              name: session.name, email: session.email,
+              country: session.country || '', city: '',
+              services: svcNames, status: 'Active'
+            }]).select();
+          }
+          clientPromise.then(function(clientRes) {
+            if (clientRes.error) { console.error('Client write failed:', clientRes.error); return; }
+            // Get client ID for task inserts
+            var clientId = null;
+            if (res.data && res.data[0]) clientId = res.data[0].id;
+            else if (clientRes.data && clientRes.data[0]) clientId = clientRes.data[0].id;
+
+            // Insert tasks for each service item
+            var taskInserts = [];
+            selectedServices.forEach(function(svc) {
+              var svcName = {home:'Property Management',vehicle:'Vehicle Management',parental:'Parental Care',legal:'Legal & Documentation'}[svc] || svc;
+              var items = [];
+              if (svc === 'home') items = (serviceDetails.home || {}).properties || [];
+              else if (svc === 'vehicle') items = (serviceDetails.vehicle || {}).vehicles || [];
+              else if (svc === 'parental') items = (serviceDetails.parental || {}).members || [];
+              else if (svc === 'legal') items = (serviceDetails.legal || {}).cases || [];
+              if (items.length === 0) items = [{}];
+              items.forEach(function(item) {
+                var desc = '';
+                if (svc === 'home') desc = (item.type || 'Property') + ' in ' + (item.city || 'India');
+                else if (svc === 'vehicle') desc = (item.model || 'Vehicle') + ' (' + (item.reg || '') + ')';
+                else if (svc === 'parental') desc = 'Care for ' + (item.name || 'family member');
+                else if (svc === 'legal') desc = (item.type || 'Case') + ' in ' + (item.city || 'India');
+                taskInserts.push({
+                  client_id: clientId,
+                  service: svcName,
+                  status: 'Pending',
+                  progress: 0,
+                  deadline: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+                  description: desc || svcName
+                });
+              });
+            });
+            if (taskInserts.length > 0) {
+              sb.from('tasks').insert(taskInserts).select().then(function(tRes) {
+                if (tRes.error) console.error('Task insert failed:', tRes.error);
+              });
+            }
+          });
+        });
+      }
 
       document.querySelectorAll('.onboard-step').forEach(function(el){el.classList.remove('active')});
       document.getElementById('stepSuccess').classList.add('active');

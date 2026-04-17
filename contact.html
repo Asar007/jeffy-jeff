@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Schedule a Callback — NRI Bridge India</title>
-<meta name="description" content="Schedule a callback with NRI Bridge India's expert team to discuss your property management, legal, or concierge needs in India.">
+<title>Schedule a Call Appointment — NRI Bridge India</title>
+<meta name="description" content="Schedule a call appointment with NRI Bridge India's expert team to discuss your property management, legal, or concierge needs in India.">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
@@ -151,14 +151,14 @@
 <section class="service-hero section-pad">
   <div class="section-tag">Contact Us</div>
   <h1>Let's Start a Conversation</h1>
-  <p>Speak directly with an NRI Property Management Expert. Tell us your timezone, and we'll call you when it's convenient.</p>
+  <p>Our NRI Bridge India support team would get back to you.</p>
 </section>
 
 <section class="services section-pad" style="padding-top:0;">
   <div class="contact-page">
     <div class="contact-card">
       <div class="contact-card-header">
-        <h2>Schedule a Callback</h2>
+        <h2>Schedule a Call Appointment</h2>
         <p>Drop your details below and an expert from our team will reach out to understand your requirements.</p>
       </div>
 
@@ -209,7 +209,7 @@
         </div>
 
         <div class="contact-submit-row">
-          <button type="submit" class="contact-submit" id="contactSubmitBtn">Schedule Callback</button>
+          <button type="submit" class="contact-submit" id="contactSubmitBtn">Schedule Call Appointment</button>
         </div>
       </form>
     </div>
@@ -237,9 +237,31 @@
 <footer></footer>
 <script src="footer.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+
 <script>
 (function(){
   'use strict';
+
+  // Fetch IP to set country-specific placeholder
+  fetch('https://ipapi.co/json/')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var c = data.country_code;
+      var code = data.country_calling_code;
+      var el = document.getElementById('contactPhone');
+      if (el && !el.value) { // only update if empty
+        if(c === 'US' || c === 'CA') el.placeholder = 'e.g. ' + code + ' 650 123 4567';
+        else if(c === 'GB') el.placeholder = 'e.g. ' + code + ' 7911 123456';
+        else if(c === 'IN') el.placeholder = 'e.g. ' + code + ' 98765 43210';
+        else if(c === 'AE') el.placeholder = 'e.g. ' + code + ' 50 123 4567';
+        else if(c === 'AU') el.placeholder = 'e.g. ' + code + ' 412 345 678';
+        else if(c === 'SG') el.placeholder = 'e.g. ' + code + ' 8123 4567';
+        else if(code) el.placeholder = 'e.g. ' + code + ' 123 4567';
+      }
+    })
+    .catch(function(e) { console.log('Placeholder IP fetch failed:', e); });
 
   // Prefill from session
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
@@ -286,10 +308,27 @@
     contacts.unshift(payload);
     localStorage.setItem('nri_contacts', JSON.stringify(contacts));
 
+    // Dual-write to Supabase appointments table for admin dashboard
+    if (typeof window.supabaseClient !== 'undefined' && window.supabaseClient) {
+      var timeNote = time ? ' (Preferred: ' + time + ' ' + timezone + ')' : '';
+      window.supabaseClient.from('appointments').insert([{
+        name: name,
+        email: email,
+        phone: phone,
+        message: (message || '') + timeNote,
+        status: 'New'
+      }]).select().then(function(result){
+        if (result.error) console.error('Appointment insert failed:', result.error);
+        else console.log('Appointment saved to Supabase');
+      }).catch(function(err){ console.error('Appointment insert exception:', err); });
+    } else {
+      console.warn('Supabase client not available — appointment saved to localStorage only');
+    }
+
     // Show success modal
     setTimeout(function(){
       btn.disabled = false;
-      btn.textContent = 'Schedule Callback';
+      btn.textContent = 'Schedule Call Appointment';
 
       // Reset Modal Animations
       var topEl = document.getElementById('contactModalTop');

@@ -47,10 +47,10 @@
         <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
         Contact Support
       </a>
-      <a href="onboarding.html" class="dash-quick-btn">
-        <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-        Manage Services
-      </a>
+      <button class="dash-quick-btn" onclick="document.getElementById('paymentsList').scrollIntoView({behavior:'smooth',block:'start'})">
+        <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+        Payment History
+      </button>
     </div>
 
     <!-- LEFT: MAIN CONTENT -->
@@ -71,6 +71,19 @@
         </div>
         <div class="dash-payments-list" id="paymentsList">
           <!-- JS renders payment rows here -->
+        </div>
+      </div>
+
+      <div class="dash-disputes-panel">
+        <div class="dash-section-header">
+          <h2>Dispute Center</h2>
+          <button class="dash-inline-btn" id="openDisputeModalBtn" type="button">Raise Dispute</button>
+        </div>
+        <div class="dash-dispute-intro">
+          Report service issues tied to your active plans. Our team will review the case, request clarifications if needed, and keep the resolution status updated here.
+        </div>
+        <div class="dash-disputes-list" id="disputesList">
+          <div class="dash-empty-note">Loading disputes...</div>
         </div>
       </div>
     </div>
@@ -98,11 +111,20 @@
         </div>
       </div>
 
+      <div class="dash-dispute-summary-card">
+        <div class="dash-sub-header">
+          <h3>Dispute Status</h3>
+        </div>
+        <div class="dash-dispute-summary-count" id="disputeSummaryCount">0</div>
+        <div class="dash-dispute-summary-copy" id="disputeSummaryCopy">No open disputes</div>
+        <button class="dash-inline-btn dash-inline-btn-block" id="openDisputeSidebarBtn" type="button">Open Dispute Center</button>
+      </div>
+
       <!-- Request Additional Service -->
       <div class="dash-request-card">
         <h3>Request Additional Service</h3>
         <p>Need something specific? Tell us what you need and we'll handle it.</p>
-        <a href="onboarding.html" class="btn-hero">Submit Request →</a>
+        <a href="quote-builder.html" class="btn-hero">Submit Request →</a>
       </div>
 
     </aside>
@@ -110,15 +132,156 @@
   </div>
 </main>
 
+<!-- ACTION MODAL -->
+<div class="action-modal-overlay" id="actionModal">
+  <div class="action-modal">
+    <div class="action-modal-top">
+      <div class="modal-svc-name" id="modalSvcName"></div>
+      <div class="modal-step-label" id="modalStepLabel"></div>
+      <div class="modal-action-title" id="modalActionTitle"></div>
+    </div>
+    <div class="action-modal-body">
+      <p class="modal-description" id="modalDescription"></p>
+      <textarea id="modalComment" placeholder="Add your comments or instructions..."></textarea>
+    </div>
+    <div class="action-modal-actions">
+      <button class="action-btn action-btn-approve" id="modalApproveBtn">Approve</button>
+      <button class="action-btn action-btn-reject" id="modalRejectBtn">Reject</button>
+      <button class="action-btn action-btn-cancel" id="modalCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOCUMENT PREVIEW MODAL -->
+<div class="dash-doc-preview-overlay" id="dashDocPreview">
+  <div class="dash-doc-preview-panel">
+    <div class="dash-doc-preview-header">
+      <div class="dash-doc-preview-title-area">
+        <div class="dash-doc-preview-icon-wrap">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div>
+          <h3 id="dashDocTitle">Document</h3>
+          <div class="dash-doc-preview-sub" id="dashDocSub"></div>
+        </div>
+      </div>
+      <div class="dash-doc-preview-btns">
+        <a id="dashDocNewTab" href="#" target="_blank" class="dash-doc-ctrl-btn" title="Open in new tab">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+        <a id="dashDocDownload" href="#" download class="dash-doc-ctrl-btn" title="Download">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </a>
+        <button id="dashDocClose" class="dash-doc-ctrl-btn dash-doc-close" title="Close">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="dash-doc-preview-content" id="dashDocContent">
+      <div class="dash-doc-preview-loader" id="dashDocLoader">
+        <div class="dash-doc-spinner"></div>
+        <span>Loading document…</span>
+      </div>
+      <iframe id="dashDocFrame" class="dash-doc-frame"></iframe>
+      <div class="dash-doc-preview-err" id="dashDocError" style="display:none;">
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h4>Could not load preview</h4>
+        <p>The document format may not support inline preview.</p>
+        <a id="dashDocFallback" href="#" target="_blank" class="dash-doc-fallback-link">Open in New Tab Instead</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DISPUTE MODAL -->
+<div class="dash-dispute-modal-overlay" id="disputeModal">
+  <div class="dash-dispute-modal">
+    <div class="dash-dispute-modal-head">
+      <div>
+        <h3>Raise a Dispute</h3>
+        <p>Select the affected service and describe the issue clearly so the operations team can route it correctly.</p>
+      </div>
+      <button class="dash-dispute-close" id="disputeModalClose" type="button" aria-label="Close dispute modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form class="dash-dispute-form" id="disputeForm">
+      <div class="dash-dispute-grid">
+        <label class="dash-dispute-field">
+          <span>Related Service</span>
+          <select id="disputeService" required>
+            <option value="">Select a service</option>
+          </select>
+        </label>
+        <label class="dash-dispute-field">
+          <span>Dispute Category</span>
+          <select id="disputeCategory" required>
+            <option value="">Select a category</option>
+          </select>
+        </label>
+      </div>
+      <div class="dash-dispute-grid">
+        <label class="dash-dispute-field">
+          <span>Priority</span>
+          <select id="disputePriority" required>
+            <option value="Medium" selected>Medium</option>
+            <option value="Low">Low</option>
+            <option value="High">High</option>
+            <option value="Urgent">Urgent</option>
+          </select>
+        </label>
+        <label class="dash-dispute-field">
+          <span>Issue Title</span>
+          <input type="text" id="disputeTitle" maxlength="120" placeholder="Short summary of the problem" required>
+        </label>
+      </div>
+      <label class="dash-dispute-field">
+        <span>Description</span>
+        <textarea id="disputeDescription" rows="5" maxlength="1500" placeholder="Explain what happened, when it started, and what resolution you expect." required></textarea>
+      </label>
+      <label class="dash-dispute-field">
+        <span>Attachments</span>
+        <input type="file" id="disputeAttachments" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
+        <small>Attach supporting screenshots, reports, invoices, or service documents. Maximum 10 MB per file.</small>
+      </label>
+      <div class="dash-dispute-modal-actions">
+        <button class="dash-inline-btn" id="submitDisputeBtn" type="submit">Submit Dispute</button>
+        <button class="dash-inline-btn dash-inline-btn-muted" id="cancelDisputeBtn" type="button">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Hidden file input for document uploads -->
+<input type="file" id="docFileInput" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+
 <footer></footer>
 <script src="footer.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="invoice-generator.js"></script>
 
 <script>
 (function() {
   'use strict';
+
+  // ── Toast Helper ──
+  function showToast(message, type) {
+    var existing = document.querySelector('.nbi-toast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'nbi-toast nbi-toast-' + (type || 'success');
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    void toast.offsetHeight;
+    toast.classList.add('show');
+    setTimeout(function() {
+      toast.classList.remove('show');
+      setTimeout(function() { toast.remove(); }, 400);
+    }, 3000);
+  }
 
   // ── Auth Check ──
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
@@ -141,6 +304,9 @@
   var serviceDetails = user.serviceDetails || { home: { properties: [] }, vehicle: { vehicles: [] }, parental: { members: [] }, legal: { cases: [] } };
   var servicePlans = user.servicePlans || {};
   var serviceBilling = user.serviceBilling || {};
+  var disputes = [];
+  var disputeServiceOptions = [];
+  var activeDisputeServiceMeta = null;
 
   var SVC_NAMES = {
     home: 'Home Management',
@@ -149,6 +315,12 @@
     legal: 'Legal & Documentation'
   };
   var SVC_CATS = { home: 'cat-home', vehicle: 'cat-vehicle', parental: 'cat-parental', legal: 'cat-legal' };
+  var DISPUTE_CATEGORIES = {
+    home: ['Inspection Issue', 'Tenant Issue', 'Rent Issue', 'Maintenance Issue', 'Document Delay'],
+    vehicle: ['Registration Issue', 'Insurance Issue', 'Servicing Issue', 'Delivery Delay', 'Document Issue'],
+    parental: ['Caretaker Issue', 'Appointment Issue', 'Medicine Issue', 'Emergency Response Issue', 'Reporting Issue'],
+    legal: ['Filing Delay', 'Drafting Issue', 'Documentation Mismatch', 'Compliance Issue', 'Case Follow-up Issue']
+  };
 
   // SVG icons for service categories
   var SVC_SVG = {
@@ -170,6 +342,25 @@
       return { starter: 'Guardian', standard: 'Command', premium: 'Concierge' }[tier] || tier;
     }
     return { starter: 'Starter', standard: 'Standard', premium: 'Premium' }[tier] || tier;
+  }
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDisputeDate(value) {
+    if (!value) return 'Just now';
+    return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function getDisputeStatusClass(status) {
+    var key = (status || 'New').toLowerCase().replace(/\s+/g, '-');
+    return 'status-' + key;
   }
 
   // ── RESEARCH-BACKED SERVICE PIPELINES ──
@@ -501,12 +692,21 @@
       }
     });
 
-    // ── Action button ──
+    // ── Action button (or decision badge if already decided) ──
     var actionHtml = '';
-    if (svc.action && svc.status !== 'completed') {
+    var decisionKey = svc.category + '-' + svc.currentStep;
+    var existingDecision = (user.decisions || {})[decisionKey];
+    if (existingDecision) {
+      var badgeClass = existingDecision.decision === 'approved' ? 'approved' : 'rejected';
+      var badgeLabel = existingDecision.decision === 'approved' ? 'Approved' : 'Rejected';
+      var badgeIcon = existingDecision.decision === 'approved'
+        ? '<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>'
+        : '<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>';
+      actionHtml = '<span class="dash-decision-badge ' + badgeClass + '">' + badgeIcon + ' ' + badgeLabel + '</span>';
+    } else if (svc.action && svc.status !== 'completed') {
       var actionClass = svc.action.pending ? 'dash-svc-action action-pending' : 'dash-svc-action';
       var actionIcon = ACTION_ICONS[svc.action.icon] || '';
-      actionHtml = '<button class="' + actionClass + '">' + actionIcon + svc.action.label + '</button>';
+      actionHtml = '<button class="' + actionClass + '" data-svc-idx="' + idx + '">' + actionIcon + svc.action.label + '</button>';
     }
 
     // ── Expandable document checklist ──
@@ -591,8 +791,28 @@
   var invoiceData = JSON.parse(localStorage.getItem('nri_invoice') || 'null');
 
   var payments = [];
-  // Add the actual onboarding payment if it exists
-  if (user.paymentDate) {
+  
+  if (user.invoices && user.invoices.length > 0) {
+    // Add all historical invoices
+    user.invoices.forEach(function(inv, index) {
+      var invTotal = 0;
+      if(inv.items) {
+         inv.items.forEach(function(item){ invTotal += item.price; });
+      }
+      var titleSuffix = index === 0 ? 'Initial Payment' : 'Additional Service';
+      payments.push({
+        title: planTierDisplay + ' — ' + titleSuffix,
+        date: new Date(inv.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+        ref: inv.txnId,
+        amount: invTotal,
+        status: 'paid',
+        invoiceData: inv
+      });
+    });
+    // sort descending by date so newest is top, wait normally we want chronological or reverse chronological?
+    payments.sort(function(a,b) { return new Date(b.date) - new Date(a.date); });
+  } else if (user.paymentDate) {
+    // Fallback for older data
     payments.push({
       title: planTierDisplay + ' — Initial Payment',
       date: new Date(user.paymentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
@@ -736,6 +956,7 @@
   var sideDocEntries = [];
 
   // Collect docs from all active service pipelines
+  var uploadedDocs = user.uploadedDocs || {};
   activeServices.forEach(function(svc) {
     var pipeline = SERVICE_PIPELINES[svc];
     if (!pipeline) return;
@@ -744,12 +965,15 @@
     var threshold = Math.min(Math.round(totalDocs * (timeStatus.progress / 100)), totalDocs);
 
     pipeline.requiredDocs.forEach(function(doc, di) {
-      var isReceived = di < threshold;
+      var docKey = SVC_NAMES[svc] + '/' + doc.name;
+      var uploaded = uploadedDocs[docKey];
+      var isReceived = uploaded ? true : di < threshold;
       sideDocEntries.push({
         name: doc.name,
         meta: SVC_NAMES[svc],
         status: isReceived ? 'received' : 'pending',
-        action: isReceived ? 'View' : 'Upload'
+        action: isReceived ? 'View' : 'Upload',
+        uploaded: uploaded || null
       });
     });
   });
@@ -775,7 +999,7 @@
     var statusIcon = doc.status === 'received' ? checkIconSmall : clockIconSmall;
     var statusText = doc.status === 'received' ? 'Received' : 'Pending';
     sideDocsHtml +=
-      '<div class="dash-doc-row">' +
+      '<div class="dash-doc-row" data-doc-name="' + doc.name + '" data-doc-service="' + doc.meta + '">' +
         '<div class="dash-doc-left">' +
           '<div class="dash-doc-icon">' + docIcon + '</div>' +
           '<div class="dash-doc-info">' +
@@ -783,7 +1007,7 @@
             '<span>' + doc.meta + ' · ' + statusIcon + ' ' + statusText + '</span>' +
           '</div>' +
         '</div>' +
-        '<button class="dash-doc-action ' + actionClass + '">' + doc.action + '</button>' +
+        '<button class="dash-doc-action ' + actionClass + '" data-doc-name="' + doc.name + '" data-doc-service="' + doc.meta + '" data-doc-status="' + doc.status + '">' + doc.action + '</button>' +
       '</div>';
   });
 
@@ -802,6 +1026,1082 @@
   document.querySelectorAll('.dash-svc-card, .dash-pay-row').forEach(function(el) {
     observer.observe(el);
   });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── ACTION MODAL LOGIC ──────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+
+  var currentModalSvcIdx = null;
+
+  function openActionModal(svcEntry, svcIdx) {
+    currentModalSvcIdx = svcIdx;
+    var overlay = document.getElementById('actionModal');
+    document.getElementById('modalSvcName').textContent = svcEntry.name;
+    document.getElementById('modalStepLabel').textContent = 'Step ' + (svcEntry.currentStep + 1) + ' of ' + svcEntry.steps.length + ' — ' + svcEntry.steps[svcEntry.currentStep];
+    document.getElementById('modalActionTitle').textContent = svcEntry.action.label;
+    document.getElementById('modalDescription').textContent = svcEntry.description;
+    document.getElementById('modalComment').value = '';
+
+    overlay.style.display = 'flex';
+    void overlay.offsetHeight;
+    overlay.classList.add('show');
+  }
+
+  function closeActionModal() {
+    var overlay = document.getElementById('actionModal');
+    overlay.classList.remove('show');
+    setTimeout(function() { overlay.style.display = 'none'; }, 400);
+    currentModalSvcIdx = null;
+  }
+
+  function submitActionDecision(decision) {
+    if (currentModalSvcIdx === null) return;
+    var svcEntry = serviceEntries[currentModalSvcIdx];
+    if (!svcEntry) return;
+
+    var comment = document.getElementById('modalComment').value.trim();
+    var decisionKey = svcEntry.category + '-' + svcEntry.currentStep;
+
+    // Persist to localStorage
+    user.decisions = user.decisions || {};
+    user.decisions[decisionKey] = {
+      decision: decision,
+      comment: comment,
+      timestamp: new Date().toISOString(),
+      serviceName: svcEntry.name,
+      stepLabel: svcEntry.steps[svcEntry.currentStep],
+      actionLabel: svcEntry.action ? svcEntry.action.label : ''
+    };
+    localStorage.setItem('nri_users', JSON.stringify(users));
+
+    // Update DOM — replace button with badge
+    var btn = document.querySelector('.dash-svc-action[data-svc-idx="' + currentModalSvcIdx + '"]');
+    if (btn) {
+      var badgeClass = decision === 'approved' ? 'approved' : 'rejected';
+      var badgeLabel = decision === 'approved' ? 'Approved' : 'Rejected';
+      var badgeIcon = decision === 'approved'
+        ? '<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>'
+        : '<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>';
+      var badge = document.createElement('span');
+      badge.className = 'dash-decision-badge ' + badgeClass;
+      badge.innerHTML = badgeIcon + ' ' + badgeLabel;
+      btn.parentNode.replaceChild(badge, btn);
+    }
+
+    closeActionModal();
+    showToast(decision === 'approved' ? 'Action approved successfully' : 'Action rejected', decision === 'approved' ? 'success' : 'info');
+  }
+
+  // Wire up action buttons on service cards
+  document.querySelectorAll('.dash-svc-action[data-svc-idx]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-svc-idx'));
+      var svcEntry = serviceEntries[idx];
+      if (svcEntry && svcEntry.action) {
+        openActionModal(svcEntry, idx);
+      }
+    });
+  });
+
+  // Modal button handlers
+  document.getElementById('modalApproveBtn').addEventListener('click', function() {
+    submitActionDecision('approved');
+  });
+  document.getElementById('modalRejectBtn').addEventListener('click', function() {
+    submitActionDecision('rejected');
+  });
+  document.getElementById('modalCancelBtn').addEventListener('click', closeActionModal);
+
+  // Close modal on overlay click
+  document.getElementById('actionModal').addEventListener('click', function(e) {
+    if (e.target === this) closeActionModal();
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeActionModal();
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── DOCUMENT UPLOAD / VIEW LOGIC ────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+
+  var pendingUploadDoc = null; // tracks which doc the file picker is for
+  var docFileInput = document.getElementById('docFileInput');
+
+  function sanitizePath(str) {
+    return str.replace(/[^a-zA-Z0-9._-]/g, '_');
+  }
+
+  function refreshDocRow(docName, docService, newStatus) {
+    var row = document.querySelector('.dash-doc-row[data-doc-name="' + docName + '"][data-doc-service="' + docService + '"]');
+    if (!row) return;
+    var infoSpan = row.querySelector('.dash-doc-info span');
+    var btn = row.querySelector('.dash-doc-action');
+    if (newStatus === 'received') {
+      var checkIcon = '<svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>';
+      if (infoSpan) infoSpan.innerHTML = docService + ' &middot; ' + checkIcon + ' Received';
+      if (btn) {
+        btn.textContent = 'View';
+        btn.classList.remove('upload-cta');
+        btn.setAttribute('data-doc-status', 'received');
+      }
+    }
+  }
+
+  function refreshDocChecklist(docName, docService) {
+    // Also update the expandable doc checklist inside service cards
+    document.querySelectorAll('.dash-doc-check-row').forEach(function(row) {
+      var nameEl = row.querySelector('.dash-doc-check-name');
+      if (!nameEl) return;
+      var name = nameEl.textContent.replace(' *', '').trim();
+      if (name === docName) {
+        var iconEl = row.querySelector('.dash-doc-check-icon');
+        var statusEl = row.querySelector('.dash-doc-check-status');
+        if (iconEl) {
+          iconEl.className = 'dash-doc-check-icon received';
+          iconEl.innerHTML = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>';
+        }
+        if (statusEl) {
+          statusEl.className = 'dash-doc-check-status received';
+          statusEl.textContent = 'Received';
+        }
+        if (nameEl) nameEl.classList.remove('pending-doc');
+      }
+    });
+  }
+
+  // Handle file selection from picker
+  docFileInput.addEventListener('change', function() {
+    if (!this.files || !this.files[0] || !pendingUploadDoc) return;
+    var file = this.files[0];
+    var docName = pendingUploadDoc.name;
+    var docService = pendingUploadDoc.service;
+    var docKey = docService + '/' + docName;
+    var ext = file.name.split('.').pop();
+    var storagePath = sanitizePath(session.email) + '/' + sanitizePath(docService) + '/' + sanitizePath(docName) + '-' + Date.now() + '.' + ext;
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('File too large. Maximum 10 MB allowed.', 'error');
+      this.value = '';
+      pendingUploadDoc = null;
+      return;
+    }
+
+    // Read file as base64 data URL first (for fallback storage)
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var fileDataUrl = e.target.result; // data:mime/type;base64,...
+
+      // Try Supabase Storage upload, with base64 fallback
+      if (window.supabaseClient && window.supabaseClient.storage) {
+        window.supabaseClient.storage.from('documents').upload(storagePath, file)
+          .then(function(result) {
+            if (result.error) {
+              // Storage bucket may not exist — save with base64 content
+              saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl);
+              showToast('Document uploaded successfully', 'success');
+            } else {
+              saveDocLocally(docKey, docName, docService, file.name, storagePath, null);
+              showToast('Document uploaded successfully', 'success');
+            }
+          })
+          .catch(function() {
+            saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl);
+            showToast('Document uploaded successfully', 'success');
+          });
+      } else {
+        saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl);
+        showToast('Document uploaded successfully', 'success');
+      }
+    };
+    reader.onerror = function() {
+      showToast('Failed to read document file', 'error');
+    };
+    reader.readAsDataURL(file);
+
+    // Reset file input
+    this.value = '';
+    pendingUploadDoc = null;
+  });
+
+  function saveDocLocally(docKey, docName, docService, fileName, storagePath, fileDataUrl) {
+    user.uploadedDocs = user.uploadedDocs || {};
+    user.uploadedDocs[docKey] = {
+      status: 'received',
+      fileName: fileName,
+      storagePath: storagePath,
+      uploadedAt: new Date().toISOString()
+    };
+    localStorage.setItem('nri_users', JSON.stringify(users));
+    refreshDocRow(docName, docService, 'received');
+    refreshDocChecklist(docName, docService);
+
+    // Dual-write to Supabase documents table for admin dashboard
+    if (window.supabaseClient) {
+      var docRecord = {
+        client_email: session.email,
+        service_type: docService,
+        doc_name: docName,
+        file_name: fileName,
+        storage_path: storagePath,
+        status: 'uploaded'
+      };
+      // Store base64 file content when no storage path available
+      if (!storagePath && fileDataUrl) {
+        docRecord.file_data = fileDataUrl;
+      }
+      window.supabaseClient.from('documents').insert([docRecord])
+        .then(function(result) {
+          if (result.error) {
+            console.error('Document insert error:', result.error);
+          }
+        })
+        .catch(function(err) {
+          console.error('Document insert exception:', err);
+        });
+    }
+  }
+
+  // Attach click handlers to all doc action buttons
+  document.querySelectorAll('.dash-doc-action').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var docName = this.getAttribute('data-doc-name');
+      var docService = this.getAttribute('data-doc-service');
+      var docStatus = this.getAttribute('data-doc-status');
+      var docKey = docService + '/' + docName;
+      var uploaded = (user.uploadedDocs || {})[docKey];
+
+      if (docStatus === 'pending' || this.textContent.trim() === 'Upload') {
+        // Open file picker
+        pendingUploadDoc = { name: docName, service: docService };
+        docFileInput.click();
+      } else {
+        // View document
+        if (uploaded && uploaded.storagePath && window.supabaseClient && window.supabaseClient.storage) {
+          // Path 1: Supabase Storage signed URL
+          openDashDocPreview(docName, docService, uploaded.fileName || docName);
+          window.supabaseClient.storage.from('documents').createSignedUrl(uploaded.storagePath, 3600)
+            .then(function(result) {
+              if (result.error || !result.data || !result.data.signedUrl) {
+                // Storage failed — try fetching file_data from documents table
+                fetchAndPreviewFromDB(docName, docService);
+              } else {
+                renderDashDocPreview(result.data.signedUrl, uploaded.fileName || docName);
+              }
+            })
+            .catch(function() {
+              fetchAndPreviewFromDB(docName, docService);
+            });
+        } else {
+          // Path 2: Fetch file_data from Supabase documents table
+          openDashDocPreview(docName, docService, uploaded ? uploaded.fileName : docName);
+          fetchAndPreviewFromDB(docName, docService);
+        }
+      }
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── DOCUMENT PREVIEW MODAL ──────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+
+  var dashPreviewOverlay = document.getElementById('dashDocPreview');
+  var dashDocFrame = document.getElementById('dashDocFrame');
+  var dashDocLoader = document.getElementById('dashDocLoader');
+  var dashDocError = document.getElementById('dashDocError');
+
+  function openDashDocPreview(docName, docService, fileName) {
+    document.getElementById('dashDocTitle').textContent = docName;
+    document.getElementById('dashDocSub').textContent = docService + (fileName ? ' · ' + fileName : '');
+
+    // Reset state
+    dashDocFrame.style.display = 'none';
+    dashDocFrame.src = '';
+    dashDocError.style.display = 'none';
+    dashDocLoader.style.display = 'flex';
+    var oldImg = document.getElementById('dashDocPreviewImg');
+    if (oldImg) oldImg.remove();
+
+    // Show modal
+    dashPreviewOverlay.style.display = 'flex';
+    void dashPreviewOverlay.offsetHeight;
+    dashPreviewOverlay.classList.add('show');
+  }
+
+  function renderDashDocPreview(url, fileName) {
+    var ext = (fileName || '').split('.').pop().toLowerCase();
+    var isImage = ['jpg','jpeg','png','gif','webp','svg'].indexOf(ext) !== -1;
+    var isPdf = ext === 'pdf';
+    var isDataUrl = url.indexOf('data:') === 0;
+
+    // Detect from data URL mime type if ext doesn't help
+    if (isDataUrl && !isImage && !isPdf) {
+      if (url.indexOf('data:image/') === 0) isImage = true;
+      else if (url.indexOf('data:application/pdf') === 0) isPdf = true;
+    }
+
+    // Set action links
+    document.getElementById('dashDocNewTab').href = url;
+    document.getElementById('dashDocFallback').href = url;
+    var dlLink = document.getElementById('dashDocDownload');
+    dlLink.href = url;
+    if (isDataUrl) {
+      dlLink.setAttribute('download', fileName || 'document');
+    }
+
+    if (isImage) {
+      dashDocLoader.style.display = 'none';
+      dashDocFrame.style.display = 'none';
+      var img = document.createElement('img');
+      img.id = 'dashDocPreviewImg';
+      img.src = url;
+      img.className = 'dash-doc-preview-img';
+      img.alt = fileName || 'Document';
+      img.onload = function() { dashDocLoader.style.display = 'none'; };
+      img.onerror = function() {
+        dashDocLoader.style.display = 'none';
+        dashDocError.style.display = 'flex';
+        img.remove();
+      };
+      document.getElementById('dashDocContent').appendChild(img);
+    } else if (isPdf) {
+      dashDocFrame.src = url;
+      dashDocFrame.onload = function() {
+        dashDocLoader.style.display = 'none';
+        dashDocFrame.style.display = 'block';
+      };
+      dashDocFrame.onerror = function() {
+        dashDocLoader.style.display = 'none';
+        dashDocError.style.display = 'flex';
+      };
+      setTimeout(function() {
+        if (dashDocLoader.style.display !== 'none') {
+          dashDocLoader.style.display = 'none';
+          dashDocFrame.style.display = 'block';
+        }
+      }, 3000);
+    } else {
+      // Unsupported — show error with fallback link
+      dashDocLoader.style.display = 'none';
+      dashDocError.style.display = 'flex';
+    }
+  }
+
+  function fetchAndPreviewFromDB(docName, docService) {
+    if (!window.supabaseClient) {
+      dashDocLoader.style.display = 'none';
+      dashDocError.style.display = 'flex';
+      return;
+    }
+    window.supabaseClient.from('documents')
+      .select('file_data, file_name, storage_path')
+      .eq('client_email', session.email)
+      .eq('doc_name', docName)
+      .eq('service_type', docService)
+      .order('uploaded_at', { ascending: false })
+      .limit(1)
+      .then(function(result) {
+        if (result.error || !result.data || result.data.length === 0) {
+          dashDocLoader.style.display = 'none';
+          dashDocError.style.display = 'flex';
+          return;
+        }
+        var doc = result.data[0];
+        if (doc.file_data) {
+          // Render from base64 data URL
+          renderDashDocPreview(doc.file_data, doc.file_name || docName);
+        } else if (doc.storage_path && window.supabaseClient.storage) {
+          // Try storage as last resort
+          window.supabaseClient.storage.from('documents').createSignedUrl(doc.storage_path, 3600)
+            .then(function(r) {
+              if (r.error || !r.data || !r.data.signedUrl) {
+                dashDocLoader.style.display = 'none';
+                dashDocError.style.display = 'flex';
+              } else {
+                renderDashDocPreview(r.data.signedUrl, doc.file_name || docName);
+              }
+            })
+            .catch(function() {
+              dashDocLoader.style.display = 'none';
+              dashDocError.style.display = 'flex';
+            });
+        } else {
+          dashDocLoader.style.display = 'none';
+          dashDocError.style.display = 'flex';
+        }
+      })
+      .catch(function() {
+        dashDocLoader.style.display = 'none';
+        dashDocError.style.display = 'flex';
+      });
+  }
+
+  function closeDashDocPreview() {
+    dashPreviewOverlay.classList.remove('show');
+    setTimeout(function() {
+      dashPreviewOverlay.style.display = 'none';
+      dashDocFrame.src = '';
+      dashDocFrame.style.display = 'none';
+      var oldImg = document.getElementById('dashDocPreviewImg');
+      if (oldImg) oldImg.remove();
+    }, 350);
+  }
+
+  document.getElementById('dashDocClose').addEventListener('click', closeDashDocPreview);
+  dashPreviewOverlay.addEventListener('click', function(e) {
+    if (e.target === dashPreviewOverlay) closeDashDocPreview();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && dashPreviewOverlay.classList.contains('show')) closeDashDocPreview();
+    if (e.key === 'Escape' && disputeModal.classList.contains('show')) closeDisputeModal();
+  });
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── CUSTOM QUOTATIONS (rendered as service cards in My Services) ─
+  // ══════════════════════════════════════════════════════════════════
+
+  var customRequestIcon = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>';
+
+  function loadQuotations() {
+    if (!window.supabaseClient) return;
+    var sb = window.supabaseClient;
+    sb.from('requests')
+      .select('*')
+      .eq('customer_email', session.email)
+      .in('status', ['New', 'In Review', 'Quoted', 'Accepted', 'Declined'])
+      .order('created_at', { ascending: false })
+      .then(function(result) {
+        var quotes = result.data || [];
+        if (quotes.length === 0) return;
+
+        // Remove old custom-request cards (for re-render)
+        document.querySelectorAll('.dash-svc-card.custom-request-card').forEach(function(el) { el.remove(); });
+
+        var servicesList = document.getElementById('servicesList');
+        var cardsHtml = '';
+
+        quotes.forEach(function(q, qi) {
+          var items = q.quote_items || [];
+          var isPending = q.status === 'New' || q.status === 'In Review';
+          var isQuoted = q.status === 'Quoted';
+          var isAccepted = q.status === 'Accepted';
+          var isDeclined = q.status === 'Declined';
+
+          // Map request status to dashboard status style
+          var statusClass, statusText, progress;
+          if (isPending) {
+            statusClass = 'status-pending'; statusText = 'Under Review'; progress = 15;
+          } else if (isQuoted) {
+            statusClass = 'status-in-progress'; statusText = 'Quotation Ready'; progress = 50;
+          } else if (isAccepted) {
+            statusClass = 'status-completed'; statusText = 'Accepted'; progress = 100;
+          } else {
+            statusClass = 'status-pending'; statusText = 'Declined'; progress = 0;
+          }
+
+          // Step tracker for custom requests
+          var customSteps = ['Request Sent', 'Under Review', 'Quotation', 'Approval'];
+          var currentStep = isPending ? 1 : isQuoted ? 2 : (isAccepted || isDeclined) ? 3 : 0;
+
+          var stepsHtml = '';
+          customSteps.forEach(function(step, si) {
+            var dotClass = '', dotContent = '';
+            if (si < currentStep) { dotClass = 'done'; dotContent = checkSvg; }
+            else if (si === currentStep) { dotClass = 'active'; dotContent = dotSvg; }
+            stepsHtml += '<div class="dash-progress-step">' +
+              '<div class="dash-progress-dot ' + dotClass + '">' + dotContent + '</div>' +
+              '<div class="dash-progress-label ' + (si < currentStep ? 'done' : si === currentStep ? 'active' : '') + '">' + step + '</div>' +
+              '</div>';
+            if (si < customSteps.length - 1) {
+              stepsHtml += '<div class="dash-progress-connector ' + (si < currentStep ? 'done' : '') + '"></div>';
+            }
+          });
+
+          // Description text
+          var descText = q.description || 'Custom service request';
+
+          // Action area — depends on status
+          var actionHtml = '';
+          if (isQuoted) {
+            // Show line items + accept/decline
+            var tableRows = '';
+            items.forEach(function(item) {
+              tableRows += '<div class="dash-quote-line-item">' +
+                '<span>' + item.description + '</span>' +
+                '<span>\u20B9' + (item.amount || 0).toLocaleString('en-IN') + '</span>' +
+              '</div>';
+            });
+            actionHtml =
+              '<div class="dash-custom-quote-detail">' +
+                '<div class="dash-quote-line-items">' + tableRows + '</div>' +
+                '<div class="dash-quote-line-total">' +
+                  '<span>Total</span>' +
+                  '<span>\u20B9' + (q.quoted_amount || 0).toLocaleString('en-IN') + '</span>' +
+                '</div>' +
+                '<div class="dash-quote-actions">' +
+                  '<button class="dash-quote-btn dash-quote-accept" data-qid="' + q.id + '">Accept Quotation</button>' +
+                  '<button class="dash-quote-btn dash-quote-decline" data-qid="' + q.id + '">Decline</button>' +
+                '</div>' +
+              '</div>';
+          } else if (isPending) {
+            actionHtml = '<div class="dash-custom-pending-note">' +
+              '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+              'Our team is reviewing your request. You\u2019ll receive a quotation shortly.' +
+            '</div>';
+          } else if (isAccepted) {
+            actionHtml = '<div class="dash-custom-resolved-note accepted">' +
+              '<svg viewBox="0 0 12 12" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>' +
+              'Quotation accepted — \u20B9' + (q.quoted_amount || 0).toLocaleString('en-IN') + '. Work will begin shortly.' +
+            '</div>';
+          } else if (isDeclined) {
+            actionHtml = '<div class="dash-custom-resolved-note declined">' +
+              '<svg viewBox="0 0 12 12" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>' +
+              'You declined this quotation.' +
+            '</div>';
+          }
+
+          // Date
+          var reqDate = q.created_at ? new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+
+          cardsHtml +=
+            '<div class="dash-svc-card custom-request-card" style="animation:fadeUp 0.5s ease both;animation-delay:' + ((serviceEntries.length + qi) * 0.1) + 's;opacity:0;">' +
+              '<div class="dash-svc-header">' +
+                '<div class="dash-svc-icon cat-custom">' + customRequestIcon + '</div>' +
+                '<div>' +
+                  '<div class="dash-svc-title-row">' +
+                    '<h3>Custom Request</h3>' +
+                    '<span class="dash-status ' + statusClass + '">' + statusText + '</span>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+              '<p class="dash-svc-desc">' + descText + '</p>' +
+              '<div class="dash-progress">' +
+                '<div class="dash-progress-steps">' + stepsHtml + '</div>' +
+                '<div class="dash-progress-track"><div class="dash-progress-fill" style="width:' + progress + '%;"></div></div>' +
+                '<div class="dash-progress-meta">' +
+                  '<span class="dash-progress-pct">' + progress + '% complete</span>' +
+                  '<span class="dash-progress-eta">' + (reqDate ? 'Requested ' + reqDate : '') + '</span>' +
+                '</div>' +
+              '</div>' +
+              actionHtml +
+            '</div>';
+        });
+
+        // Append custom request cards to services list
+        servicesList.insertAdjacentHTML('beforeend', cardsHtml);
+
+        // Attach accept/decline handlers
+        servicesList.querySelectorAll('.dash-quote-accept').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            respondToQuote(this.getAttribute('data-qid'), 'accepted');
+          });
+        });
+        servicesList.querySelectorAll('.dash-quote-decline').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            respondToQuote(this.getAttribute('data-qid'), 'declined');
+          });
+        });
+      });
+  }
+
+  function respondToQuote(quoteId, response) {
+    if (!window.supabaseClient) return;
+    var sb = window.supabaseClient;
+    var newStatus = response === 'accepted' ? 'Accepted' : 'Declined';
+
+    sb.from('requests').update({
+      status: newStatus,
+      customer_response: response,
+      responded_at: new Date().toISOString()
+    }).eq('id', quoteId).then(function(result) {
+      if (result.error) {
+        showToast('Failed to respond', 'error');
+        return;
+      }
+
+      if (response === 'accepted') {
+        showToast('Quotation accepted! We\'ll get started shortly.', 'success');
+      } else {
+        showToast('Quotation declined', 'info');
+      }
+      // Re-render custom cards
+      loadQuotations();
+    });
+  }
+
+  var disputeModal = document.getElementById('disputeModal');
+  var disputeForm = document.getElementById('disputeForm');
+  var disputeServiceSelect = document.getElementById('disputeService');
+  var disputeCategorySelect = document.getElementById('disputeCategory');
+  var disputeAttachmentsInput = document.getElementById('disputeAttachments');
+  var disputeSubmitBtn = document.getElementById('submitDisputeBtn');
+
+  function buildDisputeServiceOptions() {
+    var options = [];
+    activeServices.forEach(function(svcKey) {
+      var svcLabel = SVC_NAMES[svcKey];
+      if (!svcLabel) return;
+      var items = getItems(svcKey);
+      if (items.length === 0) {
+        options.push({
+          serviceKey: svcKey,
+          serviceLabel: svcLabel,
+          serviceItemLabel: '',
+          displayLabel: svcLabel
+        });
+        return;
+      }
+      items.forEach(function(item) {
+        options.push({
+          serviceKey: svcKey,
+          serviceLabel: svcLabel,
+          serviceItemLabel: getItemLabel(svcKey, item),
+          displayLabel: svcLabel + ' - ' + getItemLabel(svcKey, item)
+        });
+      });
+    });
+    disputeServiceOptions = options;
+  }
+
+  function populateDisputeServices() {
+    buildDisputeServiceOptions();
+    var html = '<option value="">Select a service</option>';
+    disputeServiceOptions.forEach(function(option, idx) {
+      html += '<option value="' + idx + '">' + escapeHtml(option.displayLabel) + '</option>';
+    });
+    disputeServiceSelect.innerHTML = html;
+  }
+
+  function populateDisputeCategories(serviceKey) {
+    var categories = DISPUTE_CATEGORIES[serviceKey] || [];
+    var html = '<option value="">Select a category</option>';
+    categories.forEach(function(category) {
+      html += '<option value="' + escapeHtml(category) + '">' + escapeHtml(category) + '</option>';
+    });
+    disputeCategorySelect.innerHTML = html;
+  }
+
+  function openDisputeModal() {
+    populateDisputeServices();
+    disputeCategorySelect.innerHTML = '<option value="">Select a category</option>';
+    disputeForm.reset();
+    activeDisputeServiceMeta = null;
+    disputeModal.style.display = 'flex';
+    void disputeModal.offsetHeight;
+    disputeModal.classList.add('show');
+  }
+
+  function closeDisputeModal() {
+    disputeModal.classList.remove('show');
+    setTimeout(function() {
+      disputeModal.style.display = 'none';
+      disputeForm.reset();
+      disputeCategorySelect.innerHTML = '<option value="">Select a category</option>';
+      activeDisputeServiceMeta = null;
+    }, 220);
+  }
+
+  function updateDisputeSummary() {
+    var openStatuses = ['New', 'In Review', 'Waiting for Customer'];
+    var openCount = disputes.filter(function(item) {
+      return openStatuses.indexOf(item.status) !== -1;
+    }).length;
+    document.getElementById('disputeSummaryCount').textContent = disputes.length;
+    document.getElementById('disputeSummaryCopy').textContent = disputes.length === 0
+      ? 'No disputes raised yet'
+      : openCount + ' open case' + (openCount === 1 ? '' : 's') + ' under review';
+  }
+
+  function renderDisputes() {
+    var container = document.getElementById('disputesList');
+    if (!disputes.length) {
+      container.innerHTML = '<div class="dash-empty-note">No disputes have been raised for your active services.</div>';
+      updateDisputeSummary();
+      return;
+    }
+
+    var html = '';
+    disputes.forEach(function(item, idx) {
+      var attachments = Array.isArray(item.attachments) ? item.attachments : [];
+      var attachmentHtml = '';
+      if (attachments.length) {
+        attachmentHtml = '<div class="dash-dispute-attachments">';
+        attachments.forEach(function(file, fileIdx) {
+          attachmentHtml += '<button class="dash-attachment-btn" type="button" data-dispute-idx="' + idx + '" data-file-idx="' + fileIdx + '">' + escapeHtml(file.file_name || ('Attachment ' + (fileIdx + 1))) + '</button>';
+        });
+        attachmentHtml += '</div>';
+      }
+
+      html +=
+        '<article class="dash-dispute-card">' +
+          '<div class="dash-dispute-card-top">' +
+            '<div>' +
+              '<div class="dash-dispute-service">' + escapeHtml(item.service_label) + (item.service_item_label ? ' <span>' + escapeHtml(item.service_item_label) + '</span>' : '') + '</div>' +
+              '<h3>' + escapeHtml(item.title) + '</h3>' +
+            '</div>' +
+            '<span class="dash-status ' + getDisputeStatusClass(item.status) + '">' + escapeHtml(item.status || 'New') + '</span>' +
+          '</div>' +
+          '<div class="dash-dispute-meta">' +
+            '<span>' + escapeHtml(item.category) + '</span>' +
+            '<span>' + escapeHtml(item.priority || 'Medium') + ' Priority</span>' +
+            '<span>Raised ' + escapeHtml(formatDisputeDate(item.created_at)) + '</span>' +
+          '</div>' +
+          '<p class="dash-dispute-body">' + escapeHtml(item.description) + '</p>' +
+          (item.admin_notes ? '<div class="dash-dispute-note"><strong>Admin note:</strong> ' + escapeHtml(item.admin_notes) + '</div>' : '') +
+          attachmentHtml +
+        '</article>';
+    });
+    container.innerHTML = html;
+    updateDisputeSummary();
+
+    container.querySelectorAll('.dash-attachment-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var disputeIdx = parseInt(this.getAttribute('data-dispute-idx'), 10);
+        var fileIdx = parseInt(this.getAttribute('data-file-idx'), 10);
+        var dispute = disputes[disputeIdx];
+        var attachment = dispute && dispute.attachments ? dispute.attachments[fileIdx] : null;
+        if (!attachment) return;
+        openDisputeAttachment(attachment);
+      });
+    });
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function uploadDisputeAttachment(file) {
+    var safeName = (file.name || 'attachment').replace(/[^a-zA-Z0-9.\-_]/g, '-');
+    var storagePath = 'disputes/' + encodeURIComponent(session.email) + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
+
+    if (window.supabaseClient && window.supabaseClient.storage) {
+      return window.supabaseClient.storage.from('documents').upload(storagePath, file).then(function(result) {
+        if (!result.error) {
+          return {
+            file_name: file.name,
+            mime_type: file.type || '',
+            storage_path: storagePath
+          };
+        }
+        return readFileAsDataUrl(file).then(function(dataUrl) {
+          return {
+            file_name: file.name,
+            mime_type: file.type || '',
+            file_data: dataUrl
+          };
+        });
+      }).catch(function() {
+        return readFileAsDataUrl(file).then(function(dataUrl) {
+          return {
+            file_name: file.name,
+            mime_type: file.type || '',
+            file_data: dataUrl
+          };
+        });
+      });
+    }
+
+    return readFileAsDataUrl(file).then(function(dataUrl) {
+      return {
+        file_name: file.name,
+        mime_type: file.type || '',
+        file_data: dataUrl
+      };
+    });
+  }
+
+  function openDisputeAttachment(attachment) {
+    if (attachment.file_data) {
+      window.open(attachment.file_data, '_blank');
+      return;
+    }
+    if (!attachment.storage_path || !window.supabaseClient || !window.supabaseClient.storage) {
+      showToast('Attachment preview is unavailable', 'error');
+      return;
+    }
+    window.supabaseClient.storage.from('documents').createSignedUrl(attachment.storage_path, 3600).then(function(result) {
+      if (result.error || !result.data || !result.data.signedUrl) {
+        showToast('Could not open attachment', 'error');
+        return;
+      }
+      window.open(result.data.signedUrl, '_blank');
+    });
+  }
+
+  function loadDisputes() {
+    if (!window.supabaseClient) {
+      document.getElementById('disputesList').innerHTML = '<div class="dash-empty-note">Dispute center requires a live backend connection.</div>';
+      return;
+    }
+
+    window.supabaseClient.from('disputes')
+      .select('*')
+      .eq('client_email', session.email)
+      .order('created_at', { ascending: false })
+      .then(function(result) {
+        if (result.error) {
+          console.error('Disputes fetch error:', result.error);
+          document.getElementById('disputesList').innerHTML = '<div class="dash-empty-note">Could not load disputes right now.</div>';
+          return;
+        }
+        disputes = result.data || [];
+        renderDisputes();
+      });
+  }
+
+  disputeServiceSelect.addEventListener('change', function() {
+    var idx = this.value === '' ? -1 : parseInt(this.value, 10);
+    activeDisputeServiceMeta = idx >= 0 ? disputeServiceOptions[idx] : null;
+    populateDisputeCategories(activeDisputeServiceMeta ? activeDisputeServiceMeta.serviceKey : '');
+  });
+
+  disputeForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    if (!window.supabaseClient) {
+      showToast('Dispute submission is unavailable right now', 'error');
+      return;
+    }
+    if (!activeDisputeServiceMeta) {
+      showToast('Select the related service first', 'error');
+      return;
+    }
+
+    var files = Array.prototype.slice.call(disputeAttachmentsInput.files || []);
+    var oversize = files.some(function(file) { return file.size > 10 * 1024 * 1024; });
+    if (oversize) {
+      showToast('Each attachment must be 10 MB or smaller', 'error');
+      return;
+    }
+
+    disputeSubmitBtn.disabled = true;
+    disputeSubmitBtn.textContent = 'Submitting...';
+
+    Promise.all(files.map(uploadDisputeAttachment)).then(function(attachments) {
+      return window.supabaseClient.from('disputes').insert([{
+        client_email: session.email,
+        client_name: fullName,
+        service_key: activeDisputeServiceMeta.serviceKey,
+        service_label: activeDisputeServiceMeta.serviceLabel,
+        service_item_label: activeDisputeServiceMeta.serviceItemLabel || null,
+        category: disputeCategorySelect.value,
+        title: document.getElementById('disputeTitle').value.trim(),
+        description: document.getElementById('disputeDescription').value.trim(),
+        priority: document.getElementById('disputePriority').value,
+        status: 'New',
+        attachments: attachments
+      }]);
+    }).then(function(result) {
+      if (result.error) {
+        showToast('Failed to submit dispute', 'error');
+        return;
+      }
+      showToast('Dispute submitted successfully', 'success');
+      closeDisputeModal();
+      loadDisputes();
+    }).catch(function(err) {
+      console.error('Dispute submit error:', err);
+      showToast('Failed to submit dispute', 'error');
+    }).finally(function() {
+      disputeSubmitBtn.disabled = false;
+      disputeSubmitBtn.textContent = 'Submit Dispute';
+    });
+  });
+
+  document.getElementById('openDisputeModalBtn').addEventListener('click', openDisputeModal);
+  document.getElementById('openDisputeSidebarBtn').addEventListener('click', function() {
+    document.querySelector('.dash-disputes-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    openDisputeModal();
+  });
+  document.getElementById('disputeModalClose').addEventListener('click', closeDisputeModal);
+  document.getElementById('cancelDisputeBtn').addEventListener('click', closeDisputeModal);
+  disputeModal.addEventListener('click', function(e) {
+    if (e.target === disputeModal) closeDisputeModal();
+  });
+
+  // Quotations and disputes loaded after Supabase is ready (see waitForSupabaseAndLoad below)
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── REAL-TIME TASK STATUS FROM SUPABASE ─────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+  // Fetches admin-updated tasks and overlays real progress onto service cards
+
+  function loadRealTimeStatus() {
+    if (!window.supabaseClient) return;
+    var sb = window.supabaseClient;
+    var userEmail = session.email;
+
+    // Fetch tasks for this client via the clients table join
+    sb.from('tasks')
+      .select('*, clients!inner(email)')
+      .eq('clients.email', userEmail)
+      .then(function(result) {
+        if (result.error) {
+          console.error('Task fetch error:', result.error);
+          return;
+        }
+        var realTasks = result.data || [];
+        if (realTasks.length === 0) return;
+
+        // Map service names to category keys for matching
+        var SVC_NAME_TO_KEY = {};
+        Object.keys(SVC_NAMES).forEach(function(key) {
+          SVC_NAME_TO_KEY[SVC_NAMES[key].toLowerCase()] = key;
+        });
+
+        // Group tasks by service type
+        var tasksByService = {};
+        realTasks.forEach(function(t) {
+          var svcName = (t.service || '').toLowerCase().trim();
+          // Normalize common variants
+          if (svcName.indexOf('home') !== -1) svcName = 'home management';
+          else if (svcName.indexOf('vehicle') !== -1) svcName = 'vehicle management';
+          else if (svcName.indexOf('parental') !== -1) svcName = 'parental care';
+          else if (svcName.indexOf('legal') !== -1) svcName = 'legal & documentation';
+
+          if (!tasksByService[svcName]) tasksByService[svcName] = [];
+          tasksByService[svcName].push(t);
+        });
+
+        // For each service card, find matching task and overlay real data
+        serviceEntries.forEach(function(svc, idx) {
+          var svcKey = svc.category;
+          var svcNameLower = SVC_NAMES[svcKey].toLowerCase();
+          var matchingTasks = tasksByService[svcNameLower] || [];
+
+          if (matchingTasks.length === 0) return;
+
+          // Use the first (or most relevant) task for this service
+          var task = matchingTasks[0];
+          var realProgress = typeof task.progress === 'number' ? task.progress : null;
+          var realStatus = task.status || null;
+
+          if (realProgress === null && realStatus === null) return;
+
+          var cardEl = document.getElementById('svc-card-' + idx);
+          if (!cardEl) return;
+
+          // Map admin status to dashboard status class
+          var statusMap = {
+            'Pending': 'pending',
+            'In Progress': 'in-progress',
+            'Completed': 'completed'
+          };
+          var mappedStatus = statusMap[realStatus] || svc.status;
+          var statusText = realStatus === 'In Progress' ? 'In Progress' :
+                           realStatus === 'Completed' ? 'Completed' :
+                           realStatus === 'Pending' ? 'Pending' : svc.status;
+
+          // Update status badge
+          var badge = cardEl.querySelector('.dash-status');
+          if (badge && realStatus) {
+            badge.className = 'dash-status status-' + mappedStatus;
+            badge.textContent = statusText;
+          }
+
+          // Update progress bar
+          if (realProgress !== null) {
+            var fill = cardEl.querySelector('.dash-progress-fill');
+            if (fill) fill.style.width = realProgress + '%';
+
+            var pct = cardEl.querySelector('.dash-progress-pct');
+            if (pct) pct.textContent = realProgress + '% complete';
+          }
+
+          // Update step tracker based on real progress or saved current_step
+          if (realProgress !== null && svc.steps) {
+            var totalSteps = svc.steps.length;
+            var realStep;
+            if (typeof task.current_step === 'number' && task.current_step >= 0) {
+              realStep = Math.min(task.current_step, totalSteps - 1);
+            } else {
+              realStep = Math.min(Math.floor((realProgress / 100) * totalSteps), totalSteps - 1);
+              if (realProgress >= 100) realStep = totalSteps - 1;
+            }
+
+            // Update description to match real step
+            var pipeline = SERVICE_PIPELINES[svcKey];
+            if (pipeline && pipeline.descriptions[realStep]) {
+              var descEl = cardEl.querySelector('.dash-svc-desc');
+              if (descEl) descEl.textContent = pipeline.descriptions[realStep];
+            }
+
+            // Re-render step dots
+            var dots = cardEl.querySelectorAll('.dash-progress-dot');
+            var labels = cardEl.querySelectorAll('.dash-progress-label');
+            var connectors = cardEl.querySelectorAll('.dash-progress-connector');
+
+            dots.forEach(function(dot, si) {
+              dot.className = 'dash-progress-dot';
+              dot.innerHTML = '';
+              if (si < realStep) {
+                dot.classList.add('done');
+                dot.innerHTML = checkSvg;
+              } else if (si === realStep) {
+                dot.classList.add('active');
+                dot.innerHTML = dotSvg;
+              }
+            });
+
+            labels.forEach(function(label, si) {
+              label.className = 'dash-progress-label';
+              if (si < realStep) label.classList.add('done');
+              else if (si === realStep) label.classList.add('active');
+            });
+
+            connectors.forEach(function(conn, si) {
+              conn.className = 'dash-progress-connector';
+              if (si < realStep) conn.classList.add('done');
+            });
+
+            // Update ETA
+            var etaEl = cardEl.querySelector('.dash-progress-eta');
+            if (etaEl) {
+              if (realProgress >= 100) {
+                etaEl.textContent = 'Complete';
+              } else if (task.deadline) {
+                var dl = new Date(task.deadline);
+                etaEl.textContent = 'Est. ' + dl.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              }
+            }
+          }
+
+          // Add a "Live" indicator to show this is real admin data
+          if (!cardEl.querySelector('.dash-live-badge')) {
+            var liveEl = document.createElement('span');
+            liveEl.className = 'dash-live-badge';
+            liveEl.innerHTML = '<span class="dash-live-dot"></span> Live';
+            var titleRow = cardEl.querySelector('.dash-svc-title-row');
+            if (titleRow) titleRow.appendChild(liveEl);
+          }
+        });
+      });
+  }
+
+  // Wait for Supabase client to be ready, then load real-time status
+  function waitForSupabaseAndLoad() {
+    if (window.supabaseClient) {
+      loadRealTimeStatus();
+      loadQuotations();
+      loadDisputes();
+    } else {
+      setTimeout(waitForSupabaseAndLoad, 100);
+    }
+  }
+  waitForSupabaseAndLoad();
+
+  // Auto-refresh every 60 seconds
+  setInterval(function() {
+    loadRealTimeStatus();
+    loadDisputes();
+  }, 60000);
 
 })();
 </script>
