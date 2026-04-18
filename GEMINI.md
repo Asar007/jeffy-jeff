@@ -1,6 +1,7 @@
 # NRI Bridge India — Project Context & Guidelines
 
 ## Project Overview
+
 **NRI Bridge India** is a specialized property management SaaS platform designed for Non-Resident Indians (NRIs) to manage their Indian properties remotely. The platform offers end-to-end services including tenant sourcing, rent collection, maintenance, and legal compliance.
 
 ## Tech Stack
@@ -11,16 +12,18 @@
 - **Payments:** Integrated/Simulated payment flow (Stripe mentioned in SRS, current implementation uses a 4-step onboarding wizard).
 
 ## Directory Structure
+
 - `/`: Root directory containing all HTML pages, CSS, and backend scripts.
-- `propnri-saas-site.html`: The main landing page.
-- `shared.css`: Centralized design system and styling for all pages.
-- `google_apps_script.js`: Backend logic for form submissions and data handling.
+- [`propnri-saas-site.html`](propnri-saas-site.html): The main landing page.
+- [`shared.css`](shared.css): Centralized design system and styling for all pages.
+- [`google_apps_script.js`](google_apps_script.js): Backend logic for form submissions and data handling.
 - `NRI_Bridge_India_SRS.pdf`: Software Requirements Specification.
-- `onboarding.html`: Multi-step property and plan setup wizard.
+- [`onboarding.html`](onboarding.html): Multi-step property and plan setup wizard.
 - `service-*.html`: Detailed pages for individual service offerings.
 - `.agent/`: Internal agent configurations and rules (Antigravity Kit).
 
-## Design System (shared.css)
+## Design System ([shared.css](shared.css))
+
 The project uses an earthy, professional palette:
 - **Primary Green:** `#4a6a2e` (`--green-pop`)
 - **Background Deep:** `#3d3f2e` (`--bg-deep`)
@@ -42,7 +45,7 @@ Navigation and Footers are shared across all pages. They are enclosed in comment
 - User database (simulated) is stored in `localStorage` under `nri_users`.
 
 ### 3. Backend Integration
-- The `google_apps_script.js` file handles `doPost` requests.
+- The [`google_apps_script.js`](google_apps_script.js) file handles `doPost` requests.
 - Ensure the `GOOGLE_SCRIPT_URL` in HTML files matches the deployed GAS Web App URL.
 - Expected Google Sheet names: `Signups`, `Logins`, `Contacts`.
 
