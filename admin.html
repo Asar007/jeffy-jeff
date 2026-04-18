@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Founder Portal — NRI Bridge India</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css?v=3">
+<link rel="stylesheet" href="shared.css?v=4">
 </head>
 <body class="adm-page">
 
@@ -129,6 +129,104 @@
       </div>
       <div class="adm-filter-tabs" id="filterTabs"></div>
       <div class="adm-client-list" id="clientList"></div>
+    </div>
+
+    <!-- Analytics Dashboard -->
+    <div id="sectionAnalytics" style="display:none;">
+      <div class="adm-section-head" style="margin-bottom:20px;">
+        <h2>Analytics Overview</h2>
+        <span class="adm-analytics-range" id="analyticsRangeLabel"></span>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="adm-analytics-kpis">
+        <div class="adm-kpi-card">
+          <div class="adm-kpi-icon revenue">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="adm-kpi-content">
+            <div class="adm-kpi-label">Total Revenue</div>
+            <div class="adm-kpi-num" id="anaRevenue">₹0</div>
+            <div class="adm-kpi-sub" id="anaRevenueSub">from accepted quotes</div>
+          </div>
+        </div>
+        <div class="adm-kpi-card">
+          <div class="adm-kpi-icon pipeline">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <div class="adm-kpi-content">
+            <div class="adm-kpi-label">Pipeline Value</div>
+            <div class="adm-kpi-num" id="anaPipeline">₹0</div>
+            <div class="adm-kpi-sub" id="anaPipelineSub">awaiting response</div>
+          </div>
+        </div>
+        <div class="adm-kpi-card">
+          <div class="adm-kpi-icon completion">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="adm-kpi-content">
+            <div class="adm-kpi-label">Completion Rate</div>
+            <div class="adm-kpi-num" id="anaCompletion">—</div>
+            <div class="adm-kpi-sub" id="anaCompletionSub">of all tasks</div>
+          </div>
+        </div>
+        <div class="adm-kpi-card">
+          <div class="adm-kpi-icon clients">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="adm-kpi-content">
+            <div class="adm-kpi-label">Active Clients</div>
+            <div class="adm-kpi-num" id="anaClients">—</div>
+            <div class="adm-kpi-sub" id="anaClientsSub">of total</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="adm-analytics-charts">
+        <div class="adm-chart-card adm-chart-wide">
+          <div class="adm-chart-head">
+            <h3>Revenue by Month</h3>
+            <span class="adm-chart-hint">Last 6 months · accepted quotes</span>
+          </div>
+          <div class="adm-chart-bars" id="anaRevenueChart"></div>
+        </div>
+
+        <div class="adm-chart-card">
+          <div class="adm-chart-head">
+            <h3>Task Status</h3>
+            <span class="adm-chart-hint">All time</span>
+          </div>
+          <div class="adm-chart-donut-wrap">
+            <svg id="anaTaskDonut" viewBox="0 0 120 120" width="150" height="150"></svg>
+            <div class="adm-chart-legend" id="anaTaskLegend"></div>
+          </div>
+        </div>
+
+        <div class="adm-chart-card">
+          <div class="adm-chart-head">
+            <h3>Clients by Country</h3>
+            <span class="adm-chart-hint">Top 6</span>
+          </div>
+          <div class="adm-chart-hbars" id="anaCountryChart"></div>
+        </div>
+
+        <div class="adm-chart-card">
+          <div class="adm-chart-head">
+            <h3>Service Distribution</h3>
+            <span class="adm-chart-hint">Active tasks by type</span>
+          </div>
+          <div class="adm-chart-hbars" id="anaServiceChart"></div>
+        </div>
+
+        <div class="adm-chart-card adm-chart-wide">
+          <div class="adm-chart-head">
+            <h3>Recent Activity</h3>
+            <span class="adm-chart-hint">Last 14 days</span>
+          </div>
+          <div class="adm-chart-activity" id="anaActivityChart"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Client Documents -->
@@ -1392,6 +1490,201 @@
     return 'doc-type-other';
   }
 
+  // ── Analytics ─────────────────────────────────────────────────
+  function renderAnalytics() {
+    var now = new Date();
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var rangeLabel = document.getElementById('analyticsRangeLabel');
+    if (rangeLabel) rangeLabel.textContent = 'Updated ' + now.toLocaleString('en-IN', { hour:'numeric', minute:'2-digit', hour12:true });
+
+    var inr = function(n) {
+      n = Math.round(n || 0);
+      return '\u20B9' + n.toLocaleString('en-IN');
+    };
+
+    // KPIs
+    var revenue = requests
+      .filter(function(r) { return r.status === 'Accepted'; })
+      .reduce(function(s, r) { return s + (Number(r.quoted_amount) || Number(r.amount) || 0); }, 0);
+
+    var pipeline = requests
+      .filter(function(r) { return r.status === 'Quoted'; })
+      .reduce(function(s, r) { return s + (Number(r.quoted_amount) || 0); }, 0);
+
+    var acceptedCount = requests.filter(function(r) { return r.status === 'Accepted'; }).length;
+    var quotedCount = requests.filter(function(r) { return r.status === 'Quoted'; }).length;
+    var completedTasks = tasks.filter(function(t) { return t.status === 'Completed'; }).length;
+    var totalTasks = tasks.length;
+    var completionPct = totalTasks ? Math.round(completedTasks / totalTasks * 100) : 0;
+    var activeClients = clients.filter(function(c) { return c.status === 'Active'; }).length;
+
+    document.getElementById('anaRevenue').textContent = inr(revenue);
+    document.getElementById('anaRevenueSub').textContent = acceptedCount + ' accepted quote' + (acceptedCount === 1 ? '' : 's');
+    document.getElementById('anaPipeline').textContent = inr(pipeline);
+    document.getElementById('anaPipelineSub').textContent = quotedCount + ' awaiting response';
+    document.getElementById('anaCompletion').textContent = completionPct + '%';
+    document.getElementById('anaCompletionSub').textContent = completedTasks + ' of ' + totalTasks + ' tasks';
+    document.getElementById('anaClients').textContent = activeClients;
+    document.getElementById('anaClientsSub').textContent = clients.length + ' total clients';
+
+    // Revenue by month (last 6 months, including current)
+    var buckets = [];
+    for (var i = 5; i >= 0; i--) {
+      var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      buckets.push({ label: months[d.getMonth()], year: d.getFullYear(), month: d.getMonth(), total: 0 });
+    }
+    requests.forEach(function(r) {
+      if (r.status !== 'Accepted' || !r.created_at) return;
+      var dt = new Date(r.created_at);
+      for (var j = 0; j < buckets.length; j++) {
+        if (dt.getFullYear() === buckets[j].year && dt.getMonth() === buckets[j].month) {
+          buckets[j].total += Number(r.quoted_amount) || Number(r.amount) || 0;
+          break;
+        }
+      }
+    });
+    var maxBucket = Math.max.apply(null, buckets.map(function(b) { return b.total; }).concat([1]));
+    var revChart = document.getElementById('anaRevenueChart');
+    revChart.innerHTML = buckets.map(function(b) {
+      var h = maxBucket ? (b.total / maxBucket * 100) : 0;
+      var hasData = b.total > 0;
+      return '<div class="adm-bar-col">' +
+             '<div class="adm-bar-val">' + (hasData ? inr(b.total) : '') + '</div>' +
+             '<div class="adm-bar-track"><div class="adm-bar-fill ' + (hasData ? '' : 'empty') + '" style="height:' + h + '%"></div></div>' +
+             '<div class="adm-bar-label">' + b.label + '</div>' +
+             '</div>';
+    }).join('');
+
+    // Task Status donut
+    var pending = tasks.filter(function(t) { return t.status === 'Pending'; }).length;
+    var inProgress = tasks.filter(function(t) { return t.status === 'In Progress'; }).length;
+    var completedDonut = completedTasks;
+    var totalDonut = pending + inProgress + completedDonut;
+    var donut = document.getElementById('anaTaskDonut');
+    var legend = document.getElementById('anaTaskLegend');
+    if (totalDonut === 0) {
+      donut.innerHTML = '<circle cx="60" cy="60" r="48" fill="none" stroke="#eae7dc" stroke-width="14"/>' +
+                       '<text x="60" y="66" text-anchor="middle" fill="#8b8878" font-size="12" font-family="DM Sans">No tasks</text>';
+      legend.innerHTML = '';
+    } else {
+      var segments = [
+        { label: 'Completed', value: completedDonut, color: '#5a7a3d' },
+        { label: 'In Progress', value: inProgress, color: '#e8a83a' },
+        { label: 'Pending', value: pending, color: '#b8b3a3' }
+      ];
+      var C = 2 * Math.PI * 48;
+      var offset = 0;
+      var svgParts = ['<circle cx="60" cy="60" r="48" fill="none" stroke="#f0ede4" stroke-width="14"/>'];
+      segments.forEach(function(seg) {
+        if (seg.value === 0) return;
+        var len = (seg.value / totalDonut) * C;
+        svgParts.push('<circle cx="60" cy="60" r="48" fill="none" stroke="' + seg.color + '" stroke-width="14" ' +
+                     'stroke-dasharray="' + len + ' ' + (C - len) + '" stroke-dashoffset="' + (-offset) + '" ' +
+                     'transform="rotate(-90 60 60)" stroke-linecap="butt"/>');
+        offset += len;
+      });
+      svgParts.push('<text x="60" y="56" text-anchor="middle" fill="#2b2a24" font-size="22" font-weight="700" font-family="Playfair Display">' + totalDonut + '</text>');
+      svgParts.push('<text x="60" y="73" text-anchor="middle" fill="#8b8878" font-size="10" letter-spacing="0.08em" font-family="DM Sans">TASKS</text>');
+      donut.innerHTML = svgParts.join('');
+      legend.innerHTML = segments.map(function(seg) {
+        var pct = totalDonut ? Math.round(seg.value / totalDonut * 100) : 0;
+        return '<div class="adm-legend-row">' +
+               '<span class="adm-legend-dot" style="background:' + seg.color + '"></span>' +
+               '<span class="adm-legend-label">' + seg.label + '</span>' +
+               '<span class="adm-legend-val">' + seg.value + ' <em>(' + pct + '%)</em></span>' +
+               '</div>';
+      }).join('');
+    }
+
+    // Clients by Country
+    var countryMap = {};
+    clients.forEach(function(c) {
+      var key = (c.country || 'Unknown').trim() || 'Unknown';
+      countryMap[key] = (countryMap[key] || 0) + 1;
+    });
+    var countryRows = Object.keys(countryMap).map(function(k) { return { label: k, value: countryMap[k] }; })
+      .sort(function(a, b) { return b.value - a.value; })
+      .slice(0, 6);
+    var countryChart = document.getElementById('anaCountryChart');
+    if (countryRows.length === 0) {
+      countryChart.innerHTML = '<div class="adm-chart-empty">No clients yet</div>';
+    } else {
+      var maxC = countryRows[0].value;
+      countryChart.innerHTML = countryRows.map(function(r) {
+        var w = maxC ? (r.value / maxC * 100) : 0;
+        return '<div class="adm-hbar-row">' +
+               '<div class="adm-hbar-label">' + r.label + '</div>' +
+               '<div class="adm-hbar-track"><div class="adm-hbar-fill country" style="width:' + w + '%"></div></div>' +
+               '<div class="adm-hbar-val">' + r.value + '</div>' +
+               '</div>';
+      }).join('');
+    }
+
+    // Service Distribution
+    var svcMap = {};
+    tasks.forEach(function(t) {
+      var key = (t.service_type || 'Unspecified');
+      svcMap[key] = (svcMap[key] || 0) + 1;
+    });
+    var svcRows = Object.keys(svcMap).map(function(k) { return { label: k, value: svcMap[k] }; })
+      .sort(function(a, b) { return b.value - a.value; })
+      .slice(0, 6);
+    var svcChart = document.getElementById('anaServiceChart');
+    if (svcRows.length === 0) {
+      svcChart.innerHTML = '<div class="adm-chart-empty">No tasks yet</div>';
+    } else {
+      var maxS = svcRows[0].value;
+      svcChart.innerHTML = svcRows.map(function(r) {
+        var w = maxS ? (r.value / maxS * 100) : 0;
+        return '<div class="adm-hbar-row">' +
+               '<div class="adm-hbar-label">' + r.label + '</div>' +
+               '<div class="adm-hbar-track"><div class="adm-hbar-fill service" style="width:' + w + '%"></div></div>' +
+               '<div class="adm-hbar-val">' + r.value + '</div>' +
+               '</div>';
+      }).join('');
+    }
+
+    // Recent Activity (last 14 days) — counts of new clients + new requests + new appointments per day
+    var days = [];
+    for (var k = 13; k >= 0; k--) {
+      var dd = new Date(now);
+      dd.setDate(dd.getDate() - k);
+      dd.setHours(0, 0, 0, 0);
+      days.push({ date: dd, clients: 0, requests: 0, appointments: 0 });
+    }
+    function bumpDay(dateStr, field) {
+      if (!dateStr) return;
+      var dt = new Date(dateStr);
+      dt.setHours(0, 0, 0, 0);
+      for (var m = 0; m < days.length; m++) {
+        if (days[m].date.getTime() === dt.getTime()) { days[m][field]++; return; }
+      }
+    }
+    clients.forEach(function(c) { bumpDay(c.created_at, 'clients'); });
+    requests.forEach(function(r) { bumpDay(r.created_at, 'requests'); });
+    appointments.forEach(function(a) { bumpDay(a.created_at, 'appointments'); });
+    var maxDay = Math.max.apply(null, days.map(function(d) { return d.clients + d.requests + d.appointments; }).concat([1]));
+    var activityEl = document.getElementById('anaActivityChart');
+    activityEl.innerHTML =
+      '<div class="adm-activity-bars">' +
+      days.map(function(d) {
+        var total = d.clients + d.requests + d.appointments;
+        var h = maxDay ? (total / maxDay * 100) : 0;
+        var day = d.date.getDate();
+        var title = d.date.toLocaleDateString('en-IN', { month:'short', day:'numeric' }) +
+                    ' — ' + d.clients + ' client, ' + d.requests + ' request, ' + d.appointments + ' appt';
+        return '<div class="adm-act-col" title="' + title + '">' +
+               '<div class="adm-act-track"><div class="adm-act-fill" style="height:' + Math.max(h, total ? 4 : 0) + '%"></div></div>' +
+               '<div class="adm-act-day">' + day + '</div>' +
+               '</div>';
+      }).join('') +
+      '</div>' +
+      '<div class="adm-activity-legend">' +
+      '<span><span class="adm-legend-dot" style="background:var(--green-pop)"></span>New activity per day</span>' +
+      '<span>Total: ' + (clients.length + requests.length + appointments.length) + ' records</span>' +
+      '</div>';
+  }
+
   function loadDocuments() {
     sb.from('documents')
       .select('*')
@@ -1675,19 +1968,27 @@
       ];
       var rightPanel = document.querySelector('.adm-right');
       var docSection = document.getElementById('sectionDocuments');
+      var anaSection = document.getElementById('sectionAnalytics');
 
       if (section === 'documents') {
-        // Hide default dashboard sections and right panel
         defaultSections.forEach(function(el) { if (el) el.style.display = 'none'; });
         if (rightPanel) rightPanel.style.display = 'none';
+        if (anaSection) anaSection.style.display = 'none';
         docSection.style.display = 'block';
         loadDocuments();
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (section === 'analytics') {
+        defaultSections.forEach(function(el) { if (el) el.style.display = 'none'; });
+        if (rightPanel) rightPanel.style.display = 'none';
+        docSection.style.display = 'none';
+        anaSection.style.display = 'block';
+        renderAnalytics();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        // Restore default dashboard sections and right panel
         defaultSections.forEach(function(el) { if (el) el.style.display = ''; });
         if (rightPanel) rightPanel.style.display = '';
         docSection.style.display = 'none';
+        if (anaSection) anaSection.style.display = 'none';
       }
 
       switch (section) {
@@ -1696,7 +1997,7 @@
           renderTaskTable('all');
           break;
         case 'analytics':
-          showToast('Analytics dashboard coming soon', 'info');
+          // Already handled above
           break;
         case 'clients':
         case 'byservice':
