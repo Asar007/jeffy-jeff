@@ -1,4 +1,4 @@
-# CLAUDE.md
+# NRI Bridge India
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -17,16 +17,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | File | Purpose |
 |------|---------|
-| `propnri-saas-site.html` | Main landing page |
-| `index.html` | Redirect router (auth callbacks → `auth-callback.html`, else → landing) |
-| `supabase-client.js` | Supabase init, auth state listener, dual-write to `clients` table |
-| `nav.js` | Shared nav injected into all pages; handles logged-in/out state, admin detection |
-| `footer.js` | Shared footer injected into all pages |
-| `shared.css` | Full design system — CSS variables, typography, components, page-specific styles |
-| `google_apps_script.js` | GAS backend — deploy separately in Google Apps Script editor |
-| `invoice-generator.js` | Client-side PDF invoice generation via html2pdf.js |
-| `admin.html` | Founder/admin portal with sidebar nav, reads from Supabase tables |
-| `dashboard.html` | User dashboard — services, payments, documents |
+| [`propnri-saas-site.html`](propnri-saas-site.html) | Main landing page |
+| [`index.html`](index.html) | Redirect router (auth callbacks → [`auth-callback.html`](auth-callback.html), else → landing) |
+| [`supabase-client.js`](supabase-client.js) | Supabase init, auth state listener, dual-write to `clients` table |
+| [`nav.js`](nav.js) | Shared nav injected into all pages; handles logged-in/out state, admin detection |
+| [`footer.js`](footer.js) | Shared footer injected into all pages |
+| [`shared.css`](shared.css) | Full design system — CSS variables, typography, components, page-specific styles |
+| [`google_apps_script.js`](google_apps_script.js) | GAS backend — deploy separately in Google Apps Script editor |
+| [`invoice-generator.js`](invoice-generator.js) | Client-side PDF invoice generation via html2pdf.js |
+| [`admin.html`](admin.html) | Founder/admin portal with sidebar nav, reads from Supabase tables |
+| [`dashboard.html`](dashboard.html) | User dashboard — services, payments, documents |
 
 ## Shared Components Pattern
 
@@ -41,20 +41,20 @@ Nav and footer are **not** HTML includes — they're JS-injected. Every page has
 <script src="supabase-client.js"></script>
 ```
 
-Changing nav/footer only requires editing `nav.js` / `footer.js` — no need to touch individual HTML files.
+Changing nav/footer only requires editing [`nav.js`](nav.js) / [`footer.js`](footer.js) — no need to touch individual HTML files.
 
 ## Authentication
 
 - **Supabase Auth** with email/password and Google OAuth.
-- `supabase-client.js` listens to `onAuthStateChange` and syncs to `localStorage` key `nri_session`.
-- After OAuth, users missing `phone`/`country` metadata are redirected to `complete-profile.html`.
-- Admin emails are hardcoded in `nav.js` (`ADMIN_EMAILS` array) — admin link shows for those users.
+- [`supabase-client.js`](supabase-client.js) listens to `onAuthStateChange` and syncs to `localStorage` key `nri_session`.
+- After OAuth, users missing `phone`/`country` metadata are redirected to [`complete-profile.html`](complete-profile.html).
+- Admin emails are hardcoded in [`nav.js`](nav.js) (`ADMIN_EMAILS` array) — admin link shows for those users.
 
 ## Supabase Schema
 
 Migrations live in `supabase/migrations/`. Key tables: `clients`, `disputes`, plus dashboard-related tables. Config in `supabase/config.toml`.
 
-## Design System (shared.css)
+## Design System ([shared.css](shared.css))
 
 - **Palette**: Earthy greens — `--green-pop: #4a6a2e`, `--bg-deep: #3d3f2e`, `--bg-cream: #f2efe5`
 - **Typography**: `Playfair Display` (headings), `DM Sans` (body) — loaded from Google Fonts
