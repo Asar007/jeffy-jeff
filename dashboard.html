@@ -74,7 +74,18 @@
         </div>
       </div>
 
-      <!-- Quotations now rendered as service cards in My Services -->
+      <div class="dash-disputes-panel">
+        <div class="dash-section-header">
+          <h2>Dispute Center</h2>
+          <button class="dash-inline-btn" id="openDisputeModalBtn" type="button">Raise Dispute</button>
+        </div>
+        <div class="dash-dispute-intro">
+          Report service issues tied to your active plans. Our team will review the case, request clarifications if needed, and keep the resolution status updated here.
+        </div>
+        <div class="dash-disputes-list" id="disputesList">
+          <div class="dash-empty-note">Loading disputes...</div>
+        </div>
+      </div>
     </div>
 
     <!-- RIGHT: SIDEBAR -->
@@ -98,6 +109,15 @@
         <div class="dash-docs-list" id="docsList">
           <!-- JS renders docs here -->
         </div>
+      </div>
+
+      <div class="dash-dispute-summary-card">
+        <div class="dash-sub-header">
+          <h3>Dispute Status</h3>
+        </div>
+        <div class="dash-dispute-summary-count" id="disputeSummaryCount">0</div>
+        <div class="dash-dispute-summary-copy" id="disputeSummaryCopy">No open disputes</div>
+        <button class="dash-inline-btn dash-inline-btn-block" id="openDisputeSidebarBtn" type="button">Open Dispute Center</button>
       </div>
 
       <!-- Request Additional Service -->
@@ -173,6 +193,65 @@
   </div>
 </div>
 
+<!-- DISPUTE MODAL -->
+<div class="dash-dispute-modal-overlay" id="disputeModal">
+  <div class="dash-dispute-modal">
+    <div class="dash-dispute-modal-head">
+      <div>
+        <h3>Raise a Dispute</h3>
+        <p>Select the affected service and describe the issue clearly so the operations team can route it correctly.</p>
+      </div>
+      <button class="dash-dispute-close" id="disputeModalClose" type="button" aria-label="Close dispute modal">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form class="dash-dispute-form" id="disputeForm">
+      <div class="dash-dispute-grid">
+        <label class="dash-dispute-field">
+          <span>Related Service</span>
+          <select id="disputeService" required>
+            <option value="">Select a service</option>
+          </select>
+        </label>
+        <label class="dash-dispute-field">
+          <span>Dispute Category</span>
+          <select id="disputeCategory" required>
+            <option value="">Select a category</option>
+          </select>
+        </label>
+      </div>
+      <div class="dash-dispute-grid">
+        <label class="dash-dispute-field">
+          <span>Priority</span>
+          <select id="disputePriority" required>
+            <option value="Medium" selected>Medium</option>
+            <option value="Low">Low</option>
+            <option value="High">High</option>
+            <option value="Urgent">Urgent</option>
+          </select>
+        </label>
+        <label class="dash-dispute-field">
+          <span>Issue Title</span>
+          <input type="text" id="disputeTitle" maxlength="120" placeholder="Short summary of the problem" required>
+        </label>
+      </div>
+      <label class="dash-dispute-field">
+        <span>Description</span>
+        <textarea id="disputeDescription" rows="5" maxlength="1500" placeholder="Explain what happened, when it started, and what resolution you expect." required></textarea>
+      </label>
+      <label class="dash-dispute-field">
+        <span>Attachments</span>
+        <input type="file" id="disputeAttachments" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
+        <small>Attach supporting screenshots, reports, invoices, or service documents. Maximum 10 MB per file.</small>
+      </label>
+      <div class="dash-dispute-modal-actions">
+        <button class="dash-inline-btn" id="submitDisputeBtn" type="submit">Submit Dispute</button>
+        <button class="dash-inline-btn dash-inline-btn-muted" id="cancelDisputeBtn" type="button">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Hidden file input for document uploads -->
 <input type="file" id="docFileInput" style="display:none" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
 
@@ -225,6 +304,9 @@
   var serviceDetails = user.serviceDetails || { home: { properties: [] }, vehicle: { vehicles: [] }, parental: { members: [] }, legal: { cases: [] } };
   var servicePlans = user.servicePlans || {};
   var serviceBilling = user.serviceBilling || {};
+  var disputes = [];
+  var disputeServiceOptions = [];
+  var activeDisputeServiceMeta = null;
 
   var SVC_NAMES = {
     home: 'Home Management',
@@ -233,6 +315,12 @@
     legal: 'Legal & Documentation'
   };
   var SVC_CATS = { home: 'cat-home', vehicle: 'cat-vehicle', parental: 'cat-parental', legal: 'cat-legal' };
+  var DISPUTE_CATEGORIES = {
+    home: ['Inspection Issue', 'Tenant Issue', 'Rent Issue', 'Maintenance Issue', 'Document Delay'],
+    vehicle: ['Registration Issue', 'Insurance Issue', 'Servicing Issue', 'Delivery Delay', 'Document Issue'],
+    parental: ['Caretaker Issue', 'Appointment Issue', 'Medicine Issue', 'Emergency Response Issue', 'Reporting Issue'],
+    legal: ['Filing Delay', 'Drafting Issue', 'Documentation Mismatch', 'Compliance Issue', 'Case Follow-up Issue']
+  };
 
   // SVG icons for service categories
   var SVC_SVG = {
@@ -254,6 +342,25 @@
       return { starter: 'Guardian', standard: 'Command', premium: 'Concierge' }[tier] || tier;
     }
     return { starter: 'Starter', standard: 'Standard', premium: 'Premium' }[tier] || tier;
+  }
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDisputeDate(value) {
+    if (!value) return 'Just now';
+    return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function getDisputeStatusClass(status) {
+    var key = (status || 'New').toLowerCase().replace(/\s+/g, '-');
+    return 'status-' + key;
   }
 
   // ── RESEARCH-BACKED SERVICE PIPELINES ──
@@ -1348,6 +1455,7 @@
   });
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && dashPreviewOverlay.classList.contains('show')) closeDashDocPreview();
+    if (e.key === 'Escape' && disputeModal.classList.contains('show')) closeDisputeModal();
   });
 
   // ══════════════════════════════════════════════════════════════════
@@ -1523,7 +1631,302 @@
     });
   }
 
-  // Quotations loaded after Supabase is ready (see waitForSupabaseAndLoad below)
+  var disputeModal = document.getElementById('disputeModal');
+  var disputeForm = document.getElementById('disputeForm');
+  var disputeServiceSelect = document.getElementById('disputeService');
+  var disputeCategorySelect = document.getElementById('disputeCategory');
+  var disputeAttachmentsInput = document.getElementById('disputeAttachments');
+  var disputeSubmitBtn = document.getElementById('submitDisputeBtn');
+
+  function buildDisputeServiceOptions() {
+    var options = [];
+    activeServices.forEach(function(svcKey) {
+      var svcLabel = SVC_NAMES[svcKey];
+      if (!svcLabel) return;
+      var items = getItems(svcKey);
+      if (items.length === 0) {
+        options.push({
+          serviceKey: svcKey,
+          serviceLabel: svcLabel,
+          serviceItemLabel: '',
+          displayLabel: svcLabel
+        });
+        return;
+      }
+      items.forEach(function(item) {
+        options.push({
+          serviceKey: svcKey,
+          serviceLabel: svcLabel,
+          serviceItemLabel: getItemLabel(svcKey, item),
+          displayLabel: svcLabel + ' - ' + getItemLabel(svcKey, item)
+        });
+      });
+    });
+    disputeServiceOptions = options;
+  }
+
+  function populateDisputeServices() {
+    buildDisputeServiceOptions();
+    var html = '<option value="">Select a service</option>';
+    disputeServiceOptions.forEach(function(option, idx) {
+      html += '<option value="' + idx + '">' + escapeHtml(option.displayLabel) + '</option>';
+    });
+    disputeServiceSelect.innerHTML = html;
+  }
+
+  function populateDisputeCategories(serviceKey) {
+    var categories = DISPUTE_CATEGORIES[serviceKey] || [];
+    var html = '<option value="">Select a category</option>';
+    categories.forEach(function(category) {
+      html += '<option value="' + escapeHtml(category) + '">' + escapeHtml(category) + '</option>';
+    });
+    disputeCategorySelect.innerHTML = html;
+  }
+
+  function openDisputeModal() {
+    populateDisputeServices();
+    disputeCategorySelect.innerHTML = '<option value="">Select a category</option>';
+    disputeForm.reset();
+    activeDisputeServiceMeta = null;
+    disputeModal.style.display = 'flex';
+    void disputeModal.offsetHeight;
+    disputeModal.classList.add('show');
+  }
+
+  function closeDisputeModal() {
+    disputeModal.classList.remove('show');
+    setTimeout(function() {
+      disputeModal.style.display = 'none';
+      disputeForm.reset();
+      disputeCategorySelect.innerHTML = '<option value="">Select a category</option>';
+      activeDisputeServiceMeta = null;
+    }, 220);
+  }
+
+  function updateDisputeSummary() {
+    var openStatuses = ['New', 'In Review', 'Waiting for Customer'];
+    var openCount = disputes.filter(function(item) {
+      return openStatuses.indexOf(item.status) !== -1;
+    }).length;
+    document.getElementById('disputeSummaryCount').textContent = disputes.length;
+    document.getElementById('disputeSummaryCopy').textContent = disputes.length === 0
+      ? 'No disputes raised yet'
+      : openCount + ' open case' + (openCount === 1 ? '' : 's') + ' under review';
+  }
+
+  function renderDisputes() {
+    var container = document.getElementById('disputesList');
+    if (!disputes.length) {
+      container.innerHTML = '<div class="dash-empty-note">No disputes have been raised for your active services.</div>';
+      updateDisputeSummary();
+      return;
+    }
+
+    var html = '';
+    disputes.forEach(function(item, idx) {
+      var attachments = Array.isArray(item.attachments) ? item.attachments : [];
+      var attachmentHtml = '';
+      if (attachments.length) {
+        attachmentHtml = '<div class="dash-dispute-attachments">';
+        attachments.forEach(function(file, fileIdx) {
+          attachmentHtml += '<button class="dash-attachment-btn" type="button" data-dispute-idx="' + idx + '" data-file-idx="' + fileIdx + '">' + escapeHtml(file.file_name || ('Attachment ' + (fileIdx + 1))) + '</button>';
+        });
+        attachmentHtml += '</div>';
+      }
+
+      html +=
+        '<article class="dash-dispute-card">' +
+          '<div class="dash-dispute-card-top">' +
+            '<div>' +
+              '<div class="dash-dispute-service">' + escapeHtml(item.service_label) + (item.service_item_label ? ' <span>' + escapeHtml(item.service_item_label) + '</span>' : '') + '</div>' +
+              '<h3>' + escapeHtml(item.title) + '</h3>' +
+            '</div>' +
+            '<span class="dash-status ' + getDisputeStatusClass(item.status) + '">' + escapeHtml(item.status || 'New') + '</span>' +
+          '</div>' +
+          '<div class="dash-dispute-meta">' +
+            '<span>' + escapeHtml(item.category) + '</span>' +
+            '<span>' + escapeHtml(item.priority || 'Medium') + ' Priority</span>' +
+            '<span>Raised ' + escapeHtml(formatDisputeDate(item.created_at)) + '</span>' +
+          '</div>' +
+          '<p class="dash-dispute-body">' + escapeHtml(item.description) + '</p>' +
+          (item.admin_notes ? '<div class="dash-dispute-note"><strong>Admin note:</strong> ' + escapeHtml(item.admin_notes) + '</div>' : '') +
+          attachmentHtml +
+        '</article>';
+    });
+    container.innerHTML = html;
+    updateDisputeSummary();
+
+    container.querySelectorAll('.dash-attachment-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var disputeIdx = parseInt(this.getAttribute('data-dispute-idx'), 10);
+        var fileIdx = parseInt(this.getAttribute('data-file-idx'), 10);
+        var dispute = disputes[disputeIdx];
+        var attachment = dispute && dispute.attachments ? dispute.attachments[fileIdx] : null;
+        if (!attachment) return;
+        openDisputeAttachment(attachment);
+      });
+    });
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function uploadDisputeAttachment(file) {
+    var safeName = (file.name || 'attachment').replace(/[^a-zA-Z0-9.\-_]/g, '-');
+    var storagePath = 'disputes/' + encodeURIComponent(session.email) + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
+
+    if (window.supabaseClient && window.supabaseClient.storage) {
+      return window.supabaseClient.storage.from('documents').upload(storagePath, file).then(function(result) {
+        if (!result.error) {
+          return {
+            file_name: file.name,
+            mime_type: file.type || '',
+            storage_path: storagePath
+          };
+        }
+        return readFileAsDataUrl(file).then(function(dataUrl) {
+          return {
+            file_name: file.name,
+            mime_type: file.type || '',
+            file_data: dataUrl
+          };
+        });
+      }).catch(function() {
+        return readFileAsDataUrl(file).then(function(dataUrl) {
+          return {
+            file_name: file.name,
+            mime_type: file.type || '',
+            file_data: dataUrl
+          };
+        });
+      });
+    }
+
+    return readFileAsDataUrl(file).then(function(dataUrl) {
+      return {
+        file_name: file.name,
+        mime_type: file.type || '',
+        file_data: dataUrl
+      };
+    });
+  }
+
+  function openDisputeAttachment(attachment) {
+    if (attachment.file_data) {
+      window.open(attachment.file_data, '_blank');
+      return;
+    }
+    if (!attachment.storage_path || !window.supabaseClient || !window.supabaseClient.storage) {
+      showToast('Attachment preview is unavailable', 'error');
+      return;
+    }
+    window.supabaseClient.storage.from('documents').createSignedUrl(attachment.storage_path, 3600).then(function(result) {
+      if (result.error || !result.data || !result.data.signedUrl) {
+        showToast('Could not open attachment', 'error');
+        return;
+      }
+      window.open(result.data.signedUrl, '_blank');
+    });
+  }
+
+  function loadDisputes() {
+    if (!window.supabaseClient) {
+      document.getElementById('disputesList').innerHTML = '<div class="dash-empty-note">Dispute center requires a live backend connection.</div>';
+      return;
+    }
+
+    window.supabaseClient.from('disputes')
+      .select('*')
+      .eq('client_email', session.email)
+      .order('created_at', { ascending: false })
+      .then(function(result) {
+        if (result.error) {
+          console.error('Disputes fetch error:', result.error);
+          document.getElementById('disputesList').innerHTML = '<div class="dash-empty-note">Could not load disputes right now.</div>';
+          return;
+        }
+        disputes = result.data || [];
+        renderDisputes();
+      });
+  }
+
+  disputeServiceSelect.addEventListener('change', function() {
+    var idx = this.value === '' ? -1 : parseInt(this.value, 10);
+    activeDisputeServiceMeta = idx >= 0 ? disputeServiceOptions[idx] : null;
+    populateDisputeCategories(activeDisputeServiceMeta ? activeDisputeServiceMeta.serviceKey : '');
+  });
+
+  disputeForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    if (!window.supabaseClient) {
+      showToast('Dispute submission is unavailable right now', 'error');
+      return;
+    }
+    if (!activeDisputeServiceMeta) {
+      showToast('Select the related service first', 'error');
+      return;
+    }
+
+    var files = Array.prototype.slice.call(disputeAttachmentsInput.files || []);
+    var oversize = files.some(function(file) { return file.size > 10 * 1024 * 1024; });
+    if (oversize) {
+      showToast('Each attachment must be 10 MB or smaller', 'error');
+      return;
+    }
+
+    disputeSubmitBtn.disabled = true;
+    disputeSubmitBtn.textContent = 'Submitting...';
+
+    Promise.all(files.map(uploadDisputeAttachment)).then(function(attachments) {
+      return window.supabaseClient.from('disputes').insert([{
+        client_email: session.email,
+        client_name: fullName,
+        service_key: activeDisputeServiceMeta.serviceKey,
+        service_label: activeDisputeServiceMeta.serviceLabel,
+        service_item_label: activeDisputeServiceMeta.serviceItemLabel || null,
+        category: disputeCategorySelect.value,
+        title: document.getElementById('disputeTitle').value.trim(),
+        description: document.getElementById('disputeDescription').value.trim(),
+        priority: document.getElementById('disputePriority').value,
+        status: 'New',
+        attachments: attachments
+      }]);
+    }).then(function(result) {
+      if (result.error) {
+        showToast('Failed to submit dispute', 'error');
+        return;
+      }
+      showToast('Dispute submitted successfully', 'success');
+      closeDisputeModal();
+      loadDisputes();
+    }).catch(function(err) {
+      console.error('Dispute submit error:', err);
+      showToast('Failed to submit dispute', 'error');
+    }).finally(function() {
+      disputeSubmitBtn.disabled = false;
+      disputeSubmitBtn.textContent = 'Submit Dispute';
+    });
+  });
+
+  document.getElementById('openDisputeModalBtn').addEventListener('click', openDisputeModal);
+  document.getElementById('openDisputeSidebarBtn').addEventListener('click', function() {
+    document.querySelector('.dash-disputes-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    openDisputeModal();
+  });
+  document.getElementById('disputeModalClose').addEventListener('click', closeDisputeModal);
+  document.getElementById('cancelDisputeBtn').addEventListener('click', closeDisputeModal);
+  disputeModal.addEventListener('click', function(e) {
+    if (e.target === disputeModal) closeDisputeModal();
+  });
+
+  // Quotations and disputes loaded after Supabase is ready (see waitForSupabaseAndLoad below)
 
   // ══════════════════════════════════════════════════════════════════
   // ── REAL-TIME TASK STATUS FROM SUPABASE ─────────────────────────
@@ -1687,6 +2090,7 @@
     if (window.supabaseClient) {
       loadRealTimeStatus();
       loadQuotations();
+      loadDisputes();
     } else {
       setTimeout(waitForSupabaseAndLoad, 100);
     }
@@ -1694,7 +2098,10 @@
   waitForSupabaseAndLoad();
 
   // Auto-refresh every 60 seconds
-  setInterval(function() { loadRealTimeStatus(); }, 60000);
+  setInterval(function() {
+    loadRealTimeStatus();
+    loadDisputes();
+  }, 60000);
 
 })();
 </script>
