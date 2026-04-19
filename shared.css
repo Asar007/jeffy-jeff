@@ -3786,6 +3786,17 @@ footer {
   border-color: #dc3545; color: #dc3545;
   background: rgba(220,53,69,0.04);
 }
+.adm-doc-nav-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+}
+.adm-doc-nav-btn svg { width: 16px; height: 16px; }
+.adm-doc-counter {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(74,106,46,0.08); color: var(--green-pop);
+  font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
+  min-width: 48px;
+}
 
 .adm-doc-preview-body {
   flex: 1; position: relative; overflow: hidden;
