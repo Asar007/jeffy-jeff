@@ -1329,7 +1329,7 @@ footer {
   grid-column: 1 / -1;
   background: var(--white);
   border-radius: var(--radius-lg);
-  padding: 32px 36px;
+  padding: 22px 28px;
   display: flex; align-items: center; justify-content: space-between;
   gap: 32px;
   border: 1px solid var(--border);
@@ -2451,8 +2451,60 @@ footer {
 /* Quick actions bar */
 .dash-quick-actions {
   grid-column: 1 / -1;
-  display: flex; gap: 16px; flex-wrap: wrap;
-  margin: 12px 0 8px;
+  display: flex; gap: 12px; flex-wrap: wrap;
+  margin: 4px 0 0;
+}
+
+/* Sticky section jump-nav */
+.dash-subnav {
+  grid-column: 1 / -1;
+  position: sticky;
+  top: 76px;
+  z-index: 40;
+  display: flex; gap: 6px;
+  padding: 8px;
+  margin: 4px 0 8px;
+  background: rgba(242,239,229,0.85);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(30,38,18,0.04);
+}
+.dash-subnav-tab {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem; font-weight: 600;
+  color: var(--text-mid);
+  text-decoration: none;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+.dash-subnav-tab:hover {
+  color: var(--green-pop);
+  background: rgba(74,106,46,0.06);
+}
+.dash-subnav-tab.is-active {
+  background: var(--green-pop);
+  color: var(--white);
+  box-shadow: 0 4px 12px rgba(74,106,46,0.22);
+}
+.dash-subnav-tab svg { flex-shrink: 0; }
+.dash-subnav-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px;
+  font-size: 0.7rem; font-weight: 700; font-style: normal;
+  background: rgba(232,168,58,0.18); color: #b77a10;
+}
+.dash-subnav-tab.is-active .dash-subnav-count {
+  background: rgba(255,255,255,0.22); color: var(--white);
+}
+
+/* Anchor scroll offset so sticky nav doesn't cover headings */
+#servicesSection, #paymentsSection, #disputesSection {
+  scroll-margin-top: 140px;
 }
 .dash-quick-btn {
   flex: 1; min-width: 180px;

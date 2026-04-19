@@ -6,7 +6,7 @@
 <title>My Dashboard — NRI Bridge India</title>
 <meta name="description" content="Track your active services, payments, documents, and subscription — all from one clean dashboard.">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="shared.css?v=6">
 </head>
 <body class="dash-page">
 
@@ -53,11 +53,29 @@
       </button>
     </div>
 
+    <!-- SECTION JUMP NAV -->
+    <nav class="dash-subnav" id="dashSubnav" aria-label="Dashboard sections">
+      <a href="#servicesSection" class="dash-subnav-tab is-active" data-section="servicesSection">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Services</span>
+        <em class="dash-subnav-count" id="subnavServicesCount" style="display:none;"></em>
+      </a>
+      <a href="#paymentsSection" class="dash-subnav-tab" data-section="paymentsSection">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <span>Payments</span>
+      </a>
+      <a href="#disputesSection" class="dash-subnav-tab" data-section="disputesSection">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <span>Disputes</span>
+        <em class="dash-subnav-count" id="subnavDisputesCount" style="display:none;"></em>
+      </a>
+    </nav>
+
     <!-- LEFT: MAIN CONTENT -->
     <div class="dash-main">
 
       <!-- My Services — Live Status -->
-      <div class="dash-section-header">
+      <div class="dash-section-header" id="servicesSection">
         <h2>My Services <span class="dash-em">— Live Status</span></h2>
       </div>
       <div class="dash-services-list" id="servicesList">
@@ -65,7 +83,7 @@
       </div>
 
       <!-- Payment History -->
-      <div class="dash-payments">
+      <div class="dash-payments" id="paymentsSection">
         <div class="dash-section-header">
           <h2>Payment History</h2>
         </div>
@@ -74,7 +92,7 @@
         </div>
       </div>
 
-      <div class="dash-disputes-panel">
+      <div class="dash-disputes-panel" id="disputesSection">
         <div class="dash-section-header">
           <h2>Dispute Center</h2>
           <button class="dash-inline-btn" id="openDisputeModalBtn" type="button">Raise Dispute</button>
@@ -283,6 +301,43 @@
       setTimeout(function() { toast.remove(); }, 400);
     }, 3000);
   }
+
+  // ── Sticky Sub-Nav: smooth scroll + scrollspy ──
+  (function initSubnav() {
+    var tabs = document.querySelectorAll('.dash-subnav-tab');
+    if (!tabs.length) return;
+    var sections = [];
+    tabs.forEach(function(tab) {
+      var id = tab.getAttribute('data-section');
+      var el = document.getElementById(id);
+      if (el) sections.push({ tab: tab, el: el });
+      tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        var target = document.getElementById(tab.getAttribute('data-section'));
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        tabs.forEach(function(t) { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+      });
+    });
+    if (!sections.length) return;
+    var ticking = false;
+    function syncActive() {
+      ticking = false;
+      var probe = 180; // a bit below the sticky bar
+      var active = sections[0];
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i].el.getBoundingClientRect().top - probe <= 0) active = sections[i];
+      }
+      sections.forEach(function(s) {
+        s.tab.classList.toggle('is-active', s === active);
+      });
+    }
+    window.addEventListener('scroll', function() {
+      if (!ticking) { ticking = true; requestAnimationFrame(syncActive); }
+    }, { passive: true });
+    syncActive();
+  })();
 
   // ── Auth Check ──
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
@@ -657,6 +712,15 @@
     var sumEl = document.getElementById('pendingSummary');
     sumEl.style.display = 'block';
     sumEl.textContent = pendingCount + ' service' + (pendingCount > 1 ? 's' : '') + ' awaiting your input';
+  }
+  var subnavSvcCount = document.getElementById('subnavServicesCount');
+  if (subnavSvcCount) {
+    if (pendingCount > 0) {
+      subnavSvcCount.textContent = pendingCount;
+      subnavSvcCount.style.display = 'inline-flex';
+    } else {
+      subnavSvcCount.style.display = 'none';
+    }
   }
 
   // ── Render Service Cards ──
@@ -1715,6 +1779,16 @@
     document.getElementById('disputeSummaryCopy').textContent = disputes.length === 0
       ? 'No disputes raised yet'
       : openCount + ' open case' + (openCount === 1 ? '' : 's') + ' under review';
+
+    var subnavDispCount = document.getElementById('subnavDisputesCount');
+    if (subnavDispCount) {
+      if (openCount > 0) {
+        subnavDispCount.textContent = openCount;
+        subnavDispCount.style.display = 'inline-flex';
+      } else {
+        subnavDispCount.style.display = 'none';
+      }
+    }
   }
 
   function renderDisputes() {
