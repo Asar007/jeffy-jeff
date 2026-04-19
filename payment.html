@@ -277,9 +277,22 @@
 <script src="supabase-client.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="invoice-generator.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 (function() {
   'use strict';
+
+  // ── Razorpay configuration ──
+  // Set RAZORPAY_KEY_ID to your test/live public key to enable real payments.
+  // Leave empty string to keep the existing simulation (dev mode).
+  // Production note: Razorpay requires a server-created order_id for payment
+  // verification. Create a Supabase Edge Function that calls Razorpay's
+  // /v1/orders API with your KEY_SECRET, then set CREATE_ORDER_URL below.
+  // Without an order_id, test-mode checkout still works but payments cannot
+  // be cryptographically verified server-side.
+  var RAZORPAY_KEY_ID = '';
+  var CREATE_ORDER_URL = '';   // e.g. 'https://<project>.supabase.co/functions/v1/create-razorpay-order'
+  var VERIFY_PAYMENT_URL = ''; // e.g. 'https://<project>.supabase.co/functions/v1/verify-razorpay-payment'
 
   // Check session
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
@@ -397,93 +410,206 @@
     el.classList.add('selected');
   };
 
-  // ── Process Payment (simulated) ──
+  // ── Shared success handler ──
+  // Called after either a simulated payment or a verified Razorpay success.
+  // When `serverLogged` is true, the Edge Function already inserted the row
+  // and we skip the client-side best-effort insert to avoid duplicates.
+  function completePayment(txnId, payMethod, razorpayPayload, serverLogged) {
+    var users = JSON.parse(localStorage.getItem('nri_users') || '[]');
+    var userIdx = users.findIndex(function(u) { return u.email === session.email; });
+    if (userIdx !== -1) {
+      users[userIdx].properties = order;
+      users[userIdx].paymentDate = new Date().toISOString();
+      localStorage.setItem('nri_users', JSON.stringify(users));
+    }
+
+    session.onboarded = true;
+    localStorage.setItem('nri_session', JSON.stringify(session));
+
+    var invItems = [];
+    order.forEach(function(p) {
+      var plan = PLANS[p.plan];
+      var price = 0;
+      if (p.plan === 'platinum') {
+        price = p.rent ? Math.round(p.rent * 0.1) : 0;
+      } else {
+        price = p.billing === 'annual' ? Math.round(plan.monthly * 12 * 0.85) : plan.monthly;
+      }
+      var capType = p.type ? (p.type.charAt(0).toUpperCase() + p.type.slice(1)) : 'Service';
+      var title = p.city + ' — ' + capType + ' (' + plan.name + ' - ' + (p.billing === 'annual' ? 'Annual' : 'Monthly') + ')';
+      invItems.push({ description: title, qty: 1, price: price });
+    });
+
+    var newInvoice = {
+      txnId: txnId,
+      date: new Date().toISOString(),
+      method: payMethod,
+      items: invItems
+    };
+    localStorage.setItem('nri_invoice', JSON.stringify(newInvoice));
+
+    var usersList = JSON.parse(localStorage.getItem('nri_users') || '[]');
+    var userFindIdx = usersList.findIndex(function(u) { return u.email === session.email; });
+    if (userFindIdx !== -1) {
+      if (!usersList[userFindIdx].invoices) usersList[userFindIdx].invoices = [];
+      usersList[userFindIdx].invoices.push(newInvoice);
+      localStorage.setItem('nri_users', JSON.stringify(usersList));
+    }
+
+    // Best-effort Supabase write — if the `payments` table doesn't exist yet
+    // or RLS blocks, this silently fails and the local flow still completes.
+    // Skipped when the verify Edge Function already inserted the row.
+    if (window.supabaseClient && !serverLogged) {
+      window.supabaseClient.from('payments').insert([{
+        client_email: session.email,
+        txn_id: txnId,
+        method: payMethod,
+        amount: totalDue,
+        currency: 'INR',
+        status: 'captured',
+        provider: RAZORPAY_KEY_ID ? 'razorpay' : 'simulation',
+        razorpay_payment_id: razorpayPayload ? razorpayPayload.razorpay_payment_id : null,
+        razorpay_order_id: razorpayPayload ? razorpayPayload.razorpay_order_id : null,
+        razorpay_signature: razorpayPayload ? razorpayPayload.razorpay_signature : null,
+        items: invItems
+      }]).select().then(function(r) {
+        if (r.error) console.warn('Payment log failed (non-fatal):', r.error.message);
+      });
+    }
+
+    localStorage.removeItem('nri_order');
+
+    var payPanel = document.getElementById('payPanel');
+    payPanel.innerHTML =
+      '<div class="payment-success">' +
+        '<div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+        '<h2>Payment Successful!</h2>' +
+        '<p>Thank you, ' + session.name.split(' ')[0] + '! Your subscription is now active. Your invoice will download automatically.</p>' +
+        '<div class="txn-id">Transaction ID: ' + txnId + '<br><br><button class="btn-outline" style="color:var(--text-dark);border-color:var(--border);" onclick="downloadInvoice(JSON.parse(localStorage.getItem(\'nri_invoice\')), JSON.parse(localStorage.getItem(\'nri_session\')))">Download Invoice Again</button></div>' +
+      '</div>';
+
+    var orderPanel = document.getElementById('orderPanel');
+    orderPanel.querySelector('h2').textContent = 'Payment Confirmed';
+    orderPanel.querySelector('.order-note').textContent = 'A confirmation email has been sent to ' + session.email + '.';
+
+    setTimeout(function() {
+      if (window.downloadInvoice) window.downloadInvoice(JSON.parse(localStorage.getItem('nri_invoice')), session);
+    }, 500);
+  }
+
+  // ── Razorpay hand-off ──
+  // Opens Checkout locked to the method the user picked on our UI.
+  function openRazorpay(payMethod, btn) {
+    var methodMap = { card: 'card', upi: 'upi', netbanking: 'netbanking' };
+    var methodFilter = { card: false, netbanking: false, wallet: false, upi: false, emi: false, paylater: false };
+    methodFilter[methodMap[payMethod] || 'card'] = true;
+
+    var prefill = { name: session.name || '', email: session.email || '' };
+    if (payMethod === 'upi') {
+      var vpaEl = document.getElementById('upiId');
+      if (vpaEl && vpaEl.value) prefill.vpa = vpaEl.value.trim();
+    }
+
+    function launch(orderId) {
+      var options = {
+        key: RAZORPAY_KEY_ID,
+        amount: Math.round(totalDue * 100),
+        currency: 'INR',
+        name: 'NRI Bridge India',
+        description: 'Subscription payment',
+        prefill: prefill,
+        method: methodFilter,
+        theme: { color: '#4a6a2e' },
+        handler: function(response) {
+          if (!VERIFY_PAYMENT_URL) {
+            // No server verification configured — trust client response.
+            // OK for test mode; DO NOT run live payments without a verify URL.
+            completePayment(response.razorpay_payment_id, payMethod, response, false);
+            return;
+          }
+          fetch(VERIFY_PAYMENT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              client_email: session.email,
+              method: payMethod,
+              amount: totalDue,
+              items: (JSON.parse(localStorage.getItem('nri_invoice') || '{}').items) || []
+            })
+          }).then(function(r) { return r.json().then(function(j) { return { ok: r.ok, body: j }; }); })
+            .then(function(res) {
+              if (res.ok && res.body && res.body.verified) {
+                completePayment(response.razorpay_payment_id, payMethod, response, true);
+              } else {
+                console.error('Payment verification failed:', res.body);
+                alert('We received your payment but could not verify it. Please contact support with ID ' + response.razorpay_payment_id + '.');
+                btn.disabled = false;
+                btn.textContent = payMethod === 'card' ? 'Pay Now' : (payMethod === 'upi' ? 'Pay via UPI' : 'Pay via Net Banking');
+              }
+            })
+            .catch(function(err) {
+              console.error('Verify call errored:', err);
+              alert('Network error verifying payment. Please contact support with ID ' + response.razorpay_payment_id + '.');
+              btn.disabled = false;
+              btn.textContent = payMethod === 'card' ? 'Pay Now' : (payMethod === 'upi' ? 'Pay via UPI' : 'Pay via Net Banking');
+            });
+        },
+        modal: {
+          ondismiss: function() {
+            btn.disabled = false;
+            btn.textContent = payMethod === 'card' ? 'Pay Now' : (payMethod === 'upi' ? 'Pay via UPI' : 'Pay via Net Banking');
+          }
+        }
+      };
+      if (orderId) options.order_id = orderId;
+      var rzp = new Razorpay(options);
+      rzp.on('payment.failed', function(resp) {
+        console.error('Razorpay payment failed:', resp.error);
+        alert('Payment failed: ' + (resp.error && resp.error.description ? resp.error.description : 'Please try again.'));
+        btn.disabled = false;
+        btn.textContent = payMethod === 'card' ? 'Pay Now' : (payMethod === 'upi' ? 'Pay via UPI' : 'Pay via Net Banking');
+      });
+      rzp.open();
+    }
+
+    if (CREATE_ORDER_URL) {
+      fetch(CREATE_ORDER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: Math.round(totalDue * 100), currency: 'INR', email: session.email })
+      }).then(function(r) { return r.json(); })
+        .then(function(data) { launch(data.order_id || data.id || null); })
+        .catch(function(err) {
+          console.error('Order creation failed, falling back to direct checkout:', err);
+          launch(null);
+        });
+    } else {
+      launch(null);
+    }
+  }
+
+  // ── Process Payment ──
   window.processPayment = function() {
-    // Simple validation
     var activeForm = document.querySelector('.pay-form.active');
     var btn = activeForm.querySelector('.btn-auth');
+    var activeTab = document.querySelector('.pay-tab.active');
+    var payMethod = activeTab ? activeTab.getAttribute('data-method') : 'card';
+
     btn.disabled = true;
     btn.textContent = 'Processing\u2026';
 
-    // Simulate processing delay
+    if (RAZORPAY_KEY_ID) {
+      openRazorpay(payMethod, btn);
+      return;
+    }
+
+    // Simulation fallback (unchanged behavior when no key is configured)
     setTimeout(function() {
-      // Save to user record
-      var users = JSON.parse(localStorage.getItem('nri_users') || '[]');
-      var userIdx = users.findIndex(function(u) { return u.email === session.email; });
-      if (userIdx !== -1) {
-        users[userIdx].properties = order;
-        users[userIdx].paymentDate = new Date().toISOString();
-        localStorage.setItem('nri_users', JSON.stringify(users));
-      }
-
-      // Update session
-      session.onboarded = true;
-      localStorage.setItem('nri_session', JSON.stringify(session));
-
-      // Clear order
-      localStorage.removeItem('nri_order');
-
-      // Generate fake transaction ID
       var txnId = 'NBI' + Date.now().toString().slice(-8) + Math.random().toString(36).slice(2, 6).toUpperCase();
-
-      // Generate Invoice Data
-      var invItems = [];
-      var activeTab = document.querySelector('.pay-tab.active');
-      var payMethod = activeTab ? activeTab.getAttribute('data-method') : 'card';
-      
-      order.forEach(function(p) {
-        var plan = PLANS[p.plan];
-        var price = 0;
-        
-        if (p.plan === 'platinum') {
-          price = p.rent ? Math.round(p.rent * 0.1) : 0;
-        } else {
-          if (p.billing === 'annual') {
-            price = Math.round(plan.monthly * 12 * 0.85);
-          } else {
-            price = plan.monthly;
-          }
-        }
-        
-        var capType = p.type ? (p.type.charAt(0).toUpperCase() + p.type.slice(1)) : 'Service';
-        var title = p.city + ' — ' + capType + ' (' + plan.name + ' - ' + (p.billing === 'annual' ? 'Annual' : 'Monthly') + ')';
-        invItems.push({ description: title, qty: 1, price: price });
-      });
-      
-      var newInvoice = {
-        txnId: txnId,
-        date: new Date().toISOString(),
-        method: payMethod,
-        items: invItems
-      };
-      localStorage.setItem('nri_invoice', JSON.stringify(newInvoice));
-
-      var usersList = JSON.parse(localStorage.getItem('nri_users') || '[]');
-      var userFindIdx = usersList.findIndex(function(u){return u.email===session.email});
-      if(userFindIdx !== -1) {
-        if(!usersList[userFindIdx].invoices) usersList[userFindIdx].invoices = [];
-        usersList[userFindIdx].invoices.push(newInvoice);
-        localStorage.setItem('nri_users', JSON.stringify(usersList));
-      }
-
-      // Show success
-      var payPanel = document.getElementById('payPanel');
-      payPanel.innerHTML =
-        '<div class="payment-success">' +
-          '<div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>' +
-          '<h2>Payment Successful!</h2>' +
-          '<p>Thank you, ' + session.name.split(' ')[0] + '! Your subscription is now active. Your invoice will download automatically.</p>' +
-          '<div class="txn-id">Transaction ID: ' + txnId + '<br><br><button class="btn-outline" style="color:var(--text-dark);border-color:var(--border);" onclick="downloadInvoice(JSON.parse(localStorage.getItem(\'nri_invoice\')), JSON.parse(localStorage.getItem(\'nri_session\')))">Download Invoice Again</button></div>' +
-        '</div>';
-
-      // Update order panel
-      var orderPanel = document.getElementById('orderPanel');
-      orderPanel.querySelector('h2').textContent = 'Payment Confirmed';
-      orderPanel.querySelector('.order-note').textContent = 'A confirmation email has been sent to ' + session.email + '.';
-
-      setTimeout(function() {
-        if(window.downloadInvoice) window.downloadInvoice(JSON.parse(localStorage.getItem('nri_invoice')), session);
-      }, 500);
+      completePayment(txnId, payMethod, null);
     }, 1500);
   };
 
