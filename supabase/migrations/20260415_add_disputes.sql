@@ -23,4 +23,12 @@ create table if not exists public.disputes (
 
 alter table public.disputes enable row level security;
 
-create policy "Full access" on public.disputes for all using (true) with check (true);
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public' and tablename = 'disputes' and policyname = 'Full access'
+  ) then
+    create policy "Full access" on public.disputes for all using (true) with check (true);
+  end if;
+end $$;
