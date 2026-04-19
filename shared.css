@@ -3838,6 +3838,39 @@ footer {
   .adm-doc-preview-header h3 { max-width: 200px; font-size: 0.9rem; }
 }
 
+/* ── Dispute attachment file list (client dashboard) ─────────────── */
+.dash-dispute-file-list {
+  display: flex; flex-direction: column; gap: 8px; margin-top: 10px;
+}
+.dash-dispute-file-list:empty { margin-top: 0; }
+.dash-dispute-file-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; background: rgba(74, 106, 46, 0.05);
+  border: 1px solid rgba(74, 106, 46, 0.18); border-radius: 8px;
+  font-size: 0.82rem;
+}
+.dash-dispute-file-name {
+  flex: 1; color: var(--text-dark); font-weight: 500;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dash-dispute-file-size {
+  font-size: 0.72rem; color: var(--text-muted); font-variant-numeric: tabular-nums;
+}
+.dash-dispute-file-remove {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: none; background: rgba(220, 53, 69, 0.12); color: #b02a37;
+  font-size: 1.1rem; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.dash-dispute-file-remove:hover { background: rgba(220, 53, 69, 0.25); }
+
+/* Admin dispute file chip — size em */
+.adm-dispute-file em {
+  font-style: normal; color: var(--text-muted); font-size: 0.72rem;
+  font-weight: 500; margin-left: 4px;
+}
+
 /* ── Analytics Dashboard ─────────────────────────────────────────── */
 .adm-analytics-range {
   font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 600;

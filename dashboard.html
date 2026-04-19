@@ -242,7 +242,8 @@
       <label class="dash-dispute-field">
         <span>Attachments</span>
         <input type="file" id="disputeAttachments" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx">
-        <small>Attach supporting screenshots, reports, invoices, or service documents. Maximum 10 MB per file.</small>
+        <small>Screenshots, reports, invoices, or service documents. <strong>Maximum 5 MB per file.</strong></small>
+        <div class="dash-dispute-file-list" id="disputeFileList"></div>
       </label>
       <div class="dash-dispute-modal-actions">
         <button class="dash-inline-btn" id="submitDisputeBtn" type="submit">Submit Dispute</button>
@@ -1700,6 +1701,8 @@
       disputeForm.reset();
       disputeCategorySelect.innerHTML = '<option value="">Select a category</option>';
       activeDisputeServiceMeta = null;
+      selectedDisputeFiles = [];
+      if (disputeFileList) disputeFileList.innerHTML = '';
     }, 220);
   }
 
@@ -1768,53 +1771,33 @@
     });
   }
 
-  function readFileAsDataUrl(file) {
-    return new Promise(function(resolve, reject) {
-      var reader = new FileReader();
-      reader.onload = function(e) { resolve(e.target.result); };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  var DISPUTE_MAX_BYTES = 5 * 1024 * 1024;
+
+  function formatFileSize(bytes) {
+    if (!bytes && bytes !== 0) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
   }
 
   function uploadDisputeAttachment(file) {
+    if (!window.supabaseClient || !window.supabaseClient.storage) {
+      return Promise.reject(new Error('Storage unavailable. Please try again in a moment.'));
+    }
     var safeName = (file.name || 'attachment').replace(/[^a-zA-Z0-9.\-_]/g, '-');
     var storagePath = 'disputes/' + encodeURIComponent(session.email) + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
 
-    if (window.supabaseClient && window.supabaseClient.storage) {
-      return window.supabaseClient.storage.from('documents').upload(storagePath, file).then(function(result) {
-        if (!result.error) {
-          return {
-            file_name: file.name,
-            mime_type: file.type || '',
-            storage_path: storagePath
-          };
-        }
-        return readFileAsDataUrl(file).then(function(dataUrl) {
-          return {
-            file_name: file.name,
-            mime_type: file.type || '',
-            file_data: dataUrl
-          };
-        });
-      }).catch(function() {
-        return readFileAsDataUrl(file).then(function(dataUrl) {
-          return {
-            file_name: file.name,
-            mime_type: file.type || '',
-            file_data: dataUrl
-          };
-        });
+    return window.supabaseClient.storage.from('documents')
+      .upload(storagePath, file, { contentType: file.type || 'application/octet-stream', upsert: false })
+      .then(function(result) {
+        if (result.error) throw new Error(result.error.message || 'Upload failed');
+        return {
+          file_name: file.name,
+          mime_type: file.type || '',
+          size: file.size,
+          storage_path: storagePath
+        };
       });
-    }
-
-    return readFileAsDataUrl(file).then(function(dataUrl) {
-      return {
-        file_name: file.name,
-        mime_type: file.type || '',
-        file_data: dataUrl
-      };
-    });
   }
 
   function openDisputeAttachment(attachment) {
@@ -1862,6 +1845,54 @@
     populateDisputeCategories(activeDisputeServiceMeta ? activeDisputeServiceMeta.serviceKey : '');
   });
 
+  // Curated file list — allows per-file size validation and removal before submit.
+  var selectedDisputeFiles = [];
+  var disputeFileList = document.getElementById('disputeFileList');
+
+  function renderDisputeFileList() {
+    if (!selectedDisputeFiles.length) {
+      disputeFileList.innerHTML = '';
+      return;
+    }
+    disputeFileList.innerHTML = selectedDisputeFiles.map(function(file, idx) {
+      return '<div class="dash-dispute-file-row">' +
+               '<span class="dash-dispute-file-name">' + escapeHtml(file.name) + '</span>' +
+               '<span class="dash-dispute-file-size">' + formatFileSize(file.size) + '</span>' +
+               '<button type="button" class="dash-dispute-file-remove" data-remove-idx="' + idx + '" aria-label="Remove ' + escapeHtml(file.name) + '">&times;</button>' +
+             '</div>';
+    }).join('');
+    disputeFileList.querySelectorAll('[data-remove-idx]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var rmIdx = parseInt(this.getAttribute('data-remove-idx'), 10);
+        selectedDisputeFiles.splice(rmIdx, 1);
+        renderDisputeFileList();
+      });
+    });
+  }
+
+  disputeAttachmentsInput.addEventListener('change', function() {
+    var incoming = Array.prototype.slice.call(this.files || []);
+    var rejected = [];
+    incoming.forEach(function(file) {
+      if (file.size > DISPUTE_MAX_BYTES) {
+        rejected.push(file.name);
+        return;
+      }
+      var already = selectedDisputeFiles.some(function(f) {
+        return f.name === file.name && f.size === file.size;
+      });
+      if (!already) selectedDisputeFiles.push(file);
+    });
+    this.value = '';
+    if (rejected.length) {
+      showToast(rejected.length === 1
+        ? rejected[0] + ' exceeds the 5 MB limit'
+        : rejected.length + ' files exceeded the 5 MB limit',
+        'error');
+    }
+    renderDisputeFileList();
+  });
+
   disputeForm.addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -1874,17 +1905,18 @@
       return;
     }
 
-    var files = Array.prototype.slice.call(disputeAttachmentsInput.files || []);
-    var oversize = files.some(function(file) { return file.size > 10 * 1024 * 1024; });
-    if (oversize) {
-      showToast('Each attachment must be 10 MB or smaller', 'error');
+    // Defence-in-depth — input change handler already filters, but re-check.
+    var oversize = selectedDisputeFiles.filter(function(f) { return f.size > DISPUTE_MAX_BYTES; });
+    if (oversize.length) {
+      showToast('Each attachment must be 5 MB or smaller', 'error');
       return;
     }
 
     disputeSubmitBtn.disabled = true;
-    disputeSubmitBtn.textContent = 'Submitting...';
+    disputeSubmitBtn.textContent = selectedDisputeFiles.length ? 'Uploading...' : 'Submitting...';
 
-    Promise.all(files.map(uploadDisputeAttachment)).then(function(attachments) {
+    Promise.all(selectedDisputeFiles.map(uploadDisputeAttachment)).then(function(attachments) {
+      disputeSubmitBtn.textContent = 'Submitting...';
       return window.supabaseClient.from('disputes').insert([{
         client_email: session.email,
         client_name: fullName,
@@ -1897,18 +1929,21 @@
         priority: document.getElementById('disputePriority').value,
         status: 'New',
         attachments: attachments
-      }]);
+      }]).select();
     }).then(function(result) {
-      if (result.error) {
-        showToast('Failed to submit dispute', 'error');
+      if (result && result.error) {
+        console.error('Dispute insert error:', result.error);
+        showToast('Failed to submit dispute: ' + result.error.message, 'error');
         return;
       }
       showToast('Dispute submitted successfully', 'success');
+      selectedDisputeFiles = [];
+      renderDisputeFileList();
       closeDisputeModal();
       loadDisputes();
     }).catch(function(err) {
       console.error('Dispute submit error:', err);
-      showToast('Failed to submit dispute', 'error');
+      showToast(err && err.message ? 'Upload failed: ' + err.message : 'Failed to submit dispute', 'error');
     }).finally(function() {
       disputeSubmitBtn.disabled = false;
       disputeSubmitBtn.textContent = 'Submit Dispute';
