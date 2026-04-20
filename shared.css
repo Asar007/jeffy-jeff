@@ -1866,8 +1866,7 @@ footer {
 }
 .dash-disputes-panel {
   padding: 32px 28px;
-  margin-top: 28px;
-  animation: fadeUp 0.5s ease both 0.2s; opacity: 0;
+  margin-top: 0;
   position: relative;
   overflow: hidden;
 }
@@ -2474,12 +2473,20 @@ footer {
   flex: 1;
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   padding: 10px 14px;
+  border: 0;
+  background: transparent;
   border-radius: 10px;
+  font-family: inherit;
   font-size: 0.85rem; font-weight: 600;
   color: var(--text-mid);
   text-decoration: none;
+  cursor: pointer;
   transition: all 0.18s ease;
   white-space: nowrap;
+}
+.dash-subnav-tab:focus-visible {
+  outline: 2px solid var(--green-pop);
+  outline-offset: 2px;
 }
 .dash-subnav-tab:hover {
   color: var(--green-pop);
@@ -2504,8 +2511,61 @@ footer {
 
 /* Tabbed panels — show only the active one */
 .dash-main > .dash-panel { display: none; }
-.dash-main > .dash-panel.is-active { display: block; animation: fadeIn 0.25s ease; }
+.dash-main > .dash-panel.is-active {
+  display: block;
+  animation: dashPanelIn 0.28s ease both;
+}
 .dash-main > .dash-panel[hidden] { display: none !important; }
+@keyframes dashPanelIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Services tab: add a leading dot on the section heading for consistency */
+.dash-main > #servicesPanel .dash-section-header h2::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green-pop);
+  box-shadow: 0 0 0 3px rgba(74,106,46,0.15);
+  flex-shrink: 0;
+}
+
+/* Payments tab: framed card surface, matching Disputes look */
+.dash-main > #paymentsPanel .dash-payments {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 28px 22px;
+  margin-top: 0;
+  position: relative;
+  overflow: hidden;
+}
+.dash-main > #paymentsPanel .dash-payments::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--green-pop), #7fa958, var(--green-pop));
+  background-size: 200% 100%;
+  animation: shimmerBar 3s ease infinite;
+}
+.dash-main > #paymentsPanel .dash-section-header {
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.dash-main > #paymentsPanel .dash-section-header h2 {
+  display: flex; align-items: center; gap: 10px;
+}
+.dash-main > #paymentsPanel .dash-section-header h2::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green-pop);
+  box-shadow: 0 0 0 3px rgba(74,106,46,0.15);
+  flex-shrink: 0;
+}
 .dash-quick-btn {
   flex: 1; min-width: 180px;
   display: flex; align-items: center; justify-content: center; gap: 12px;
@@ -2907,6 +2967,17 @@ footer {
 .dash-doc-ctrl-btn.dash-doc-close:hover {
   border-color: #dc3545; color: #dc3545;
   background: rgba(220,53,69,0.04);
+}
+.dash-doc-ctrl-btn.dash-doc-nav-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+}
+.dash-doc-ctrl-btn.dash-doc-nav-btn svg { width: 16px; height: 16px; }
+.dash-doc-counter {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 4px 10px; border-radius: 999px;
+  background: rgba(74,106,46,0.08); color: var(--green-pop);
+  font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
+  min-width: 48px;
 }
 .dash-doc-preview-content {
   flex: 1; min-height: 350px; position: relative;
