@@ -1644,7 +1644,7 @@ footer {
 }
 
 /* ── Payment History ── */
-.dash-payments { margin-top: 32px; }
+.dash-payments { margin-top: 0; }
 .dash-payments-list {
   background: var(--white);
   border-radius: var(--radius-lg);
@@ -2502,10 +2502,10 @@ footer {
   background: rgba(255,255,255,0.22); color: var(--white);
 }
 
-/* Anchor scroll offset so sticky nav doesn't cover headings */
-#servicesSection, #paymentsSection, #disputesSection {
-  scroll-margin-top: 140px;
-}
+/* Tabbed panels — show only the active one */
+.dash-main > .dash-panel { display: none; }
+.dash-main > .dash-panel.is-active { display: block; animation: fadeIn 0.25s ease; }
+.dash-main > .dash-panel[hidden] { display: none !important; }
 .dash-quick-btn {
   flex: 1; min-width: 180px;
   display: flex; align-items: center; justify-content: center; gap: 12px;
