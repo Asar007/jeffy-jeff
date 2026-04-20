@@ -456,7 +456,7 @@
 
 <!-- ── Task Edit Modal ────────────────────────────────────────────── -->
 <div class="adm-modal-overlay" id="taskEditModal">
-  <div class="adm-modal" style="max-width:520px;">
+  <div class="adm-modal" style="max-width:620px;">
     <h3>Update Task</h3>
     <div style="background:var(--bg-cream);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:16px;">
       <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:2px;">Task</div>
@@ -491,8 +491,32 @@
       <label>Deadline</label>
       <input type="date" id="teDeadline" style="width:100%;padding:9px 12px;border:1.5px solid #d4d2c8;border-radius:10px;font-family:inherit;font-size:0.84rem;background:var(--bg-cream);">
     </div>
+
+    <!-- ── Client-visible update: note + photos ── -->
+    <div class="adm-form-group" style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
+      <label>Post an update to the client <span style="font-weight:400;color:var(--text-muted);font-size:0.76rem;">— appears on their dashboard as proof of work</span></label>
+      <textarea id="teUpdateNote" rows="3" placeholder="E.g. Completed Q2 inspection — 4 photos attached. Next: share report on Monday." style="width:100%;padding:10px 12px;border:1.5px solid #d4d2c8;border-radius:10px;font-family:inherit;font-size:0.84rem;background:var(--bg-cream);resize:vertical;"></textarea>
+      <div class="te-photo-row">
+        <label class="te-photo-btn" for="teUpdatePhotos">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Attach photos
+        </label>
+        <input type="file" id="teUpdatePhotos" multiple accept="image/*,.pdf" style="display:none;">
+        <span class="te-photo-hint" id="teUpdatePhotosHint">No photos selected</span>
+      </div>
+      <div class="te-photo-previews" id="teUpdatePhotoPreviews"></div>
+    </div>
+
+    <!-- ── Existing timeline ── -->
+    <div class="adm-form-group" id="teTimelineGroup" style="border-top:1px solid var(--border);padding-top:16px;">
+      <label>Update history</label>
+      <div class="te-timeline" id="teTimeline">
+        <div class="te-timeline-empty">Loading…</div>
+      </div>
+    </div>
+
     <div class="adm-modal-actions">
-      <button class="adm-btn-add" id="teSubmit">Save Changes</button>
+      <button class="adm-btn-add" id="teSubmit">Save &amp; Post Update</button>
       <button class="adm-btn-export" id="teCancel">Cancel</button>
       <button class="adm-btn-export" id="teDelete" style="color:#dc3545;border-color:#dc3545;margin-left:auto;">Delete</button>
     </div>
@@ -1281,6 +1305,12 @@
     renderPipeline(pipelineKey, stepIdx);
   }
 
+  // ── Task-update state ──
+  var teInitialStatus = '';
+  var teInitialProgress = 0;
+  var teSelectedPhotos = [];
+  var TE_MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
   function openTaskEdit(taskId) {
     var t = tasks.find(function(x) { return x.id === taskId; });
     if (!t) return;
@@ -1293,6 +1323,17 @@
     document.getElementById('teProgress').value = t.progress || 0;
     document.getElementById('teProgressLabel').textContent = (t.progress || 0) + '%';
     document.getElementById('teDeadline').value = t.deadline || '';
+
+    // Reset update form
+    teInitialStatus = t.status || '';
+    teInitialProgress = t.progress || 0;
+    teSelectedPhotos = [];
+    document.getElementById('teUpdateNote').value = '';
+    document.getElementById('teUpdatePhotos').value = '';
+    document.getElementById('teUpdatePhotoPreviews').innerHTML = '';
+    document.getElementById('teUpdatePhotosHint').textContent = 'No photos selected';
+
+    loadTaskTimeline(taskId);
 
     // Render pipeline stepper
     var pipelineKey = getPipelineKey(t.service);
@@ -1357,32 +1398,173 @@
   document.getElementById('teCancel').addEventListener('click', closeTaskEdit);
   teModal.addEventListener('click', function(e) { if (e.target === teModal) closeTaskEdit(); });
 
+  // ── Load and render timeline ──
+  function loadTaskTimeline(taskId) {
+    var wrap = document.getElementById('teTimeline');
+    wrap.innerHTML = '<div class="te-timeline-empty">Loading…</div>';
+    sb.from('task_updates').select('*').eq('task_id', taskId).order('created_at', { ascending: false }).then(function(r) {
+      if (r.error) {
+        wrap.innerHTML = '<div class="te-timeline-empty">Could not load updates (' + (r.error.message || 'unknown error') + ')</div>';
+        return;
+      }
+      renderTaskTimeline(r.data || []);
+    });
+  }
+
+  function renderTaskTimeline(items) {
+    var wrap = document.getElementById('teTimeline');
+    if (!items.length) {
+      wrap.innerHTML = '<div class="te-timeline-empty">No updates posted yet. Post the first one below to keep the client informed.</div>';
+      return;
+    }
+    var html = '';
+    items.forEach(function(it) {
+      var when = new Date(it.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+      var photos = Array.isArray(it.photos) ? it.photos : [];
+      var photoHtml = '';
+      if (photos.length) {
+        photoHtml = '<div class="te-timeline-photos">' + photos.map(function(p) {
+          return '<span class="te-timeline-photo-chip" title="' + (p.file_name || '') + '">' +
+            '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' +
+            (p.file_name || 'photo') + '</span>';
+        }).join('') + '</div>';
+      }
+      var statusLine = '';
+      if (it.status_to || typeof it.progress_to === 'number') {
+        var parts = [];
+        if (it.status_to) parts.push('status → ' + it.status_to);
+        if (typeof it.progress_to === 'number') parts.push('progress → ' + it.progress_to + '%');
+        statusLine = '<div class="te-timeline-statusline">' + parts.join(' · ') + '</div>';
+      }
+      var ackLine = '';
+      if (it.ack_kind === 'acknowledged') {
+        var ackWhen = it.acknowledged_at ? new Date(it.acknowledged_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+        ackLine = '<div class="te-timeline-ack ack">Client acknowledged' + (ackWhen ? ' · ' + ackWhen : '') + '</div>';
+      } else if (it.ack_kind === 'concern') {
+        var cWhen = it.acknowledged_at ? new Date(it.acknowledged_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+        ackLine = '<div class="te-timeline-ack concern">Client raised a concern' + (cWhen ? ' · ' + cWhen : '') + '</div>';
+      } else {
+        ackLine = '<div class="te-timeline-ack pending">Awaiting client review</div>';
+      }
+      html +=
+        '<div class="te-timeline-item">' +
+          '<div class="te-timeline-dot"></div>' +
+          '<div class="te-timeline-body">' +
+            '<div class="te-timeline-meta">' + escapeHtml(it.author_name || it.author_email || 'Admin') + ' · ' + when + '</div>' +
+            '<div class="te-timeline-note">' + escapeHtml(it.note || '') + '</div>' +
+            statusLine + photoHtml + ackLine +
+          '</div>' +
+        '</div>';
+    });
+    wrap.innerHTML = html;
+  }
+
+  // ── Photo selection + preview ──
+  document.getElementById('teUpdatePhotos').addEventListener('change', function(e) {
+    var files = Array.prototype.slice.call(e.target.files || []);
+    var valid = [];
+    for (var i = 0; i < files.length; i++) {
+      if (files[i].size > TE_MAX_PHOTO_BYTES) {
+        showToast('"' + files[i].name + '" exceeds 5 MB and was skipped', 'error');
+        continue;
+      }
+      valid.push(files[i]);
+    }
+    teSelectedPhotos = valid;
+    var hint = document.getElementById('teUpdatePhotosHint');
+    hint.textContent = valid.length ? valid.length + ' photo' + (valid.length === 1 ? '' : 's') + ' ready' : 'No photos selected';
+    var previews = document.getElementById('teUpdatePhotoPreviews');
+    previews.innerHTML = valid.map(function(f) {
+      return '<span class="te-photo-chip">' + escapeHtml(f.name) + ' <em>' + (f.size < 1024 * 1024 ? (f.size / 1024).toFixed(0) + ' KB' : (f.size / (1024 * 1024)).toFixed(1) + ' MB') + '</em></span>';
+    }).join('');
+  });
+
+  function uploadTaskUpdatePhoto(taskId, file) {
+    var safeName = (file.name || 'photo').replace(/[^a-zA-Z0-9.\-_]/g, '-');
+    var storagePath = 'tasks/' + taskId + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
+    return sb.storage.from('documents').upload(storagePath, file, {
+      contentType: file.type || 'application/octet-stream',
+      upsert: false
+    }).then(function(r) {
+      if (r.error) throw new Error(r.error.message || 'Upload failed');
+      return {
+        file_name: file.name,
+        mime_type: file.type || '',
+        size: file.size,
+        storage_path: storagePath
+      };
+    });
+  }
+
   document.getElementById('teSubmit').addEventListener('click', function() {
     if (!currentTaskId) return;
+    var saveBtn = this;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+
+    var newStatus = document.getElementById('teStatus').value;
+    var newProgress = parseInt(document.getElementById('teProgress').value) || 0;
+    var note = document.getElementById('teUpdateNote').value.trim();
+    var statusChanged = newStatus !== teInitialStatus;
+    var progressChanged = newProgress !== teInitialProgress;
+    var hasUpdate = note.length > 0 || teSelectedPhotos.length > 0 || statusChanged || progressChanged;
+
     var updates = {
-      status: document.getElementById('teStatus').value,
-      progress: parseInt(document.getElementById('teProgress').value) || 0,
+      status: newStatus,
+      progress: newProgress,
       deadline: document.getElementById('teDeadline').value || null,
       current_step: currentPipelineStep >= 0 ? currentPipelineStep : null
     };
+
+    function finish(msg, level) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save & Post Update';
+      showToast(msg, level || 'success');
+      closeTaskEdit();
+      loadDashboard();
+    }
+
+    function postUpdateRow() {
+      if (!hasUpdate) { finish('Task updated'); return; }
+      // Upload photos first
+      var uploads = teSelectedPhotos.length
+        ? Promise.all(teSelectedPhotos.map(function(f) { return uploadTaskUpdatePhoto(currentTaskId, f); }))
+        : Promise.resolve([]);
+      uploads.then(function(photos) {
+        var localSess = JSON.parse(localStorage.getItem('nri_session') || 'null') || {};
+        var authorEmail = localSess.email || 'admin@nri-bridge.in';
+        var authorName = localSess.name || 'Admin';
+        return sb.from('task_updates').insert({
+          task_id: currentTaskId,
+          author_email: authorEmail,
+          author_name: authorName,
+          note: note || (statusChanged ? 'Status changed to ' + newStatus : 'Progress updated to ' + newProgress + '%'),
+          status_to: statusChanged ? newStatus : null,
+          progress_to: progressChanged ? newProgress : null,
+          photos: photos
+        });
+      }).then(function(r) {
+        if (r && r.error) { finish('Task saved but update post failed: ' + r.error.message, 'error'); return; }
+        finish('Task updated & client notified');
+      }).catch(function(err) {
+        finish('Photo upload failed: ' + (err.message || 'unknown'), 'error');
+      });
+    }
+
     sb.from('tasks').update(updates).eq('id', currentTaskId).select().then(function(r) {
       if (r.error) {
-        // If current_step column doesn't exist yet, retry without it
         if (r.error.message && r.error.message.indexOf('current_step') !== -1) {
           delete updates.current_step;
           sb.from('tasks').update(updates).eq('id', currentTaskId).select().then(function(r2) {
-            if (r2.error) { showToast('Failed to update: ' + r2.error.message, 'error'); return; }
-            showToast('Task updated (add current_step column to tasks table for step tracking)', 'info');
-            closeTaskEdit();
-            loadDashboard();
+            if (r2.error) { saveBtn.disabled = false; saveBtn.textContent = 'Save & Post Update'; showToast('Failed to update: ' + r2.error.message, 'error'); return; }
+            postUpdateRow();
           });
           return;
         }
+        saveBtn.disabled = false; saveBtn.textContent = 'Save & Post Update';
         showToast('Failed to update: ' + r.error.message, 'error'); return;
       }
-      showToast('Task updated', 'success');
-      closeTaskEdit();
-      loadDashboard();
+      postUpdateRow();
     });
   });
 
