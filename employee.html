@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Work — NRI Bridge India</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css?v=7">
+</head>
+<body class="emp-page">
+
+<nav></nav>
+<script src="nav.js"></script>
+
+<main class="emp-container" id="empMain">
+  <!-- gate or task list rendered by JS -->
+  <div class="emp-empty">Loading your work…</div>
+</main>
+
+<footer></footer>
+<script src="footer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  var MAX_BYTES = 5 * 1024 * 1024;
+  var sb = window.supabaseClient;
+  var mainEl = document.getElementById('empMain');
+  var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
+  if (!session || !session.email) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  var me = null;          // employees row
+  var myTasks = [];       // tasks assigned to me
+  var updatesByTask = {}; // taskId → array of task_updates
+  var filter = 'active';  // active | all | completed
+
+  function escapeHtml(s) {
+    return (s == null ? '' : String(s))
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+  }
+
+  function showToast(msg, type) {
+    var t = document.createElement('div');
+    t.className = 'nbi-toast nbi-toast-' + (type || 'info');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    void t.offsetHeight;
+    t.classList.add('show');
+    setTimeout(function() {
+      t.classList.remove('show');
+      setTimeout(function() { t.remove(); }, 400);
+    }, 3500);
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function fmtDateTime(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  function fmtSize(bytes) {
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function initials(name) {
+    return (name || '?').split(' ').map(function(w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
+  }
+
+  // ── Boot: verify employee row + status gate ──
+  sb.from('employees').select('*').eq('email', session.email).maybeSingle().then(function(r) {
+    if (r.error || !r.data) {
+      renderGate('rejected', 'We could not find an employee profile for ' + session.email + '. If you signed up recently, please wait for admin verification.');
+      return;
+    }
+    me = r.data;
+    if (me.status === 'approved') {
+      renderShell();
+      loadTasks();
+    } else if (me.status === 'pending') {
+      renderGate('pending', 'Your application is under review. We will email you at ' + me.email + ' once your profile is approved.');
+    } else if (me.status === 'rejected') {
+      renderGate('rejected', me.rejection_reason || 'Your application was not approved at this time.');
+    } else if (me.status === 'suspended') {
+      renderGate('suspended', 'Your account is currently suspended. Please contact support for details.');
+    }
+  });
+
+  // ── Status gate ──
+  function renderGate(kind, message) {
+    var icons = {
+      pending: '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+      rejected: '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+      suspended: '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+    };
+    var titles = { pending: 'Application under review', rejected: 'Application not approved', suspended: 'Account suspended' };
+    mainEl.innerHTML =
+      '<div class="emp-gate">' +
+        '<div class="emp-gate-icon ' + kind + '">' + icons[kind] + '</div>' +
+        '<h1>' + titles[kind] + '</h1>' +
+        '<p>' + escapeHtml(message) + '</p>' +
+        (kind === 'rejected' && me && me.rejection_reason ? '<div class="emp-gate-reason"><strong>Reason:</strong> ' + escapeHtml(me.rejection_reason) + '</div>' : '') +
+        '<div style="margin-top:24px;">' +
+          '<button class="emp-btn" id="gateLogoutBtn">Sign out</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('gateLogoutBtn').addEventListener('click', signOut);
+  }
+
+  function signOut() {
+    sb.auth.signOut().then(function() {
+      localStorage.removeItem('nri_session');
+      sessionStorage.removeItem('nri_role');
+      window.location.href = 'login.html';
+    });
+  }
+
+  // ── Approved shell ──
+  function renderShell() {
+    mainEl.innerHTML =
+      '<div class="emp-welcome">' +
+        '<div>' +
+          '<h1>Hi ' + escapeHtml(me.name.split(' ')[0]) + ' 👋</h1>' +
+          '<div class="emp-welcome-sub">' + escapeHtml(me.city || '') + (me.city && me.pin_code ? ' · ' : '') + escapeHtml(me.pin_code || '') + '</div>' +
+        '</div>' +
+        '<div class="emp-welcome-stat">' +
+          '<div class="emp-stat-num" id="empActiveCount">0</div>' +
+          '<div class="emp-stat-label">Active tasks</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="emp-section-header">' +
+        '<h2>My Work</h2>' +
+        '<div class="emp-filter-tabs" id="empFilterTabs">' +
+          '<button class="emp-filter-tab active" data-filter="active">Active</button>' +
+          '<button class="emp-filter-tab" data-filter="completed">Completed</button>' +
+          '<button class="emp-filter-tab" data-filter="all">All</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="emp-tasks-list" id="empTasksList">' +
+        '<div class="emp-empty">Loading tasks…</div>' +
+      '</div>' +
+      '<div style="text-align:center;margin-top:32px;">' +
+        '<button class="emp-btn" id="empSignOut">Sign out</button>' +
+      '</div>';
+
+    document.getElementById('empSignOut').addEventListener('click', signOut);
+    document.getElementById('empFilterTabs').querySelectorAll('.emp-filter-tab').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.emp-filter-tab').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        filter = btn.getAttribute('data-filter');
+        renderTasks();
+      });
+    });
+  }
+
+  // ── Load my tasks + their updates ──
+  function loadTasks() {
+    sb.from('tasks')
+      .select('*, clients(name, email)')
+      .eq('assigned_employee_email', me.email)
+      .order('created_at', { ascending: false })
+      .then(function(r) {
+        if (r.error) {
+          document.getElementById('empTasksList').innerHTML =
+            '<div class="emp-empty">Could not load tasks: ' + escapeHtml(r.error.message) + '</div>';
+          return;
+        }
+        myTasks = r.data || [];
+        if (!myTasks.length) {
+          updateStats();
+          renderTasks();
+          return;
+        }
+        var taskIds = myTasks.map(function(t) { return t.id; });
+        sb.from('task_updates').select('*').in('task_id', taskIds).order('created_at', { ascending: false }).then(function(ur) {
+          updatesByTask = {};
+          (ur.data || []).forEach(function(u) {
+            if (!updatesByTask[u.task_id]) updatesByTask[u.task_id] = [];
+            updatesByTask[u.task_id].push(u);
+          });
+          updateStats();
+          renderTasks();
+        });
+      });
+  }
+
+  function updateStats() {
+    var active = myTasks.filter(function(t) { return t.status !== 'Completed'; }).length;
+    var el = document.getElementById('empActiveCount');
+    if (el) el.textContent = active;
+  }
+
+  function renderTasks() {
+    var list = document.getElementById('empTasksList');
+    var filtered = myTasks.filter(function(t) {
+      if (filter === 'active') return t.status !== 'Completed';
+      if (filter === 'completed') return t.status === 'Completed';
+      return true;
+    });
+    if (!filtered.length) {
+      list.innerHTML = '<div class="emp-empty">' +
+        (myTasks.length ? 'Nothing in this view.' : 'No tasks assigned yet. Once an admin assigns work to you, it will appear here.') +
+        '</div>';
+      return;
+    }
+    list.innerHTML = '';
+    filtered.forEach(function(task) {
+      list.appendChild(buildTaskCard(task));
+    });
+  }
+
+  function statusClass(s) {
+    if (!s) return 'pending';
+    return s.toLowerCase().replace(/\s+/g, '-');
+  }
+
+  function buildTaskCard(task) {
+    var card = document.createElement('article');
+    card.className = 'emp-task-card';
+    card.dataset.taskId = task.id;
+    var clientName = (task.clients && task.clients.name) || 'Client';
+    var progress = typeof task.progress === 'number' ? task.progress : 0;
+
+    card.innerHTML =
+      '<div class="emp-task-head">' +
+        '<div>' +
+          '<div class="emp-task-client">' + escapeHtml(clientName) + '</div>' +
+          '<h3>' + escapeHtml(task.service || 'Task') + '</h3>' +
+        '</div>' +
+        '<span class="emp-status-badge ' + statusClass(task.status) + '">' + escapeHtml(task.status || 'Pending') + '</span>' +
+      '</div>' +
+      (task.description ? '<p class="emp-task-desc">' + escapeHtml(task.description) + '</p>' : '') +
+      '<div class="emp-progress-bar"><div class="emp-progress-fill" style="width:' + progress + '%;"></div></div>' +
+      '<div class="emp-task-meta">' +
+        '<span>ETA <strong>' + fmtDate(task.deadline) + '</strong></span>' +
+        '<span>Progress <strong>' + progress + '%</strong></span>' +
+        '<span>Updates <strong>' + ((updatesByTask[task.id] || []).length) + '</strong></span>' +
+      '</div>' +
+      '<div class="emp-task-actions">' +
+        '<button class="emp-btn" data-action="toggle-post">Post update</button>' +
+        '<button class="emp-btn" data-action="toggle-timeline">View timeline</button>' +
+        (task.status !== 'Completed'
+          ? '<button class="emp-btn primary" data-action="mark-done">Mark done</button>'
+          : '') +
+      '</div>' +
+      '<div class="emp-post-form" data-slot="post" style="display:none;"></div>' +
+      '<div class="emp-timeline" data-slot="timeline" style="display:none;"></div>';
+
+    wireCardEvents(card, task);
+    return card;
+  }
+
+  function wireCardEvents(card, task) {
+    card.querySelector('[data-action="toggle-post"]').addEventListener('click', function() {
+      var slot = card.querySelector('[data-slot="post"]');
+      if (slot.style.display === 'none') {
+        slot.style.display = 'block';
+        if (!slot.dataset.built) { buildPostForm(slot, task); slot.dataset.built = '1'; }
+      } else {
+        slot.style.display = 'none';
+      }
+    });
+    card.querySelector('[data-action="toggle-timeline"]').addEventListener('click', function() {
+      var slot = card.querySelector('[data-slot="timeline"]');
+      if (slot.style.display === 'none') {
+        slot.style.display = 'block';
+        renderTimeline(slot, task);
+      } else {
+        slot.style.display = 'none';
+      }
+    });
+    var doneBtn = card.querySelector('[data-action="mark-done"]');
+    if (doneBtn) doneBtn.addEventListener('click', function() { markDone(task, card); });
+  }
+
+  function renderTimeline(slot, task) {
+    var items = updatesByTask[task.id] || [];
+    if (!items.length) {
+      slot.innerHTML = '<div class="emp-timeline-head">Timeline</div><div style="font-size:0.85rem;color:var(--text-mid);padding:8px 0;">No updates posted yet.</div>';
+      return;
+    }
+    var html = '<div class="emp-timeline-head">Timeline</div>';
+    items.forEach(function(u) {
+      var photos = Array.isArray(u.photos) ? u.photos : [];
+      var photoHtml = '';
+      if (photos.length) {
+        photoHtml = '<div class="emp-update-photos">' + photos.map(function(p) {
+          return '<div class="emp-update-photo" title="' + escapeHtml(p.file_name || '') + '" data-photo-path="' + escapeHtml(p.storage_path || '') + '"></div>';
+        }).join('') + '</div>';
+      }
+      var statusLine = '';
+      if (u.status_to || typeof u.progress_to === 'number') {
+        var parts = [];
+        if (u.status_to) parts.push('status → ' + u.status_to);
+        if (typeof u.progress_to === 'number') parts.push('progress → ' + u.progress_to + '%');
+        statusLine = '<div style="font-size:0.78rem;color:var(--text-mid);margin-top:4px;">' + parts.join(' · ') + '</div>';
+      }
+      html +=
+        '<div class="emp-update-item">' +
+          '<div class="emp-update-avatar">' + initials(u.author_name) + '</div>' +
+          '<div class="emp-update-body">' +
+            '<span class="emp-update-author">' + escapeHtml(u.author_name || u.author_email || 'Team') + '</span>' +
+            '<span class="emp-update-date">' + fmtDateTime(u.created_at) + '</span>' +
+            '<div class="emp-update-note">' + escapeHtml(u.note || '') + '</div>' +
+            statusLine + photoHtml +
+          '</div>' +
+        '</div>';
+    });
+    slot.innerHTML = html;
+    // Load signed-URL previews lazily
+    slot.querySelectorAll('.emp-update-photo').forEach(function(el) {
+      var path = el.getAttribute('data-photo-path');
+      if (!path) return;
+      sb.storage.from('documents').createSignedUrl(path, 3600).then(function(r) {
+        if (r && r.data && r.data.signedUrl) {
+          el.style.backgroundImage = 'url("' + r.data.signedUrl + '")';
+          el.addEventListener('click', function() { window.open(r.data.signedUrl, '_blank'); });
+        }
+      });
+    });
+  }
+
+  // ── Post update form ──
+  function buildPostForm(slot, task) {
+    slot.innerHTML =
+      '<div class="emp-form-row-full"><label>What happened?</label>' +
+        '<textarea data-field="note" placeholder="e.g. Inspected the apartment — water leak found in kitchen. Started repair."></textarea>' +
+      '</div>' +
+      '<div class="emp-form-row">' +
+        '<div><label>Update status</label>' +
+          '<select data-field="status">' +
+            '<option value="">— no change —</option>' +
+            '<option value="Pending">Pending</option>' +
+            '<option value="In Progress">In Progress</option>' +
+            '<option value="In Review">In Review</option>' +
+            '<option value="Completed">Completed</option>' +
+          '</select>' +
+        '</div>' +
+        '<div><label>Progress %</label>' +
+          '<input type="number" min="0" max="100" step="5" data-field="progress" placeholder="leave blank for no change">' +
+        '</div>' +
+      '</div>' +
+      '<div class="emp-form-row-full"><label>Proof photos (optional, up to 5 MB each)</label>' +
+        '<input type="file" data-field="photos" multiple accept="image/*,.pdf">' +
+        '<div data-slot="photo-list"></div>' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">' +
+        '<button type="button" class="emp-btn" data-action="cancel-post">Cancel</button>' +
+        '<button type="button" class="emp-btn primary" data-action="submit-post">Post update</button>' +
+      '</div>';
+
+    var selected = [];
+    var photoInput = slot.querySelector('[data-field="photos"]');
+    var photoList = slot.querySelector('[data-slot="photo-list"]');
+
+    function renderPhotoList() {
+      photoList.innerHTML = selected.map(function(f, i) {
+        return '<div class="emp-file-row">' +
+          '<span class="emp-file-row-name">' + escapeHtml(f.name) + '</span>' +
+          '<span class="emp-file-row-size">' + fmtSize(f.size) + '</span>' +
+          '<button type="button" class="emp-file-row-remove" data-remove="' + i + '">×</button>' +
+        '</div>';
+      }).join('');
+      photoList.querySelectorAll('[data-remove]').forEach(function(b) {
+        b.addEventListener('click', function() {
+          selected.splice(parseInt(b.getAttribute('data-remove'), 10), 1);
+          renderPhotoList();
+        });
+      });
+    }
+
+    photoInput.addEventListener('change', function() {
+      var incoming = Array.prototype.slice.call(photoInput.files || []);
+      incoming.forEach(function(f) {
+        if (f.size > MAX_BYTES) { showToast('"' + f.name + '" exceeds 5 MB — skipped', 'error'); return; }
+        selected.push(f);
+      });
+      photoInput.value = '';
+      renderPhotoList();
+    });
+
+    slot.querySelector('[data-action="cancel-post"]').addEventListener('click', function() {
+      slot.style.display = 'none';
+    });
+    slot.querySelector('[data-action="submit-post"]').addEventListener('click', function() {
+      submitPost(slot, task, selected);
+    });
+  }
+
+  function uploadPhoto(taskId, file) {
+    var safeName = (file.name || 'photo').replace(/[^a-zA-Z0-9.\-_]/g, '-');
+    var path = 'tasks/' + taskId + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '-' + safeName;
+    return sb.storage.from('documents').upload(path, file, {
+      contentType: file.type || 'application/octet-stream', upsert: false
+    }).then(function(r) {
+      if (r.error) throw new Error(r.error.message || 'Upload failed');
+      return { file_name: file.name, mime_type: file.type || '', size: file.size, storage_path: path };
+    });
+  }
+
+  function submitPost(slot, task, photos) {
+    var note = slot.querySelector('[data-field="note"]').value.trim();
+    var newStatus = slot.querySelector('[data-field="status"]').value;
+    var progressRaw = slot.querySelector('[data-field="progress"]').value;
+    var newProgress = progressRaw === '' ? null : parseInt(progressRaw, 10);
+
+    if (!note && !newStatus && newProgress == null && !photos.length) {
+      showToast('Add a note, status change, progress, or a photo before posting.', 'error'); return;
+    }
+
+    var submitBtn = slot.querySelector('[data-action="submit-post"]');
+    submitBtn.disabled = true; submitBtn.textContent = 'Posting…';
+
+    // 1. Upload photos
+    var uploads = photos.length ? Promise.all(photos.map(function(f) { return uploadPhoto(task.id, f); })) : Promise.resolve([]);
+
+    uploads.then(function(photoMeta) {
+      // 2. Update the task itself if status/progress changed
+      var taskChanges = {};
+      if (newStatus) taskChanges.status = newStatus;
+      if (newProgress != null && !isNaN(newProgress)) taskChanges.progress = Math.max(0, Math.min(100, newProgress));
+      var taskUpdate = Object.keys(taskChanges).length
+        ? sb.from('tasks').update(taskChanges).eq('id', task.id)
+        : Promise.resolve({ error: null });
+
+      return taskUpdate.then(function(tRes) {
+        if (tRes && tRes.error) throw tRes.error;
+
+        // 3. Insert the task_updates row
+        return sb.from('task_updates').insert({
+          task_id: task.id,
+          author_email: me.email,
+          author_name: me.name,
+          note: note || (newStatus ? 'Status changed to ' + newStatus : 'Progress updated'),
+          status_to: newStatus || null,
+          progress_to: newProgress,
+          photos: photoMeta
+        });
+      });
+    }).then(function(r) {
+      if (r && r.error) throw r.error;
+      showToast('Update posted — client will see it instantly');
+      // Merge locally for immediate UI refresh
+      if (newStatus) task.status = newStatus;
+      if (newProgress != null && !isNaN(newProgress)) task.progress = Math.max(0, Math.min(100, newProgress));
+      if (!updatesByTask[task.id]) updatesByTask[task.id] = [];
+      updatesByTask[task.id].unshift({
+        task_id: task.id, author_email: me.email, author_name: me.name,
+        note: note, status_to: newStatus || null, progress_to: newProgress,
+        photos: [], created_at: new Date().toISOString()
+      });
+      updateStats();
+      renderTasks();
+    }).catch(function(err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Post update';
+      showToast('Post failed: ' + (err.message || 'unknown'), 'error');
+    });
+  }
+
+  function markDone(task, card) {
+    if (!confirm('Mark this task as done? A completion update will be posted to the client.')) return;
+    sb.from('tasks').update({ status: 'Completed', progress: 100 }).eq('id', task.id).then(function(r) {
+      if (r.error) { showToast('Could not mark done: ' + r.error.message, 'error'); return; }
+      return sb.from('task_updates').insert({
+        task_id: task.id, author_email: me.email, author_name: me.name,
+        note: 'Task completed by ' + me.name + '.',
+        status_to: 'Completed', progress_to: 100, photos: []
+      }).then(function(u) {
+        if (u.error) showToast('Task marked done but update post failed.', 'error');
+        task.status = 'Completed'; task.progress = 100;
+        updateStats(); renderTasks();
+        showToast('Task marked done ✓');
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

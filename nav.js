@@ -59,7 +59,7 @@
   var ADMIN_EMAILS = ['iqbalahmedkm@gmail.com', 'arfan@nribridgeindia.com', 'admin@nribridgeindia.com', 'admin@gmail.com', 'asif.mohamed1616@gmail.com', 'jeffrinmac@gmail.com'];
 
   // ── Helper: render the logged-in nav state ────────────────────────────────
-  function renderLoggedIn(name, email) {
+  function renderLoggedIn(name, email, role) {
     hideGetStartedButtons();
     var navActions = document.getElementById('navActions');
     if (!navActions) return;
@@ -67,10 +67,29 @@
     var firstName = name.split(' ')[0];
     var initials = name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
     var isAdmin = email && ADMIN_EMAILS.indexOf(email.toLowerCase()) !== -1;
+    var isEmployee = role && role.indexOf('employee-') === 0;
 
     var adminLink = isAdmin
       ? '<a href="admin.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Admin Portal</a>'
       : '';
+
+    var menuItems;
+    if (isEmployee) {
+      menuItems =
+        '<a href="employee.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> My Work</a>';
+    } else {
+      menuItems =
+        '<a href="dashboard.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Dashboard</a>' +
+        '<a href="onboarding.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Manage Services</a>';
+    }
+
+    // Hide "Request Service" links for employees
+    if (isEmployee) {
+      document.querySelectorAll('.nav-links a[href="services.html"], .nav-links a[href^="home-management"], .nav-links a[href^="vehicle-management"], .nav-links a[href^="parental-care"], .nav-links a[href^="legal-documentation"]').forEach(function(el) {
+        var li = el.closest('li');
+        if (li && li.classList.contains('nav-dropdown')) li.style.display = 'none';
+      });
+    }
 
     // Replace Login/Get Started buttons with a clickable user pill + dropdown
     navActions.innerHTML =
@@ -81,8 +100,7 @@
           '<svg class="nav-user-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
         '</button>' +
         '<div class="nav-user-menu" id="navUserMenu">' +
-          '<a href="dashboard.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Dashboard</a>' +
-          '<a href="onboarding.html"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Manage Services</a>' +
+          menuItems +
           adminLink +
           '<div class="nav-user-menu-divider"></div>' +
           '<a href="#" class="nav-signout-link" id="navSignOut"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out</a>' +
@@ -118,27 +136,31 @@
   // ── 1. Immediate render from localStorage (avoids flash on normal page loads) ──
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
   if (session && session.name) {
-    renderLoggedIn(session.name, session.email || '');
+    var cachedRole = sessionStorage.getItem('nri_role') || '';
+    renderLoggedIn(session.name, session.email || '', cachedRole);
   }
 
   // ── 2. Subscribe to Supabase auth state (handles Google OAuth redirect) ────
   // supabase-client.js is loaded AFTER nav.js, so we wait for it to be ready.
+  function renderWithRole(user) {
+    var meta = user.user_metadata || {};
+    var name = meta.full_name || user.email || 'User';
+    var rolePromise = typeof window.getUserRole === 'function' ? window.getUserRole() : Promise.resolve(sessionStorage.getItem('nri_role') || '');
+    rolePromise.then(function(role) {
+      renderLoggedIn(name, user.email || '', role || '');
+    });
+  }
+
   function subscribeToAuth() {
     if (window.supabaseClient && window.supabaseClient.auth) {
       window.supabaseClient.auth.getSession().then(function(result) {
         var s = result.data && result.data.session;
-        if (s && s.user) {
-          var meta = s.user.user_metadata || {};
-          var name = meta.full_name || s.user.email || 'User';
-          renderLoggedIn(name, s.user.email || '');
-        }
+        if (s && s.user) renderWithRole(s.user);
       });
 
       window.supabaseClient.auth.onAuthStateChange(function(event, s) {
         if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && s && s.user) {
-          var meta = s.user.user_metadata || {};
-          var name = meta.full_name || s.user.email || 'User';
-          renderLoggedIn(name, s.user.email || '');
+          renderWithRole(s.user);
         } else if (event === 'SIGNED_OUT') {
           showGetStartedButtons();
           var navActions = document.getElementById('navActions');

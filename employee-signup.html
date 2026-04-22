@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join the Field Team — NRI Bridge India</title>
+<meta name="description" content="Apply to join our verified field team delivering property, legal, and care services for NRIs across India.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css?v=7">
+</head>
+<body>
+
+<nav></nav>
+<script src="nav.js"></script>
+
+<main>
+  <section class="emp-signup-panel" id="signupPanel">
+    <h1>Join our field team</h1>
+    <p class="emp-signup-sub">
+      We onboard verified local experts for property, legal, and care services.
+      Submit your details — our team will review your documents and email you
+      once your profile is approved.
+    </p>
+
+    <form id="empSignupForm" novalidate>
+      <div class="emp-field-row">
+        <div class="emp-field">
+          <label for="empName">Full Name</label>
+          <input type="text" id="empName" required>
+        </div>
+        <div class="emp-field">
+          <label for="empPhone">Phone</label>
+          <input type="tel" id="empPhone" required placeholder="+91 98765 43210">
+        </div>
+      </div>
+
+      <div class="emp-field-row">
+        <div class="emp-field">
+          <label for="empEmail">Email</label>
+          <input type="email" id="empEmail" required>
+        </div>
+        <div class="emp-field">
+          <label for="empPassword">Password (min 8 chars)</label>
+          <input type="password" id="empPassword" minlength="8" required>
+        </div>
+      </div>
+
+      <div class="emp-field-row">
+        <div class="emp-field">
+          <label for="empCity">City</label>
+          <input type="text" id="empCity" required placeholder="e.g. Bengaluru">
+        </div>
+        <div class="emp-field">
+          <label for="empPin">Pin code</label>
+          <input type="text" id="empPin" required placeholder="e.g. 560001">
+        </div>
+      </div>
+
+      <div class="emp-field">
+        <label>Services you can deliver</label>
+        <div class="emp-skills-grid" id="empSkills">
+          <label class="emp-skill-chip"><input type="checkbox" value="Property" /> Property</label>
+          <label class="emp-skill-chip"><input type="checkbox" value="Legal" /> Legal</label>
+          <label class="emp-skill-chip"><input type="checkbox" value="Tenant" /> Tenant management</label>
+          <label class="emp-skill-chip"><input type="checkbox" value="Inspection" /> Inspection</label>
+          <label class="emp-skill-chip"><input type="checkbox" value="Tax" /> Tax filing</label>
+          <label class="emp-skill-chip"><input type="checkbox" value="Banking" /> Banking</label>
+          <label class="emp-skill-chip"><input type="checkbox" value="Care" /> Parental care</label>
+          <label class="emp-skill-chip"><input type="checkbox" value="Vehicle" /> Vehicle</label>
+        </div>
+      </div>
+
+      <div class="emp-field">
+        <label>Identity document (Aadhaar / PAN / Passport)</label>
+        <div class="emp-upload-box" id="idDocBox">
+          <div class="emp-upload-label" id="idDocLabel">Click to upload (PDF, JPG, PNG)</div>
+          <div class="emp-upload-hint">Max 5 MB</div>
+        </div>
+        <input type="file" id="idDocInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+      </div>
+
+      <div class="emp-field">
+        <label>Address proof (utility bill / rental agreement)</label>
+        <div class="emp-upload-box" id="addrDocBox">
+          <div class="emp-upload-label" id="addrDocLabel">Click to upload (PDF, JPG, PNG)</div>
+          <div class="emp-upload-hint">Max 5 MB</div>
+        </div>
+        <input type="file" id="addrDocInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+      </div>
+
+      <button type="submit" class="emp-signup-submit" id="empSubmitBtn">Submit application</button>
+    </form>
+  </section>
+
+  <section class="emp-signup-panel emp-signup-success" id="successPanel" style="display:none;">
+    <div class="emp-success-icon">
+      <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Application received</h2>
+    <p>
+      Thanks for applying. Our team will review your documents and email you
+      once your profile is verified. You can log in to
+      <a href="login.html">track status</a> anytime.
+    </p>
+  </section>
+</main>
+
+<footer></footer>
+<script src="footer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  var MAX_BYTES = 5 * 1024 * 1024;
+  var sb = window.supabaseClient;
+  if (!sb) {
+    console.error('Supabase client not initialised');
+    return;
+  }
+
+  // ── Skill chip visuals ──
+  document.querySelectorAll('.emp-skill-chip input').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      cb.closest('.emp-skill-chip').classList.toggle('checked', cb.checked);
+    });
+  });
+
+  // ── File pickers ──
+  var files = { id: null, addr: null };
+  function wirePicker(key, boxId, inputId, labelId) {
+    var box = document.getElementById(boxId);
+    var input = document.getElementById(inputId);
+    var label = document.getElementById(labelId);
+    box.addEventListener('click', function() { input.click(); });
+    input.addEventListener('change', function() {
+      var file = input.files && input.files[0];
+      if (!file) return;
+      if (file.size > MAX_BYTES) {
+        alert('"' + file.name + '" exceeds 5 MB. Please pick a smaller file.');
+        input.value = '';
+        return;
+      }
+      files[key] = file;
+      box.classList.add('has-file');
+      label.textContent = file.name;
+    });
+  }
+  wirePicker('id', 'idDocBox', 'idDocInput', 'idDocLabel');
+  wirePicker('addr', 'addrDocBox', 'addrDocInput', 'addrDocLabel');
+
+  // ── Toast ──
+  function showToast(msg, type) {
+    var t = document.createElement('div');
+    t.className = 'nbi-toast nbi-toast-' + (type || 'info');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    void t.offsetHeight;
+    t.classList.add('show');
+    setTimeout(function() {
+      t.classList.remove('show');
+      setTimeout(function() { t.remove(); }, 400);
+    }, 3500);
+  }
+
+  // ── Submit handler ──
+  document.getElementById('empSignupForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var btn = document.getElementById('empSubmitBtn');
+
+    var name = document.getElementById('empName').value.trim();
+    var phone = document.getElementById('empPhone').value.trim();
+    var email = document.getElementById('empEmail').value.trim().toLowerCase();
+    var password = document.getElementById('empPassword').value;
+    var city = document.getElementById('empCity').value.trim();
+    var pin = document.getElementById('empPin').value.trim();
+    var skills = Array.prototype.map.call(
+      document.querySelectorAll('.emp-skill-chip input:checked'),
+      function(cb) { return cb.value; }
+    );
+
+    if (!name || !phone || !email || !password || !city || !pin) {
+      showToast('Please fill all fields', 'error'); return;
+    }
+    if (password.length < 8) {
+      showToast('Password must be at least 8 characters', 'error'); return;
+    }
+    if (!skills.length) {
+      showToast('Please select at least one service you can deliver', 'error'); return;
+    }
+    if (!files.id || !files.addr) {
+      showToast('Please upload both ID and address documents', 'error'); return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    sb.auth.signUp({ email: email, password: password, options: { data: { name: name, phone: phone, role: 'employee' } } })
+      .then(function(res) {
+        if (res.error) throw res.error;
+
+        var ts = Date.now();
+        var idPath = 'employees/' + email + '/id-' + ts + '-' + sanitizeName(files.id.name);
+        var addrPath = 'employees/' + email + '/address-' + ts + '-' + sanitizeName(files.addr.name);
+
+        return Promise.all([
+          sb.storage.from('documents').upload(idPath, files.id, { upsert: false }),
+          sb.storage.from('documents').upload(addrPath, files.addr, { upsert: false })
+        ]).then(function(results) {
+          results.forEach(function(r) { if (r.error) throw r.error; });
+          return { idPath: idPath, addrPath: addrPath };
+        });
+      })
+      .then(function(paths) {
+        return sb.from('employees').insert({
+          email: email, name: name, phone: phone,
+          city: city, pin_code: pin, skills: skills,
+          id_doc_path: paths.idPath, address_doc_path: paths.addrPath,
+          status: 'pending'
+        });
+      })
+      .then(function(res) {
+        if (res && res.error) throw res.error;
+        document.getElementById('signupPanel').style.display = 'none';
+        document.getElementById('successPanel').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Submit application';
+        showToast('Signup failed: ' + (err.message || 'unknown error'), 'error');
+        console.error(err);
+      });
+  });
+
+  function sanitizeName(n) {
+    return (n || 'file').replace(/[^a-zA-Z0-9._-]+/g, '_').slice(0, 80);
+  }
+})();
+</script>
+</body>
+</html>

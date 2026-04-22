@@ -2309,6 +2309,17 @@
             if (titleRow) titleRow.appendChild(liveEl);
           }
 
+          // "Handled by" pill when an employee is assigned
+          if (task.assigned_employee_email && !cardEl.querySelector('.dash-svc-assigned-pill')) {
+            var assigneeName = task.assigned_employee_email;
+            var assigneePill = document.createElement('span');
+            assigneePill.className = 'dash-svc-assigned-pill';
+            assigneePill.setAttribute('data-assignee-email', task.assigned_employee_email);
+            assigneePill.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Handled by ' + escapeHtml(assigneeName);
+            var svcHeader = cardEl.querySelector('.dash-svc-header');
+            if (svcHeader) svcHeader.appendChild(assigneePill);
+          }
+
           // Track this card <-> task for the updates fetch below
           cardEl.setAttribute('data-task-id', task.id);
           cardEl.setAttribute('data-svc-category', svcKey);
@@ -2336,26 +2347,53 @@
 
   // Cache of task_updates per task id for on-card rendering + modal
   var taskUpdatesById = {};
+  var employeeMap = {};
 
   function loadTaskUpdates(realTasks) {
     if (!realTasks || !realTasks.length || !window.supabaseClient) return;
     var ids = realTasks.map(function(t) { return t.id; }).filter(Boolean);
     if (!ids.length) return;
-    window.supabaseClient.from('task_updates')
+
+    var updatesP = window.supabaseClient.from('task_updates')
       .select('*')
       .in('task_id', ids)
-      .order('created_at', { ascending: false })
-      .then(function(result) {
-        if (result.error) { console.warn('task_updates fetch failed:', result.error.message); return; }
-        taskUpdatesById = {};
-        (result.data || []).forEach(function(u) {
-          (taskUpdatesById[u.task_id] = taskUpdatesById[u.task_id] || []).push(u);
-        });
-        document.querySelectorAll('.dash-svc-card[data-task-id]').forEach(function(cardEl) {
-          renderCardUpdates(cardEl);
-        });
-        updateUnackedSubnavPill();
+      .order('created_at', { ascending: false });
+
+    var employeesP = window.supabaseClient.from('employees')
+      .select('email,name,phone')
+      .eq('status', 'approved');
+
+    Promise.all([updatesP, employeesP]).then(function(results) {
+      var updResult = results[0];
+      var empResult = results[1];
+
+      if (updResult.error) { console.warn('task_updates fetch failed:', updResult.error.message); return; }
+      taskUpdatesById = {};
+      (updResult.data || []).forEach(function(u) {
+        (taskUpdatesById[u.task_id] = taskUpdatesById[u.task_id] || []).push(u);
       });
+
+      employeeMap = {};
+      if (!empResult.error && empResult.data) {
+        empResult.data.forEach(function(e) {
+          employeeMap[(e.email || '').toLowerCase()] = { name: e.name, phone: e.phone };
+        });
+      }
+
+      // Resolve "Handled by" pills to show employee name instead of email
+      document.querySelectorAll('.dash-svc-assigned-pill[data-assignee-email]').forEach(function(pill) {
+        var email = (pill.getAttribute('data-assignee-email') || '').toLowerCase();
+        var emp = employeeMap[email];
+        if (emp) {
+          pill.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Handled by ' + escapeHtml(emp.name);
+        }
+      });
+
+      document.querySelectorAll('.dash-svc-card[data-task-id]').forEach(function(cardEl) {
+        renderCardUpdates(cardEl);
+      });
+      updateUnackedSubnavPill();
+    });
   }
 
   function formatUpdateDate(iso) {
@@ -2371,6 +2409,16 @@
     var days = Math.floor(hrs / 24);
     if (days < 7) return days + ' day' + (days === 1 ? '' : 's') + ' ago';
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function formatUpdateAuthor(u) {
+    var name = escapeHtml(u.author_name || 'Admin');
+    var empKey = (u.author_email || '').toLowerCase();
+    var emp = employeeMap[empKey];
+    if (emp && emp.phone) {
+      return '<span class="dash-update-author">' + name + ' · ' + escapeHtml(emp.phone) + '</span>';
+    }
+    return name;
   }
 
   function renderAckBadge(u) {
@@ -2430,7 +2478,7 @@
         '<button class="dash-svc-updates-view" type="button" data-task-id="' + escapeHtml(taskId) + '">View all →</button>' +
       '</div>' +
       '<div class="dash-svc-updates-latest">' +
-        '<div class="dash-update-meta">' + escapeHtml(latest.author_name || 'Admin') + ' · ' + formatUpdateDate(latest.created_at) + renderAckBadge(latest) + '</div>' +
+        '<div class="dash-update-meta">' + formatUpdateAuthor(latest) + ' · ' + formatUpdateDate(latest.created_at) + renderAckBadge(latest) + '</div>' +
         '<div class="dash-update-note">' + escapeHtml(latest.note || '') + '</div>' +
         thumbsHtml +
         renderAckActions(latest, taskId, svcCategory) +
@@ -2564,7 +2612,7 @@
         '<div class="dash-timeline-item">' +
           '<div class="dash-timeline-dot"></div>' +
           '<div class="dash-timeline-body">' +
-            '<div class="dash-timeline-meta">' + escapeHtml(u.author_name || 'Admin') + ' · ' + new Date(u.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) + renderAckBadge(u) + '</div>' +
+            '<div class="dash-timeline-meta">' + formatUpdateAuthor(u) + ' · ' + new Date(u.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) + renderAckBadge(u) + '</div>' +
             '<div class="dash-timeline-note">' + escapeHtml(u.note || '') + '</div>' +
             statusLine + photoHtml +
             renderAckActions(u, taskId, svcCategory) +

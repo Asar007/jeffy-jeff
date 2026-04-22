@@ -186,13 +186,26 @@
       var urlParams = new URLSearchParams(window.location.search);
       var planParam = urlParams.get('plan');
 
-      setTimeout(function() {
-        if (planParam) {
-          window.location.href = 'onboarding.html?plan=' + planParam;
-        } else {
-          window.location.href = 'propnri-saas-site.html';
-        }
-      }, 2000);
+      // Role-aware redirect: admins → admin, employees → employee portal, else default.
+      var rolePromise = typeof window.getUserRole === 'function'
+        ? window.getUserRole()
+        : Promise.resolve('client');
+
+      rolePromise.then(function(role) {
+        setTimeout(function() {
+          if (planParam) {
+            window.location.href = 'onboarding.html?plan=' + planParam;
+            return;
+          }
+          if (role === 'admin') {
+            window.location.href = 'admin.html';
+          } else if (role && role.indexOf('employee-') === 0) {
+            window.location.href = 'employee.html';
+          } else {
+            window.location.href = 'propnri-saas-site.html';
+          }
+        }, 1500);
+      });
     });
 
     // ── Clear error state on input ──

@@ -44,6 +44,12 @@
   </div>
 
   <div class="adm-nav-group">
+    <div class="adm-nav-label">Team</div>
+    <a class="adm-nav-item" data-section="employees">Employees <span class="adm-nav-badge" id="badgeEmployees">—</span></a>
+    <a class="adm-nav-item" data-section="employeesPending">Pending Approvals <span class="adm-nav-badge orange" id="badgeEmployeesPending">—</span></a>
+  </div>
+
+  <div class="adm-nav-group">
     <div class="adm-nav-label">Files</div>
     <a class="adm-nav-item" data-section="documents">Documents <span class="adm-nav-badge" id="badgeDocs">—</span></a>
   </div>
@@ -241,6 +247,37 @@
       </div>
       <div id="docsGrid">
         <div style="text-align:center;color:var(--text-muted);padding:40px;">Loading documents…</div>
+      </div>
+    </div>
+
+    <div id="sectionEmployees" style="display:none; margin-top:32px;">
+      <div class="adm-section-head" style="margin-bottom:18px;">
+        <h2>Field Team</h2>
+        <span style="font-size:0.78rem;color:var(--text-muted);" id="empCountLabel"></span>
+      </div>
+      <div class="adm-docs-filters" id="empFilters" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="adm-filter-tab active" data-emp-filter="all">All</button>
+        <button class="adm-filter-tab" data-emp-filter="pending">Pending</button>
+        <button class="adm-filter-tab" data-emp-filter="approved">Approved</button>
+        <button class="adm-filter-tab" data-emp-filter="rejected">Rejected</button>
+        <button class="adm-filter-tab" data-emp-filter="suspended">Suspended</button>
+      </div>
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Contact</th>
+              <th>City</th>
+              <th>Skills</th>
+              <th>Status</th>
+              <th>Submitted</th>
+            </tr>
+          </thead>
+          <tbody id="employeesTableBody">
+            <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">Loading…</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -491,6 +528,12 @@
       <label>Deadline</label>
       <input type="date" id="teDeadline" style="width:100%;padding:9px 12px;border:1.5px solid #d4d2c8;border-radius:10px;font-family:inherit;font-size:0.84rem;background:var(--bg-cream);">
     </div>
+    <div class="adm-form-group">
+      <label>Assigned to <span style="font-weight:400;color:var(--text-muted);font-size:0.76rem;">— approved field team only</span></label>
+      <select id="teAssignee" style="width:100%;padding:9px 12px;border:1.5px solid #d4d2c8;border-radius:10px;font-family:inherit;font-size:0.84rem;background:var(--bg-cream);">
+        <option value="">— Unassigned —</option>
+      </select>
+    </div>
 
     <!-- ── Client-visible update: note + photos ── -->
     <div class="adm-form-group" style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
@@ -559,6 +602,52 @@
   </div>
 </div>
 
+<!-- ── Employee Detail Modal ────────────────────────────────────── -->
+<div class="adm-modal-overlay" id="employeeDetailModal">
+  <div class="adm-modal" style="max-width:580px;">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div class="adm-avatar green" id="edAvatar" style="width:52px;height:52px;font-size:1rem;"></div>
+      <div style="flex:1;">
+        <h3 style="margin:0;" id="edName"></h3>
+        <div style="font-size:0.82rem;color:var(--text-mid);" id="edEmail"></div>
+      </div>
+      <div id="edStatusBadge"></div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:140px;background:var(--bg-cream);border-radius:var(--radius-md);padding:12px 14px;">
+        <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.04em;">Phone</div>
+        <div style="font-size:0.88rem;color:var(--text-dark);margin-top:2px;" id="edPhone">—</div>
+      </div>
+      <div style="flex:1;min-width:140px;background:var(--bg-cream);border-radius:var(--radius-md);padding:12px 14px;">
+        <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.04em;">Service Area</div>
+        <div style="font-size:0.88rem;color:var(--text-dark);margin-top:2px;" id="edArea">—</div>
+      </div>
+      <div style="flex:1;min-width:140px;background:var(--bg-cream);border-radius:var(--radius-md);padding:12px 14px;">
+        <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.04em;">Submitted</div>
+        <div style="font-size:0.88rem;color:var(--text-dark);margin-top:2px;" id="edSubmitted">—</div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.04em;margin-bottom:8px;">Skills</div>
+      <div id="edSkills" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.04em;margin-bottom:8px;">KYC Documents</div>
+      <div id="edDocs" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+    <div id="edRejectWrap" style="display:none;margin-bottom:14px;">
+      <label style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:0.04em;">Reason for rejection</label>
+      <textarea id="edRejectReason" rows="3" style="width:100%;padding:10px 12px;border:1.5px solid #d4d2c8;border-radius:10px;font-family:inherit;font-size:0.84rem;background:var(--bg-cream);resize:vertical;" placeholder="Explain briefly so the applicant can re-submit if appropriate."></textarea>
+    </div>
+    <div class="adm-modal-actions" style="margin-top:20px;flex-wrap:wrap;gap:8px;">
+      <button class="adm-btn-add" id="edApprove">Approve</button>
+      <button class="adm-btn-export" id="edReject" style="color:#dc3545;border-color:#dc3545;">Reject</button>
+      <button class="adm-btn-export" id="edSuspend">Suspend</button>
+      <button class="adm-btn-export" id="edClose" style="margin-left:auto;">Close</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 
@@ -607,8 +696,11 @@
   var tasks = [];
   var requests = [];
   var disputes = [];
+  var employees = [];
   var activeDisputeFilter = 'all';
+  var activeEmpFilter = 'all';
   var currentDisputeId = null;
+  var currentEmployeeId = null;
 
   function waitForSupabase(cb) {
     if (window.supabaseClient) { sb = window.supabaseClient; cb(); }
@@ -662,21 +754,24 @@
       sb.from('tasks').select('*, clients(name, city, country)').order('deadline', { ascending: true }),
       sb.from('requests').select('*').order('created_at', { ascending: false }),
       sb.from('appointments').select('*').order('created_at', { ascending: false }),
-      sb.from('disputes').select('*').order('created_at', { ascending: false })
+      sb.from('disputes').select('*').order('created_at', { ascending: false }),
+      sb.from('employees').select('*').order('created_at', { ascending: false })
     ]).then(function(results) {
       if (results[0].error) console.error('Clients fetch error:', results[0].error);
       if (results[1].error) console.error('Tasks fetch error:', results[1].error);
       if (results[2].error) console.error('Requests fetch error:', results[2].error);
       if (results[3].error) console.error('Appointments fetch error:', results[3].error);
       if (results[4].error) console.error('Disputes fetch error:', results[4].error);
+      if (results[5].error) console.error('Employees fetch error:', results[5].error);
 
       clients = results[0].data || [];
       tasks = results[1].data || [];
       requests = results[2].data || [];
       appointments = results[3].data || [];
       disputes = results[4].data || [];
+      employees = results[5].data || [];
 
-      console.log('Dashboard loaded:', { clients: clients.length, tasks: tasks.length, requests: requests.length, appointments: appointments.length, disputes: disputes.length });
+      console.log('Dashboard loaded:', { clients: clients.length, tasks: tasks.length, requests: requests.length, appointments: appointments.length, disputes: disputes.length, employees: employees.length });
       renderStats();
       renderTaskTable();
       renderClientsByService();
@@ -685,6 +780,7 @@
       renderAppointments();
       renderBadges();
       renderDisputes();
+      renderEmployeesTable();
     });
   }
 
@@ -714,6 +810,9 @@
     document.getElementById('badgeRequests').textContent = openReqs;
     var newAppts = appointments.filter(function(a) { return a.status === 'New'; }).length;
     document.getElementById('badgeAppts').textContent = newAppts;
+    document.getElementById('badgeEmployees').textContent = employees.length;
+    var pendingEmps = employees.filter(function(e) { return e.status === 'pending'; }).length;
+    document.getElementById('badgeEmployeesPending').textContent = pendingEmps;
     var openDisputes = disputes.filter(function(d) {
       return ['New', 'In Review', 'Waiting for Customer'].indexOf(d.status) !== -1;
     }).length;
@@ -1237,6 +1336,41 @@
   var currentTaskId = null;
   var currentPipelineStep = -1;
 
+  function serviceToSkillKey(service) {
+    var s = (service || '').toLowerCase();
+    if (!s) return null;
+    if (s.indexOf('tenant') !== -1) return 'Tenant';
+    if (s.indexOf('inspect') !== -1) return 'Inspection';
+    if (s.indexOf('tax') !== -1) return 'Tax';
+    if (s.indexOf('bank') !== -1) return 'Banking';
+    if (s.indexOf('legal') !== -1 || s.indexOf('document') !== -1) return 'Legal';
+    if (s.indexOf('parental') !== -1 || s.indexOf('care') !== -1) return 'Care';
+    if (s.indexOf('vehicle') !== -1) return 'Vehicle';
+    if (s.indexOf('home') !== -1 || s.indexOf('property') !== -1 || s.indexOf('rent') !== -1 || s.indexOf('maint') !== -1 || s.indexOf('utility') !== -1 || s.indexOf('lease') !== -1) return 'Property';
+    return null;
+  }
+
+  function populateAssigneeDropdown(task) {
+    var sel = document.getElementById('teAssignee');
+    if (!sel) return;
+    var approved = employees.filter(function(e) { return e.status === 'approved'; });
+    var needed = serviceToSkillKey(task && task.service);
+    approved.sort(function(a, b) {
+      if (!needed) return (a.name || '').localeCompare(b.name || '');
+      var aM = (a.skills || []).indexOf(needed) !== -1 ? 0 : 1;
+      var bM = (b.skills || []).indexOf(needed) !== -1 ? 0 : 1;
+      if (aM !== bM) return aM - bM;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+    var html = '<option value="">— Unassigned —</option>';
+    approved.forEach(function(e) {
+      var matches = needed && (e.skills || []).indexOf(needed) !== -1 ? ' ✓' : '';
+      html += '<option value="' + escapeHtml(e.email) + '">' + escapeHtml(e.name) + matches + ' · ' + escapeHtml(e.city || '') + '</option>';
+    });
+    sel.innerHTML = html;
+    sel.value = (task && task.assigned_employee_email) || '';
+  }
+
   function renderPipeline(pipelineKey, currentStep) {
     var container = document.getElementById('tePipeline');
     var pipelineGroup = document.getElementById('tePipelineGroup');
@@ -1323,6 +1457,9 @@
     document.getElementById('teProgress').value = t.progress || 0;
     document.getElementById('teProgressLabel').textContent = (t.progress || 0) + '%';
     document.getElementById('teDeadline').value = t.deadline || '';
+
+    // Populate Assigned-to dropdown with approved employees (matching skills first)
+    populateAssigneeDropdown(t);
 
     // Reset update form
     teInitialStatus = t.status || '';
@@ -1509,11 +1646,13 @@
     var progressChanged = newProgress !== teInitialProgress;
     var hasUpdate = note.length > 0 || teSelectedPhotos.length > 0 || statusChanged || progressChanged;
 
+    var assigneeVal = document.getElementById('teAssignee').value || null;
     var updates = {
       status: newStatus,
       progress: newProgress,
       deadline: document.getElementById('teDeadline').value || null,
-      current_step: currentPipelineStep >= 0 ? currentPipelineStep : null
+      current_step: currentPipelineStep >= 0 ? currentPipelineStep : null,
+      assigned_employee_email: assigneeVal
     };
 
     function finish(msg, level) {
@@ -1551,21 +1690,28 @@
       });
     }
 
-    sb.from('tasks').update(updates).eq('id', currentTaskId).select().then(function(r) {
-      if (r.error) {
-        if (r.error.message && r.error.message.indexOf('current_step') !== -1) {
-          delete updates.current_step;
-          sb.from('tasks').update(updates).eq('id', currentTaskId).select().then(function(r2) {
-            if (r2.error) { saveBtn.disabled = false; saveBtn.textContent = 'Save & Post Update'; showToast('Failed to update: ' + r2.error.message, 'error'); return; }
-            postUpdateRow();
-          });
+    function doUpdate(payload) {
+      sb.from('tasks').update(payload).eq('id', currentTaskId).select().then(function(r) {
+        if (r.error) {
+          var msg = r.error.message || '';
+          if (msg.indexOf('assigned_employee_email') !== -1 && 'assigned_employee_email' in payload) {
+            delete payload.assigned_employee_email;
+            doUpdate(payload);
+            return;
+          }
+          if (msg.indexOf('current_step') !== -1 && 'current_step' in payload) {
+            delete payload.current_step;
+            doUpdate(payload);
+            return;
+          }
+          saveBtn.disabled = false; saveBtn.textContent = 'Save & Post Update';
+          showToast('Failed to update: ' + msg, 'error');
           return;
         }
-        saveBtn.disabled = false; saveBtn.textContent = 'Save & Post Update';
-        showToast('Failed to update: ' + r.error.message, 'error'); return;
-      }
-      postUpdateRow();
-    });
+        postUpdateRow();
+      });
+    }
+    doUpdate(updates);
   });
 
   document.getElementById('teDelete').addEventListener('click', function() {
@@ -1639,6 +1785,154 @@
         loadDashboard();
       });
     });
+  });
+
+  // ── Employees: table + detail modal + approve/reject/suspend ──
+  function renderEmployeesTable() {
+    var body = document.getElementById('employeesTableBody');
+    if (!body) return;
+    document.getElementById('empCountLabel').textContent =
+      employees.length + (employees.length === 1 ? ' applicant' : ' applicants');
+
+    var rows = employees.filter(function(e) {
+      return activeEmpFilter === 'all' ? true : e.status === activeEmpFilter;
+    });
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No employees in this view.</td></tr>';
+      return;
+    }
+    var html = '';
+    rows.forEach(function(e) {
+      var statusClass = 'pending';
+      if (e.status === 'approved') statusClass = 'active';
+      else if (e.status === 'rejected') statusClass = 'inactive';
+      else if (e.status === 'suspended') statusClass = 'pending';
+      var skillsHtml = (e.skills || []).slice(0, 3).map(function(s) {
+        return '<span class="adm-svc-tag">' + escapeHtml(s) + '</span>';
+      }).join('');
+      if ((e.skills || []).length > 3) skillsHtml += ' <span style="font-size:0.72rem;color:var(--text-muted);">+' + ((e.skills || []).length - 3) + '</span>';
+      html +=
+        '<tr data-employee-id="' + e.id + '" style="cursor:pointer;">' +
+          '<td><div style="display:flex;align-items:center;gap:10px;"><div class="adm-avatar green" style="width:34px;height:34px;font-size:0.74rem;">' + getInitials(e.name) + '</div><div><div style="font-weight:600;">' + escapeHtml(e.name || '—') + '</div><div style="font-size:0.72rem;color:var(--text-muted);">' + escapeHtml(e.email) + '</div></div></div></td>' +
+          '<td style="font-size:0.82rem;">' + escapeHtml(e.phone || '—') + '</td>' +
+          '<td style="font-size:0.82rem;">' + escapeHtml(e.city || '—') + (e.pin_code ? ' · ' + escapeHtml(e.pin_code) : '') + '</td>' +
+          '<td>' + (skillsHtml || '<span style="color:var(--text-muted);">—</span>') + '</td>' +
+          '<td><span class="adm-status-badge ' + statusClass + '">' + (e.status || 'pending') + '</span></td>' +
+          '<td style="font-size:0.82rem;color:var(--text-mid);">' + (e.created_at ? formatDate(e.created_at) : '—') + '</td>' +
+        '</tr>';
+    });
+    body.innerHTML = html;
+    body.querySelectorAll('tr[data-employee-id]').forEach(function(tr) {
+      tr.addEventListener('click', function() { openEmployeeDetail(tr.getAttribute('data-employee-id')); });
+    });
+  }
+
+  document.querySelectorAll('#empFilters [data-emp-filter]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#empFilters [data-emp-filter]').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeEmpFilter = btn.getAttribute('data-emp-filter');
+      renderEmployeesTable();
+    });
+  });
+
+  var edModal = document.getElementById('employeeDetailModal');
+  function openEmployeeDetail(id) {
+    var e = employees.find(function(x) { return x.id === id; });
+    if (!e) return;
+    currentEmployeeId = id;
+    document.getElementById('edAvatar').textContent = getInitials(e.name);
+    document.getElementById('edName').textContent = e.name || '—';
+    document.getElementById('edEmail').textContent = e.email || '—';
+    document.getElementById('edPhone').textContent = e.phone || '—';
+    document.getElementById('edArea').textContent = [e.city, e.pin_code].filter(Boolean).join(' · ') || '—';
+    document.getElementById('edSubmitted').textContent = e.created_at ? formatDate(e.created_at) : '—';
+
+    var badgeClass = 'pending';
+    if (e.status === 'approved') badgeClass = 'active';
+    else if (e.status === 'rejected' || e.status === 'suspended') badgeClass = 'inactive';
+    document.getElementById('edStatusBadge').innerHTML =
+      '<span class="adm-status-badge ' + badgeClass + '" style="font-size:0.78rem;">' + (e.status || 'pending') + '</span>';
+
+    document.getElementById('edSkills').innerHTML = (e.skills || []).length
+      ? (e.skills || []).map(function(s) { return '<span class="adm-svc-tag">' + escapeHtml(s) + '</span>'; }).join('')
+      : '<span style="color:var(--text-muted);font-size:0.82rem;">No skills listed</span>';
+
+    var docsWrap = document.getElementById('edDocs');
+    docsWrap.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);">Loading documents…</div>';
+    var docTargets = [
+      { label: 'Identity document', path: e.id_doc_path },
+      { label: 'Address proof', path: e.address_doc_path }
+    ].filter(function(d) { return !!d.path; });
+
+    if (!docTargets.length) {
+      docsWrap.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);">No documents uploaded.</div>';
+    } else {
+      docsWrap.innerHTML = '';
+      docTargets.forEach(function(d) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg-cream);border-radius:10px;';
+        row.innerHTML = '<div><div style="font-weight:600;font-size:0.84rem;">' + d.label + '</div><div style="font-size:0.72rem;color:var(--text-muted);">' + escapeHtml(d.path.split('/').pop()) + '</div></div><a href="#" class="adm-link" data-open-doc>Open</a>';
+        row.querySelector('[data-open-doc]').addEventListener('click', function(ev) {
+          ev.preventDefault();
+          sb.storage.from('documents').createSignedUrl(d.path, 3600).then(function(r) {
+            if (r && r.data && r.data.signedUrl) window.open(r.data.signedUrl, '_blank');
+            else showToast('Could not open document', 'error');
+          });
+        });
+        docsWrap.appendChild(row);
+      });
+    }
+
+    document.getElementById('edRejectReason').value = e.rejection_reason || '';
+    document.getElementById('edRejectWrap').style.display = e.status === 'rejected' ? 'block' : 'none';
+
+    edModal.style.display = 'flex';
+    void edModal.offsetHeight;
+    edModal.classList.add('show');
+  }
+
+  function closeEmployeeDetail() {
+    edModal.classList.remove('show');
+    setTimeout(function() { edModal.style.display = 'none'; }, 300);
+    currentEmployeeId = null;
+  }
+
+  document.getElementById('edClose').addEventListener('click', closeEmployeeDetail);
+  edModal.addEventListener('click', function(ev) { if (ev.target === edModal) closeEmployeeDetail(); });
+
+  function updateEmployeeStatus(patch, successMsg) {
+    if (!currentEmployeeId) return;
+    var sess = JSON.parse(localStorage.getItem('nri_session') || 'null') || {};
+    if (patch.status === 'approved') {
+      patch.approved_at = new Date().toISOString();
+      patch.approved_by = sess.email || 'admin';
+    }
+    sb.from('employees').update(patch).eq('id', currentEmployeeId).then(function(r) {
+      if (r.error) { showToast('Failed: ' + r.error.message, 'error'); return; }
+      showToast(successMsg || 'Employee updated');
+      closeEmployeeDetail();
+      loadDashboard();
+    });
+  }
+
+  document.getElementById('edApprove').addEventListener('click', function() {
+    updateEmployeeStatus({ status: 'approved', rejection_reason: null }, 'Employee approved');
+  });
+  document.getElementById('edReject').addEventListener('click', function() {
+    var wrap = document.getElementById('edRejectWrap');
+    if (wrap.style.display === 'none') {
+      wrap.style.display = 'block';
+      showToast('Add a reason, then click Reject again', 'info');
+      return;
+    }
+    var reason = document.getElementById('edRejectReason').value.trim();
+    if (!reason) { showToast('Please enter a reason first', 'error'); return; }
+    updateEmployeeStatus({ status: 'rejected', rejection_reason: reason }, 'Application rejected');
+  });
+  document.getElementById('edSuspend').addEventListener('click', function() {
+    if (!confirm('Suspend this employee? They will not be able to access the portal until reinstated.')) return;
+    updateEmployeeStatus({ status: 'suspended' }, 'Employee suspended');
   });
 
   // ── Export CSV ──
@@ -2475,16 +2769,21 @@
       var docSection = document.getElementById('sectionDocuments');
       var anaSection = document.getElementById('sectionAnalytics');
       var disputeSection = document.getElementById('sectionDisputes');
+      var empSection = document.getElementById('sectionEmployees');
 
-      if (section === 'documents' || section === 'disputes' || section === 'analytics') {
+      var fullWidthSections = ['documents','disputes','analytics','employees','employeesPending'];
+      if (fullWidthSections.indexOf(section) !== -1) {
         defaultSections.forEach(function(el) { if (el) el.style.display = 'none'; });
         if (rightPanel) rightPanel.style.display = 'none';
         if (docSection) docSection.style.display = section === 'documents' ? 'block' : 'none';
         if (disputeSection) disputeSection.style.display = section === 'disputes' ? 'block' : 'none';
         if (anaSection) anaSection.style.display = section === 'analytics' ? 'block' : 'none';
+        if (empSection) empSection.style.display = (section === 'employees' || section === 'employeesPending') ? 'block' : 'none';
         if (section === 'documents') loadDocuments();
         if (section === 'disputes') renderDisputes();
         if (section === 'analytics') renderAnalytics();
+        if (section === 'employees') { activeEmpFilter = 'all'; document.querySelectorAll('#empFilters [data-emp-filter]').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-emp-filter') === 'all'); }); renderEmployeesTable(); }
+        if (section === 'employeesPending') { activeEmpFilter = 'pending'; document.querySelectorAll('#empFilters [data-emp-filter]').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-emp-filter') === 'pending'); }); renderEmployeesTable(); }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         defaultSections.forEach(function(el) { if (el) el.style.display = ''; });
@@ -2492,6 +2791,7 @@
         if (docSection) docSection.style.display = 'none';
         if (anaSection) anaSection.style.display = 'none';
         if (disputeSection) disputeSection.style.display = 'none';
+        if (empSection) empSection.style.display = 'none';
       }
 
       switch (section) {
