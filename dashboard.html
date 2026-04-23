@@ -2380,12 +2380,14 @@
         });
       }
 
-      // Resolve "Handled by" pills to show employee name instead of email
+      // Resolve "Handled by" pills to show employee name and phone instead of email
       document.querySelectorAll('.dash-svc-assigned-pill[data-assignee-email]').forEach(function(pill) {
         var email = (pill.getAttribute('data-assignee-email') || '').toLowerCase();
         var emp = employeeMap[email];
         if (emp) {
-          pill.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Handled by ' + escapeHtml(emp.name);
+          var label = escapeHtml(emp.name);
+          if (emp.phone) label += ' · ' + escapeHtml(emp.phone);
+          pill.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Handled by ' + label;
         }
       });
 

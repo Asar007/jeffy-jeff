@@ -4976,6 +4976,14 @@ body.emp-page {
 }
 .dash-svc-assigned-pill svg { width: 12px; height: 12px; flex-shrink: 0; }
 
+/* Admin task table — assignee cell */
+.adm-assignee-cell {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.adm-assignee-name {
+  font-weight: 600; font-size: 0.84rem; color: var(--green-pop);
+}
+
 /* Admin employees table */
 .adm-emp-skills {
   display: inline-flex; flex-wrap: wrap; gap: 4px;
