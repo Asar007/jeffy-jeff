@@ -47,6 +47,7 @@
     <div class="adm-nav-label">Team</div>
     <a class="adm-nav-item" data-section="employees">Employees <span class="adm-nav-badge" id="badgeEmployees">—</span></a>
     <a class="adm-nav-item" data-section="employeesPending">Pending Approvals <span class="adm-nav-badge orange" id="badgeEmployeesPending">—</span></a>
+    <a class="adm-nav-item" id="navAddEmployee">Add Employee</a>
   </div>
 
   <div class="adm-nav-group">
@@ -255,6 +256,7 @@
       <div class="adm-section-head" style="margin-bottom:18px;">
         <h2>Field Team</h2>
         <span style="font-size:0.78rem;color:var(--text-muted);" id="empCountLabel"></span>
+        <button class="adm-btn-add" id="btnAddEmployee" style="margin-left:auto;">+ Add Employee</button>
       </div>
       <div class="adm-docs-filters" id="empFilters" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
         <button class="adm-filter-tab active" data-emp-filter="all">All</button>
@@ -645,6 +647,65 @@
       <button class="adm-btn-export" id="edReject" style="color:#dc3545;border-color:#dc3545;">Reject</button>
       <button class="adm-btn-export" id="edSuspend">Suspend</button>
       <button class="adm-btn-export" id="edClose" style="margin-left:auto;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Employee Modal ──────────────────────────────────────────── -->
+<div class="adm-modal-overlay" id="addEmployeeModal">
+  <div class="adm-modal">
+    <h3>Add New Employee</h3>
+    <div class="adm-form-group" style="display:flex;gap:12px;">
+      <div style="flex:1;">
+        <label>Full Name *</label>
+        <input type="text" id="aeNameInput" placeholder="e.g. Ravi Kumar">
+      </div>
+      <div style="flex:1;">
+        <label>Phone *</label>
+        <input type="text" id="aePhoneInput" placeholder="e.g. +91 98765 43210">
+      </div>
+    </div>
+    <div class="adm-form-group">
+      <label>Email *</label>
+      <input type="email" id="aeEmailInput" placeholder="e.g. ravi@example.com">
+    </div>
+    <div class="adm-form-group" style="display:flex;gap:12px;">
+      <div style="flex:1;">
+        <label>City</label>
+        <input type="text" id="aeCityInput" placeholder="e.g. Bangalore">
+      </div>
+      <div style="flex:1;">
+        <label>Pin Code</label>
+        <input type="text" id="aePinInput" placeholder="e.g. 560001">
+      </div>
+    </div>
+    <div class="adm-form-group">
+      <label>Skills</label>
+      <div class="adm-form-checks" id="aeSkillsChecks">
+        <label><input type="checkbox" value="Property"> Property</label>
+        <label><input type="checkbox" value="Legal"> Legal</label>
+        <label><input type="checkbox" value="Tax"> Tax</label>
+        <label><input type="checkbox" value="Banking"> Banking</label>
+        <label><input type="checkbox" value="Care"> Care</label>
+        <label><input type="checkbox" value="Vehicle"> Vehicle</label>
+        <label><input type="checkbox" value="Tenant"> Tenant</label>
+        <label><input type="checkbox" value="Inspection"> Inspection</label>
+      </div>
+    </div>
+    <div class="adm-form-group" style="display:flex;gap:12px;">
+      <div style="flex:1;">
+        <label>ID Document</label>
+        <input type="file" id="aeIdDoc" accept="image/*,.pdf" style="font-size:0.82rem;">
+      </div>
+      <div style="flex:1;">
+        <label>Address Proof</label>
+        <input type="file" id="aeAddrDoc" accept="image/*,.pdf" style="font-size:0.82rem;">
+      </div>
+    </div>
+    <div style="font-size:0.72rem;color:var(--text-muted);margin:-8px 0 14px;">Admin-added employees are auto-approved. Documents optional.</div>
+    <div class="adm-modal-actions">
+      <button class="adm-btn-add" id="aeSubmit">Add Employee</button>
+      <button class="adm-btn-export" id="aeCancel">Cancel</button>
     </div>
   </div>
 </div>
@@ -1948,6 +2009,112 @@
   document.getElementById('edSuspend').addEventListener('click', function() {
     if (!confirm('Suspend this employee? They will not be able to access the portal until reinstated.')) return;
     updateEmployeeStatus({ status: 'suspended' }, 'Employee suspended');
+  });
+
+  // ── Add Employee Modal ──
+  var aeModal = document.getElementById('addEmployeeModal');
+
+  function openAddEmployee() {
+    aeModal.style.display = 'flex';
+    void aeModal.offsetHeight;
+    aeModal.classList.add('show');
+  }
+  function closeAddEmployee() {
+    aeModal.classList.remove('show');
+    setTimeout(function() { aeModal.style.display = 'none'; }, 300);
+  }
+
+  document.getElementById('btnAddEmployee').addEventListener('click', openAddEmployee);
+  document.getElementById('navAddEmployee').addEventListener('click', openAddEmployee);
+  document.getElementById('aeCancel').addEventListener('click', closeAddEmployee);
+  aeModal.addEventListener('click', function(e) { if (e.target === aeModal) closeAddEmployee(); });
+
+  document.getElementById('aeSubmit').addEventListener('click', function() {
+    var name = document.getElementById('aeNameInput').value.trim();
+    var email = document.getElementById('aeEmailInput').value.trim();
+    var phone = document.getElementById('aePhoneInput').value.trim();
+    var city = document.getElementById('aeCityInput').value.trim();
+    var pin = document.getElementById('aePinInput').value.trim();
+
+    if (!name) { showToast('Name is required', 'error'); return; }
+    if (!email) { showToast('Email is required', 'error'); return; }
+    if (!phone) { showToast('Phone is required', 'error'); return; }
+
+    var skills = [];
+    document.querySelectorAll('#aeSkillsChecks input:checked').forEach(function(cb) {
+      skills.push(cb.value);
+    });
+
+    var submitBtn = document.getElementById('aeSubmit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding…';
+
+    var sess = JSON.parse(localStorage.getItem('nri_session') || 'null') || {};
+    var idDocFile = document.getElementById('aeIdDoc').files[0];
+    var addrDocFile = document.getElementById('aeAddrDoc').files[0];
+
+    var uploads = [];
+    var idDocPath = null;
+    var addrDocPath = null;
+
+    if (idDocFile) {
+      var ts = Date.now();
+      idDocPath = 'employees/' + email + '/id-' + ts + '-' + idDocFile.name;
+      uploads.push(sb.storage.from('documents').upload(idDocPath, idDocFile));
+    }
+    if (addrDocFile) {
+      var ts2 = Date.now();
+      addrDocPath = 'employees/' + email + '/address-' + ts2 + '-' + addrDocFile.name;
+      uploads.push(sb.storage.from('documents').upload(addrDocPath, addrDocFile));
+    }
+
+    Promise.all(uploads).then(function() {
+      var row = {
+        name: name,
+        email: email,
+        phone: phone,
+        city: city || null,
+        pin_code: pin || null,
+        skills: skills,
+        status: 'approved',
+        approved_at: new Date().toISOString(),
+        approved_by: sess.email || 'admin',
+        id_doc_path: idDocPath,
+        address_doc_path: addrDocPath
+      };
+
+      return sb.from('employees').insert([row]).select();
+    }).then(function(result) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Add Employee';
+
+      if (result.error) {
+        if (result.error.message && result.error.message.indexOf('duplicate') !== -1) {
+          showToast('An employee with this email already exists', 'error');
+        } else {
+          showToast('Failed: ' + result.error.message, 'error');
+        }
+        return;
+      }
+
+      showToast('Employee added & approved', 'success');
+      closeAddEmployee();
+
+      // Reset form
+      document.getElementById('aeNameInput').value = '';
+      document.getElementById('aeEmailInput').value = '';
+      document.getElementById('aePhoneInput').value = '';
+      document.getElementById('aeCityInput').value = '';
+      document.getElementById('aePinInput').value = '';
+      document.getElementById('aeIdDoc').value = '';
+      document.getElementById('aeAddrDoc').value = '';
+      document.querySelectorAll('#aeSkillsChecks input:checked').forEach(function(cb) { cb.checked = false; });
+      loadDashboard();
+    }).catch(function(err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Add Employee';
+      showToast('Upload failed: ' + (err.message || 'unknown error'), 'error');
+    });
   });
 
   // ── Export CSV ──
