@@ -2326,7 +2326,188 @@
         });
 
         loadTaskUpdates(realTasks);
+        loadAndRenderStepPipelines(realTasks);
       });
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // STEP PIPELINE — per-step proof review (accept/dispute) for client
+  // ══════════════════════════════════════════════════════════════════
+  var dashSteps = [];
+  var dashProofs = {};
+
+  function loadAndRenderStepPipelines(realTasks) {
+    if (!realTasks || !realTasks.length || !window.supabaseClient) return;
+    var sb = window.supabaseClient;
+    var taskIds = realTasks.map(function(t) { return t.id; }).filter(Boolean);
+    if (!taskIds.length) return;
+
+    sb.from('task_steps').select('*').in('task_id', taskIds).order('step_index', { ascending: true }).then(function(r) {
+      if (r.error) { console.error('task_steps fetch error:', r.error); return; }
+      dashSteps = r.data || [];
+      var stepIds = dashSteps.map(function(s) { return s.id; });
+      if (!stepIds.length) { renderStepPipelinesIntoCards(); return; }
+
+      sb.from('step_proofs').select('*').in('task_step_id', stepIds).order('round', { ascending: true }).then(function(pr) {
+        dashProofs = {};
+        (pr.data || []).forEach(function(p) {
+          if (!dashProofs[p.task_step_id]) dashProofs[p.task_step_id] = [];
+          dashProofs[p.task_step_id].push(p);
+        });
+        renderStepPipelinesIntoCards();
+      });
+    });
+  }
+
+  function renderStepPipelinesIntoCards() {
+    document.querySelectorAll('[data-task-id]').forEach(function(cardEl) {
+      var taskId = cardEl.getAttribute('data-task-id');
+      if (!taskId) return;
+      var steps = dashSteps.filter(function(s) { return s.task_id === taskId; });
+      if (!steps.length) return;
+
+      var existing = cardEl.querySelector('.dash-step-pipeline-wrap');
+      if (existing) existing.remove();
+
+      var wrap = document.createElement('div');
+      wrap.className = 'dash-step-pipeline-wrap';
+      wrap.style.marginTop = '16px';
+      wrap.innerHTML = buildClientStepPipeline(steps);
+      cardEl.appendChild(wrap);
+      wireClientProofEvents(wrap);
+    });
+  }
+
+  function buildClientStepPipeline(steps) {
+    var html = '<div class="step-pipeline">';
+    steps.forEach(function(step) {
+      var itemClass = 'step-pipe-item';
+      if (step.status === 'completed' || step.status === 'client_accepted' || step.status === 'admin_resolved') itemClass += ' done';
+      else if (step.status === 'proof_submitted' || step.status === 'resubmitted') itemClass += ' active';
+      else if (step.status === 'client_disputed') itemClass += ' disputed';
+      else if (step.status === 'escalated') itemClass += ' escalated';
+
+      var indicatorContent = (step.status === 'completed' || step.status === 'client_accepted' || step.status === 'admin_resolved')
+        ? '<svg viewBox="0 0 12 12" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>'
+        : (step.step_index + 1);
+
+      var proofs = dashProofs[step.id] || [];
+      var latestProof = proofs.length ? proofs[proofs.length - 1] : null;
+      var actionHtml = '';
+
+      if ((step.status === 'proof_submitted' || step.status === 'resubmitted') && latestProof && !latestProof.client_response) {
+        actionHtml = '<div class="step-proof-box">' +
+          '<div class="step-proof-note">' + escapeHtml(latestProof.note) + '</div>' +
+          '<div class="step-proof-meta">Submitted ' + new Date(latestProof.submitted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + '</div>' +
+          buildProofPhotos(latestProof.photos || []) +
+          '<div class="step-proof-actions">' +
+            '<button class="step-proof-btn accept client-accept-btn" data-proof-id="' + latestProof.id + '">Accept</button>' +
+            '<button class="step-proof-btn dispute client-dispute-toggle" data-proof-id="' + latestProof.id + '">Dispute</button>' +
+          '</div>' +
+          '<div class="client-dispute-form" data-proof-id="' + latestProof.id + '" style="display:none;">' +
+            '<textarea class="step-dispute-input" placeholder="Please explain what is wrong with this proof..."></textarea>' +
+            '<div style="margin-top:8px;"><button class="step-proof-btn dispute client-dispute-submit" data-proof-id="' + latestProof.id + '">Submit Dispute</button></div>' +
+          '</div>' +
+        '</div>';
+      } else if (step.status === 'escalated') {
+        actionHtml = '<div class="step-proof-box" style="border:1.5px solid #8b0000;"><div style="font-size:0.78rem;color:#8b0000;font-weight:600;">Under admin review — we\'ll resolve this within 48 hours</div></div>';
+      } else if ((step.status === 'completed' || step.status === 'client_accepted') && latestProof) {
+        actionHtml = '<div class="step-proof-box">' +
+          '<div class="step-proof-note">' + escapeHtml(latestProof.note) + '</div>' +
+          buildProofPhotos(latestProof.photos || []) +
+          '<div style="font-size:0.72rem;color:#3d6b24;margin-top:6px;font-weight:600;">Accepted</div>' +
+        '</div>';
+      } else if (step.status === 'in_progress') {
+        actionHtml = '<div style="font-size:0.78rem;color:#b5700a;margin-top:6px;">Employee working on this step…</div>';
+      } else if (step.status === 'client_disputed' && latestProof) {
+        actionHtml = '<div class="step-proof-box" style="border:1.5px solid #dc3545;">' +
+          '<div style="font-size:0.78rem;color:#dc3545;font-weight:600;">Awaiting employee resubmission</div>' +
+          (latestProof.client_response_note ? '<div style="font-size:0.82rem;color:var(--text-dark);margin-top:4px;">Your note: "' + escapeHtml(latestProof.client_response_note) + '"</div>' : '') +
+        '</div>';
+      }
+
+      var statusLabel = step.status.replace(/_/g, ' ');
+
+      html += '<div class="' + itemClass + '">' +
+        '<div class="step-pipe-indicator">' + indicatorContent + '</div>' +
+        '<div class="step-pipe-content">' +
+          '<div class="step-pipe-name">' + escapeHtml(step.step_name) + '</div>' +
+          '<div class="step-pipe-desc">' + escapeHtml(step.step_description || '') + '</div>' +
+          '<span class="step-pipe-status ' + step.status.replace(/_/g, '-') + '">' + statusLabel + '</span>' +
+          actionHtml +
+        '</div></div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function buildProofPhotos(photos) {
+    if (!photos.length) return '';
+    var html = '<div class="step-proof-photos">';
+    photos.forEach(function(p) {
+      html += '<div class="step-proof-photo" data-path="' + escapeHtml(p.storage_path || '') + '" title="' + escapeHtml(p.file_name || '') + '"></div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function wireClientProofEvents(container) {
+    var sb = window.supabaseClient;
+
+    container.querySelectorAll('.client-accept-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var proofId = this.getAttribute('data-proof-id');
+        btn.disabled = true;
+        btn.textContent = 'Accepting…';
+        sb.from('step_proofs').update({
+          client_response: 'accepted',
+          client_responded_at: new Date().toISOString()
+        }).eq('id', proofId).then(function(r) {
+          if (r.error) { showToast('Failed: ' + r.error.message, 'error'); btn.disabled = false; btn.textContent = 'Accept'; return; }
+          showToast('Step accepted — next step unlocked', 'success');
+          if (typeof loadRealTimeStatus === 'function') loadRealTimeStatus();
+        });
+      });
+    });
+
+    container.querySelectorAll('.client-dispute-toggle').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var proofId = this.getAttribute('data-proof-id');
+        var form = container.querySelector('.client-dispute-form[data-proof-id="' + proofId + '"]');
+        if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      });
+    });
+
+    container.querySelectorAll('.client-dispute-submit').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var proofId = this.getAttribute('data-proof-id');
+        var form = this.closest('.client-dispute-form');
+        var note = form.querySelector('.step-dispute-input').value.trim();
+        if (!note) { showToast('Please explain the issue', 'error'); return; }
+        btn.disabled = true;
+        btn.textContent = 'Submitting…';
+        sb.from('step_proofs').update({
+          client_response: 'disputed',
+          client_response_note: note,
+          client_responded_at: new Date().toISOString()
+        }).eq('id', proofId).then(function(r) {
+          if (r.error) { showToast('Failed: ' + r.error.message, 'error'); btn.disabled = false; btn.textContent = 'Submit Dispute'; return; }
+          showToast('Dispute submitted — employee will be notified', 'success');
+          if (typeof loadRealTimeStatus === 'function') loadRealTimeStatus();
+        });
+      });
+    });
+
+    container.querySelectorAll('.step-proof-photo').forEach(function(el) {
+      var path = el.getAttribute('data-path');
+      if (!path) return;
+      sb.storage.from('documents').createSignedUrl(path, 3600).then(function(r) {
+        if (r && r.data && r.data.signedUrl) {
+          el.style.backgroundImage = 'url("' + r.data.signedUrl + '")';
+          el.addEventListener('click', function() { window.open(r.data.signedUrl, '_blank'); });
+        }
+      });
+    });
   }
 
   function updateUnackedSubnavPill() {
