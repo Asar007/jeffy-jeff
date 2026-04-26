@@ -166,6 +166,9 @@
   }
 
   // ── Load my tasks + their updates ──
+  var stepsByTask = {};
+  var proofsByStep = {};
+
   function loadTasks() {
     sb.from('tasks')
       .select('*, clients(name, email)')
@@ -178,20 +181,41 @@
           return;
         }
         myTasks = r.data || [];
-        if (!myTasks.length) {
-          updateStats();
-          renderTasks();
-          return;
-        }
+        if (!myTasks.length) { updateStats(); renderTasks(); return; }
+
         var taskIds = myTasks.map(function(t) { return t.id; });
-        sb.from('task_updates').select('*').in('task_id', taskIds).order('created_at', { ascending: false }).then(function(ur) {
+
+        Promise.all([
+          sb.from('task_steps').select('*').in('task_id', taskIds).order('step_index', { ascending: true }),
+          sb.from('task_updates').select('*').in('task_id', taskIds).order('created_at', { ascending: false })
+        ]).then(function(results) {
+          stepsByTask = {};
+          (results[0].data || []).forEach(function(s) {
+            if (!stepsByTask[s.task_id]) stepsByTask[s.task_id] = [];
+            stepsByTask[s.task_id].push(s);
+          });
+
           updatesByTask = {};
-          (ur.data || []).forEach(function(u) {
+          (results[1].data || []).forEach(function(u) {
             if (!updatesByTask[u.task_id]) updatesByTask[u.task_id] = [];
             updatesByTask[u.task_id].push(u);
           });
-          updateStats();
-          renderTasks();
+
+          var stepIds = (results[0].data || []).map(function(s) { return s.id; });
+          if (stepIds.length) {
+            sb.from('step_proofs').select('*').in('task_step_id', stepIds).order('round', { ascending: true }).then(function(pr) {
+              proofsByStep = {};
+              (pr.data || []).forEach(function(p) {
+                if (!proofsByStep[p.task_step_id]) proofsByStep[p.task_step_id] = [];
+                proofsByStep[p.task_step_id].push(p);
+              });
+              updateStats();
+              renderTasks();
+            });
+          } else {
+            updateStats();
+            renderTasks();
+          }
         });
       });
   }
@@ -231,9 +255,12 @@
     card.className = 'emp-task-card';
     card.dataset.taskId = task.id;
     var clientName = (task.clients && task.clients.name) || 'Client';
-    var progress = typeof task.progress === 'number' ? task.progress : 0;
+    var steps = stepsByTask[task.id] || [];
+    var progress = task.total_steps
+      ? Math.round(steps.filter(function(s) { return s.status === 'completed'; }).length / task.total_steps * 100)
+      : (task.progress || 0);
 
-    card.innerHTML =
+    var headerHtml =
       '<div class="emp-task-head">' +
         '<div>' +
           '<div class="emp-task-client">' + escapeHtml(clientName) + '</div>' +
@@ -241,25 +268,169 @@
         '</div>' +
         '<span class="emp-status-badge ' + statusClass(task.status) + '">' + escapeHtml(task.status || 'Pending') + '</span>' +
       '</div>' +
-      (task.description ? '<p class="emp-task-desc">' + escapeHtml(task.description) + '</p>' : '') +
       '<div class="emp-progress-bar"><div class="emp-progress-fill" style="width:' + progress + '%;"></div></div>' +
-      '<div class="emp-task-meta">' +
-        '<span>ETA <strong>' + fmtDate(task.deadline) + '</strong></span>' +
-        '<span>Progress <strong>' + progress + '%</strong></span>' +
-        '<span>Updates <strong>' + ((updatesByTask[task.id] || []).length) + '</strong></span>' +
-      '</div>' +
-      '<div class="emp-task-actions">' +
-        '<button class="emp-btn" data-action="toggle-post">Post update</button>' +
-        '<button class="emp-btn" data-action="toggle-timeline">View timeline</button>' +
-        (task.status !== 'Completed'
-          ? '<button class="emp-btn primary" data-action="mark-done">Mark done</button>'
-          : '') +
-      '</div>' +
-      '<div class="emp-post-form" data-slot="post" style="display:none;"></div>' +
-      '<div class="emp-timeline" data-slot="timeline" style="display:none;"></div>';
+      '<div class="emp-task-meta"><span>ETA <strong>' + fmtDate(task.deadline) + '</strong></span><span>Progress <strong>' + progress + '%</strong></span></div>';
 
-    wireCardEvents(card, task);
+    var bodyHtml = '';
+
+    if (steps.length) {
+      bodyHtml = '<div class="step-pipeline">';
+      steps.forEach(function(step) {
+        var itemClass = 'step-pipe-item';
+        if (step.status === 'completed' || step.status === 'client_accepted' || step.status === 'admin_resolved') itemClass += ' done';
+        else if (step.status === 'in_progress' || step.status === 'proof_submitted' || step.status === 'resubmitted') itemClass += ' active';
+        else if (step.status === 'client_disputed') itemClass += ' disputed';
+        else if (step.status === 'escalated') itemClass += ' escalated';
+
+        var indicatorContent = (step.status === 'completed' || step.status === 'client_accepted' || step.status === 'admin_resolved')
+          ? '<svg viewBox="0 0 12 12" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>'
+          : (step.step_index + 1);
+
+        var statusLabel = step.status.replace(/_/g, ' ');
+        var statusHtml = '<span class="step-pipe-status ' + step.status.replace(/_/g, '-') + '">' + statusLabel + '</span>';
+
+        var proofs = proofsByStep[step.id] || [];
+        var actionHtml = '';
+
+        if (step.status === 'pending' && step.step_index === 0) {
+          actionHtml = '<div style="margin-top:8px;"><button class="step-proof-btn submit emp-start-step" data-step-id="' + step.id + '">Start Working</button></div>';
+        } else if (step.status === 'in_progress') {
+          actionHtml = buildProofForm(step, proofs.length + 1);
+        } else if (step.status === 'client_disputed') {
+          var lastProof = proofs[proofs.length - 1];
+          actionHtml = '<div class="step-proof-box" style="border:1.5px solid #dc3545;">' +
+            '<div style="font-size:0.78rem;color:#dc3545;font-weight:600;margin-bottom:4px;">Client disputed this step</div>' +
+            (lastProof && lastProof.client_response_note ? '<div style="font-size:0.82rem;color:var(--text-dark);">"' + escapeHtml(lastProof.client_response_note) + '"</div>' : '') +
+          '</div>' + buildProofForm(step, proofs.length + 1, true);
+        } else if (step.status === 'proof_submitted' || step.status === 'resubmitted') {
+          actionHtml = '<div class="step-proof-box"><div style="font-size:0.78rem;color:#3b6fa0;font-weight:600;">Awaiting client review</div></div>';
+        } else if (step.status === 'escalated') {
+          actionHtml = '<div class="step-proof-box" style="border:1.5px solid #8b0000;"><div style="font-size:0.78rem;color:#8b0000;font-weight:600;">Under admin review</div></div>';
+        }
+
+        var proofsDisplayHtml = '';
+        if (proofs.length && step.status !== 'in_progress') {
+          proofs.forEach(function(p) {
+            proofsDisplayHtml += '<div class="step-proof-box" style="margin-top:6px;">' +
+              '<div class="step-proof-meta">Round ' + p.round + ' · ' + fmtDateTime(p.submitted_at) + '</div>' +
+              '<div class="step-proof-note">' + escapeHtml(p.note) + '</div>' +
+            '</div>';
+          });
+        }
+
+        bodyHtml += '<div class="' + itemClass + '">' +
+          '<div class="step-pipe-indicator">' + indicatorContent + '</div>' +
+          '<div class="step-pipe-content">' +
+            '<div class="step-pipe-name">' + escapeHtml(step.step_name) + '</div>' +
+            '<div class="step-pipe-desc">' + escapeHtml(step.step_description || '') + '</div>' +
+            statusHtml + proofsDisplayHtml + actionHtml +
+          '</div></div>';
+      });
+      bodyHtml += '</div>';
+    } else {
+      // Legacy task without pipeline steps — fall back to update form
+      bodyHtml =
+        (task.description ? '<p class="emp-task-desc">' + escapeHtml(task.description) + '</p>' : '') +
+        '<div class="emp-task-actions">' +
+          '<button class="emp-btn" data-action="toggle-post">Post update</button>' +
+          '<button class="emp-btn" data-action="toggle-timeline">View timeline</button>' +
+          (task.status !== 'Completed'
+            ? '<button class="emp-btn primary" data-action="mark-done">Mark done</button>'
+            : '') +
+        '</div>' +
+        '<div class="emp-post-form" data-slot="post" style="display:none;"></div>' +
+        '<div class="emp-timeline" data-slot="timeline" style="display:none;"></div>';
+    }
+
+    card.innerHTML = headerHtml + bodyHtml;
+
+    if (steps.length) {
+      wireStepEvents(card);
+    } else {
+      wireCardEvents(card, task);
+    }
     return card;
+  }
+
+  function buildProofForm(step, nextRound, isResubmit) {
+    var btnClass = isResubmit ? 'resubmit' : 'submit';
+    var btnLabel = isResubmit ? 'Resubmit Proof' : 'Submit Proof';
+    return '<div class="step-submit-form" data-step-id="' + step.id + '" data-round="' + nextRound + '">' +
+      '<textarea placeholder="Describe what was completed for this step..." class="proof-note-input"></textarea>' +
+      '<div class="file-row">' +
+        '<label class="file-label"><input type="file" multiple accept="image/*,.pdf" class="proof-file-input" style="display:none;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Attach photos</label>' +
+        '<span class="file-hint proof-file-hint">At least 1 photo required</span>' +
+      '</div>' +
+      '<div class="submit-row"><button class="step-proof-btn ' + btnClass + ' proof-submit-btn">' + btnLabel + '</button></div>' +
+    '</div>';
+  }
+
+  function wireStepEvents(card) {
+    card.querySelectorAll('.emp-start-step').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var stepId = this.getAttribute('data-step-id');
+        sb.from('task_steps').update({ status: 'in_progress', started_at: new Date().toISOString() }).eq('id', stepId).then(function(r) {
+          if (r.error) { showToast('Failed: ' + r.error.message, 'error'); return; }
+          showToast('Step started', 'success');
+          loadTasks();
+        });
+      });
+    });
+
+    card.querySelectorAll('.proof-file-input').forEach(function(inp) {
+      inp.addEventListener('change', function() {
+        var hint = this.closest('.file-row').querySelector('.proof-file-hint');
+        var files = this.files;
+        hint.textContent = files.length ? files.length + ' file(s) selected' : 'At least 1 photo required';
+      });
+    });
+
+    card.querySelectorAll('.proof-submit-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var form = this.closest('.step-submit-form');
+        var stepId = form.getAttribute('data-step-id');
+        var round = parseInt(form.getAttribute('data-round'), 10) || 1;
+        var noteInput = form.querySelector('.proof-note-input');
+        var fileInput = form.querySelector('.proof-file-input');
+        var note = noteInput.value.trim();
+        var files = Array.prototype.slice.call(fileInput.files || []);
+
+        if (!note) { showToast('Please describe what was completed', 'error'); return; }
+        if (!files.length) { showToast('At least one photo is required as proof', 'error'); return; }
+
+        var origLabel = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Uploading…';
+
+        var uploads = files.map(function(f) {
+          if (f.size > MAX_BYTES) { showToast(f.name + ' exceeds 5 MB', 'error'); return Promise.resolve(null); }
+          var path = 'task-proofs/' + stepId + '/' + Date.now() + '-' + f.name.replace(/[^a-zA-Z0-9.\-_]/g, '-');
+          return sb.storage.from('documents').upload(path, f).then(function(r) {
+            if (r.error) throw new Error(r.error.message);
+            return { file_name: f.name, storage_path: path, size: f.size, mime_type: f.type };
+          });
+        });
+
+        Promise.all(uploads).then(function(photos) {
+          photos = photos.filter(Boolean);
+          return sb.from('step_proofs').insert({
+            task_step_id: stepId,
+            round: round,
+            submitted_by: me.email,
+            note: note,
+            photos: photos
+          });
+        }).then(function(r) {
+          if (r.error) { showToast('Failed: ' + r.error.message, 'error'); btn.disabled = false; btn.textContent = origLabel; return; }
+          showToast('Proof submitted — awaiting client review', 'success');
+          loadTasks();
+        }).catch(function(err) {
+          showToast('Upload failed: ' + err.message, 'error');
+          btn.disabled = false;
+          btn.textContent = origLabel;
+        });
+      });
+    });
   }
 
   function wireCardEvents(card, task) {
