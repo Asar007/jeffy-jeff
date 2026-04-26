@@ -2384,6 +2384,30 @@
     var board = document.getElementById('opsBoard');
     if (!board) return;
 
+    // If no real task_steps exist but we have tasks, synthesize virtual steps
+    // so the board has something to display (handles pre-migration data)
+    var effectiveSteps = taskSteps;
+    if (taskSteps.length === 0 && tasks.length > 0) {
+      effectiveSteps = [];
+      tasks.forEach(function(t) {
+        if (t.status === 'Completed') return; // skip completed tasks
+        var virtualStatus = 'pending';
+        if (t.status === 'In Progress') virtualStatus = 'in_progress';
+        else if (t.status === 'In Review') virtualStatus = 'proof_submitted';
+        effectiveSteps.push({
+          id: t.id + '_v0',
+          task_id: t.id,
+          step_index: 0,
+          step_name: t.description || t.service || 'Task',
+          step_description: t.description || '',
+          status: virtualStatus,
+          assigned_employee_email: t.assigned_employee_email || null,
+          created_at: t.created_at || new Date().toISOString(),
+          _virtual: true
+        });
+      });
+    }
+
     var columns = [
       { key: 'unassigned', label: 'Unassigned', filter: function(s) { return !s.assigned_employee_email && s.status === 'pending'; } },
       { key: 'in_progress', label: 'In Progress', filter: function(s) { return s.status === 'in_progress'; } },
@@ -2400,7 +2424,7 @@
     var empVal = filterEmployee ? filterEmployee.value : '';
     var ageVal = filterAge ? filterAge.value : '';
 
-    var filtered = taskSteps.filter(function(s) {
+    var filtered = effectiveSteps.filter(function(s) {
       if (s.status === 'completed') return false;
       if (s.status === 'pending' && s.assigned_employee_email) return false;
       var task = tasks.find(function(t) { return t.id === s.task_id; });
