@@ -3473,6 +3473,22 @@ footer {
   display: block; color: var(--text-mid);
 }
 
+/* ── Task Edit Modal: sticky action bar so Save/Cancel/Delete are always reachable ── */
+#taskEditModal .adm-modal {
+  display: flex; flex-direction: column;
+  padding: 28px 28px 0; max-height: 92vh;
+}
+#taskEditModal .adm-modal > h3 { flex-shrink: 0; }
+#taskEditModal .adm-modal-actions {
+  position: sticky; bottom: 0;
+  margin: 4px -28px 0;
+  padding: 14px 28px 18px;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  z-index: 5;
+  flex-shrink: 0;
+}
+
 /* ── Admin Documents Section ─────────────────────────────────────── */
 .adm-filter-tab {
   padding: 5px 14px; border-radius: var(--radius-pill); border: 1.5px solid #d4d2c8;
