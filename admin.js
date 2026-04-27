@@ -2384,37 +2384,40 @@
     var board = document.getElementById('opsBoard');
     if (!board) return;
 
-    // If no real task_steps exist but we have tasks, synthesize virtual steps
-    // so the board has something to display (handles pre-migration data)
-    var effectiveSteps = taskSteps;
-    if (taskSteps.length === 0 && tasks.length > 0) {
-      effectiveSteps = [];
-      tasks.forEach(function(t) {
-        if (t.status === 'Completed') return; // skip completed tasks
-        var virtualStatus = 'pending';
-        if (t.status === 'In Progress') virtualStatus = 'in_progress';
-        else if (t.status === 'In Review') virtualStatus = 'proof_submitted';
-        effectiveSteps.push({
-          id: t.id + '_v0',
-          task_id: t.id,
-          step_index: 0,
-          step_name: t.description || t.service || 'Task',
-          step_description: t.description || '',
-          status: virtualStatus,
-          assigned_employee_email: t.assigned_employee_email || null,
-          created_at: t.created_at || new Date().toISOString(),
-          _virtual: true
-        });
+    // For any task that has no real task_steps, synthesize a single virtual step
+    // so the board still surfaces it. This must be per-task: once the
+    // pipeline-backfill migration has run, only services that match a
+    // pipeline_key get real rows, so a global "if taskSteps is empty" gate
+    // would silently drop every unmatched task.
+    var taskIdsWithSteps = {};
+    taskSteps.forEach(function(s) { if (s.task_id) taskIdsWithSteps[s.task_id] = true; });
+    var effectiveSteps = taskSteps.slice();
+    tasks.forEach(function(t) {
+      if (taskIdsWithSteps[t.id]) return;
+      if (t.status === 'Completed') return;
+      var virtualStatus = 'pending';
+      if (t.status === 'In Progress') virtualStatus = 'in_progress';
+      else if (t.status === 'In Review') virtualStatus = 'proof_submitted';
+      effectiveSteps.push({
+        id: t.id + '_v0',
+        task_id: t.id,
+        step_index: 0,
+        step_name: t.description || t.service || 'Task',
+        step_description: t.description || '',
+        status: virtualStatus,
+        assigned_employee_email: t.assigned_employee_email || null,
+        created_at: t.created_at || new Date().toISOString(),
+        _virtual: true
       });
-    }
+    });
 
     var columns = [
       { key: 'unassigned', label: 'Unassigned', filter: function(s) { return !s.assigned_employee_email && s.status === 'pending'; } },
-      { key: 'in_progress', label: 'In Progress', filter: function(s) { return s.status === 'in_progress'; } },
+      { key: 'in_progress', label: 'In Progress', filter: function(s) { return s.status === 'in_progress' || (s.status === 'pending' && !!s.assigned_employee_email); } },
       { key: 'proof_submitted', label: 'Proof Submitted', filter: function(s) { return s.status === 'proof_submitted' || s.status === 'resubmitted'; } },
       { key: 'awaiting', label: 'Awaiting Client', filter: function(s) { return s.status === 'client_accepted'; } },
       { key: 'disputed', label: 'Disputed', filter: function(s) { return s.status === 'client_disputed'; } },
-      { key: 'escalated', label: 'Escalated', filter: function(s) { return s.status === 'escalated'; }, className: 'escalated' }
+      { key: 'escalated', label: 'Escalated', filter: function(s) { return s.status === 'escalated' || s.status === 'admin_resolved'; }, className: 'escalated' }
     ];
 
     var filterService = document.getElementById('opsFilterService');
@@ -2426,7 +2429,6 @@
 
     var filtered = effectiveSteps.filter(function(s) {
       if (s.status === 'completed') return false;
-      if (s.status === 'pending' && s.assigned_employee_email) return false;
       var task = tasks.find(function(t) { return t.id === s.task_id; });
       if (svcVal && task && task.service !== svcVal) return false;
       if (empVal && s.assigned_employee_email !== empVal) return false;
