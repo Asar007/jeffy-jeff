@@ -2709,4 +2709,40 @@
   // Expose for Add Client/Employee triggers from sidebar
   window.admReloadDashboard = loadDashboard;
 
+  // ── Mobile Sidebar Toggle ──
+  var hamburger = document.getElementById('admHamburger');
+  var sidebar = document.getElementById('admSidebar');
+  var sidebarOverlay = document.getElementById('admSidebarOverlay');
+
+  function toggleSidebar() {
+    var isOpen = sidebar.classList.toggle('open');
+    hamburger.classList.toggle('open', isOpen);
+    if (isOpen) {
+      sidebarOverlay.classList.add('show');
+    } else {
+      sidebarOverlay.classList.remove('show');
+    }
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    hamburger.classList.remove('open');
+    sidebarOverlay.classList.remove('show');
+  }
+
+  if (hamburger) {
+    hamburger.addEventListener('click', toggleSidebar);
+  }
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', closeSidebar);
+  }
+
+  // Close sidebar when a nav item is clicked (mobile UX)
+  document.querySelectorAll('.adm-nav-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      if (window.innerWidth <= 768) {
+        closeSidebar();
+      }
+    });
+  });
+
 })();

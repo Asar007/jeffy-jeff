@@ -3037,10 +3037,37 @@ footer {
 
 /* ── Sidebar ─────────────────────────────────────────────────────── */
 .adm-sidebar {
-  width: 260px; min-height: 100vh; background: #faf8f2; border-right: 1px solid #e8e4d4;
+  width: 260px; height: 100vh; background: #faf8f2; border-right: 1px solid #e8e4d4;
   padding: 28px 20px; position: fixed; top: 0; left: 0; z-index: 100;
   display: flex; flex-direction: column; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(74,106,46,0.2) transparent;
 }
+.adm-sidebar::-webkit-scrollbar { width: 5px; }
+.adm-sidebar::-webkit-scrollbar-track { background: transparent; }
+.adm-sidebar::-webkit-scrollbar-thumb { background: rgba(74,106,46,0.2); border-radius: 4px; }
+.adm-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(74,106,46,0.35); }
+
+/* ── Hamburger Toggle (hidden on desktop, visible on mobile) ────── */
+.adm-hamburger {
+  display: none; position: fixed; top: 16px; left: 16px; z-index: 200;
+  width: 42px; height: 42px; border-radius: 10px;
+  background: #faf8f2; border: 1.5px solid #e8e4d4;
+  cursor: pointer; align-items: center; justify-content: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: all 0.2s;
+}
+.adm-hamburger:hover { border-color: var(--green-pop); background: #fff; }
+.adm-hamburger svg { width: 20px; height: 20px; color: var(--text-dark); }
+.adm-hamburger.open svg .bar1 { transform: rotate(45deg) translate(3px, 3px); }
+.adm-hamburger.open svg .bar2 { opacity: 0; }
+.adm-hamburger.open svg .bar3 { transform: rotate(-45deg) translate(3px, -3px); }
+
+/* ── Sidebar Overlay (mobile backdrop) ──────────────────────────── */
+.adm-sidebar-overlay {
+  display: none; position: fixed; inset: 0; z-index: 99;
+  background: rgba(0,0,0,0.4); backdrop-filter: blur(3px);
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.adm-sidebar-overlay.show { display: block; opacity: 1; }
 .adm-logo { margin-bottom: 32px; }
 .adm-logo-sub { font-family: 'DM Sans', sans-serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
 .adm-logo-main { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 700; color: var(--text-dark); line-height: 1.2; }
@@ -4214,9 +4241,17 @@ footer {
   .adm-right { width: 100%; min-width: 0; border-left: none; border-top: 1px solid #e8e4d4; padding: 24px 32px; }
 }
 @media (max-width: 768px) {
-  .adm-sidebar { display: none; }
+  .adm-hamburger { display: flex; }
+  .adm-sidebar {
+    transform: translateX(-100%); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+    box-shadow: none;
+  }
+  .adm-sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+  }
   .adm-body { margin-left: 0; }
-  .adm-main { padding: 20px 16px; }
+  .adm-main { padding: 20px 16px; padding-top: 68px; }
   .adm-right { padding: 20px 16px; }
   .adm-stats { grid-template-columns: 1fr 1fr; }
   .adm-header { flex-direction: column; }
