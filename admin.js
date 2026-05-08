@@ -47,8 +47,10 @@
   var stepProofs = [];
   var employeeMetrics = [];
   var servicePipelines = [];
+  var recurringSchedules = [];
   var activeDisputeFilter = 'all';
   var activeEmpFilter = 'all';
+  var activeRecurringFilter = 'all';
   var currentDisputeId = null;
   var currentEmployeeId = null;
 
@@ -117,7 +119,8 @@
       sb.from('task_steps').select('*').order('created_at', { ascending: true }),
       sb.from('step_proofs').select('*').order('round', { ascending: true }),
       sb.from('employee_metrics').select('*').order('performance_score', { ascending: false }),
-      sb.from('service_pipelines').select('*').order('pipeline_key', { ascending: true })
+      sb.from('service_pipelines').select('*').order('pipeline_key', { ascending: true }),
+      sb.from('recurring_schedules').select('*').order('next_due_at', { ascending: true })
     ]).then(function(results) {
       if (results[0].error) console.error('Clients fetch error:', results[0].error);
       if (results[1].error) console.error('Tasks fetch error:', results[1].error);
@@ -129,6 +132,7 @@
       if (results[7] && results[7].error) console.error('Step proofs fetch error:', results[7].error);
       if (results[8] && results[8].error) console.error('Employee metrics fetch error:', results[8].error);
       if (results[9] && results[9].error) console.error('Service pipelines fetch error:', results[9].error);
+      if (results[10] && results[10].error) console.error('Recurring schedules fetch error:', results[10].error);
 
       clients = results[0].data || [];
       tasks = results[1].data || [];
@@ -140,6 +144,7 @@
       stepProofs = (results[7] && results[7].data) || [];
       employeeMetrics = (results[8] && results[8].data) || [];
       servicePipelines = (results[9] && results[9].data) || [];
+      recurringSchedules = (results[10] && results[10].data) || [];
 
       console.log('Dashboard loaded:', { clients: clients.length, tasks: tasks.length, requests: requests.length, appointments: appointments.length, disputes: disputes.length, employees: employees.length, taskSteps: taskSteps.length, stepProofs: stepProofs.length });
       renderStats();
@@ -199,6 +204,12 @@
     }).length;
     var escBadge = document.getElementById('badgeEscalations');
     if (escBadge) escBadge.textContent = escCount;
+
+    var recBadge = document.getElementById('badgeRecurring');
+    if (recBadge) {
+      var activeRec = recurringSchedules.filter(function(r) { return r.active; }).length;
+      recBadge.textContent = activeRec;
+    }
   }
 
   // ── Task Table ──
@@ -2284,12 +2295,13 @@
       var disputeSection = document.getElementById('sectionDisputes');
       var empSection = document.getElementById('sectionEmployees');
 
-      var fullWidthSections = ['documents','disputes','analytics','employees','employeesPending','opsboard','scorecards','leaderboard','escalations','proofqueue'];
+      var fullWidthSections = ['documents','disputes','analytics','employees','employeesPending','opsboard','scorecards','leaderboard','escalations','proofqueue','recurring'];
       var opsSection = document.getElementById('sectionOpsboard');
       var scoreSection = document.getElementById('sectionScorecards');
       var leaderSection = document.getElementById('sectionLeaderboard');
       var escSection = document.getElementById('sectionEscalations');
       var proofSection = document.getElementById('sectionProofqueue');
+      var recurringSection = document.getElementById('sectionRecurring');
 
       if (fullWidthSections.indexOf(section) !== -1) {
         defaultSections.forEach(function(el) { if (el) el.style.display = 'none'; });
@@ -2303,6 +2315,7 @@
         if (leaderSection) leaderSection.style.display = section === 'leaderboard' ? 'block' : 'none';
         if (escSection) escSection.style.display = section === 'escalations' ? 'block' : 'none';
         if (proofSection) proofSection.style.display = section === 'proofqueue' ? 'block' : 'none';
+        if (recurringSection) recurringSection.style.display = section === 'recurring' ? 'block' : 'none';
         if (section === 'documents') loadDocuments();
         if (section === 'disputes') renderDisputes();
         if (section === 'analytics') renderAnalytics();
@@ -2311,6 +2324,7 @@
         if (section === 'leaderboard') renderLeaderboard();
         if (section === 'escalations') renderEscalations();
         if (section === 'proofqueue') renderProofQueue();
+        if (section === 'recurring') renderRecurringSchedules();
         if (section === 'employees') { activeEmpFilter = 'all'; document.querySelectorAll('#empFilters [data-emp-filter]').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-emp-filter') === 'all'); }); renderEmployeesTable(); }
         if (section === 'employeesPending') { activeEmpFilter = 'pending'; document.querySelectorAll('#empFilters [data-emp-filter]').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-emp-filter') === 'pending'); }); renderEmployeesTable(); }
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2326,6 +2340,7 @@
         if (leaderSection) leaderSection.style.display = 'none';
         if (escSection) escSection.style.display = 'none';
         if (proofSection) proofSection.style.display = 'none';
+        if (recurringSection) recurringSection.style.display = 'none';
       }
 
       switch (section) {
@@ -2510,18 +2525,25 @@
     var empSelect = document.getElementById('opsFilterEmployee');
     if (!svcSelect || !empSelect) return;
 
+    var prevSvc = svcSelect.value;
+    var prevEmp = empSelect.value;
+
     var services = {};
     tasks.forEach(function(t) { if (t.service) services[t.service] = true; });
     svcSelect.innerHTML = '<option value="">All Services</option>';
     Object.keys(services).sort().forEach(function(s) {
       svcSelect.innerHTML += '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + '</option>';
     });
+    if (prevSvc && services[prevSvc]) svcSelect.value = prevSvc;
 
     var approvedEmps = employees.filter(function(e) { return e.status === 'approved'; });
     empSelect.innerHTML = '<option value="">All Employees</option>';
     approvedEmps.forEach(function(e) {
       empSelect.innerHTML += '<option value="' + escapeHtml(e.email) + '">' + escapeHtml(e.name) + '</option>';
     });
+    if (prevEmp && approvedEmps.some(function(e) { return e.email === prevEmp; })) {
+      empSelect.value = prevEmp;
+    }
 
     [svcSelect, empSelect, document.getElementById('opsFilterAge')].forEach(function(sel) {
       if (sel && !sel._opsBound) {
@@ -2705,6 +2727,278 @@
     });
     body.innerHTML = html;
   }
+
+  // ══════════════════════════════════════════
+  // RECURRING SCHEDULES
+  // ══════════════════════════════════════════
+  function formatRsDate(d) {
+    if (!d) return '—';
+    var dt = new Date(d);
+    if (isNaN(dt.getTime())) return '—';
+    return months[dt.getMonth()] + ' ' + String(dt.getDate()).padStart(2,'0') + ', ' + dt.getFullYear();
+  }
+
+  function rsRelative(d) {
+    if (!d) return '';
+    var dt = new Date(d).getTime();
+    if (!dt) return '';
+    var diffMs = dt - Date.now();
+    var days = Math.round(diffMs / 86400000);
+    if (days === 0) return 'today';
+    if (days > 0) return 'in ' + days + 'd';
+    return Math.abs(days) + 'd ago';
+  }
+
+  function rsClient(id) {
+    return clients.find(function(c) { return c.id === id; });
+  }
+
+  function rsPipeline(key) {
+    return servicePipelines.find(function(p) { return p.pipeline_key === key; });
+  }
+
+  function recurringFiltered() {
+    var nowMs = Date.now();
+    return recurringSchedules.filter(function(r) {
+      if (activeRecurringFilter === 'all') return true;
+      if (activeRecurringFilter === 'active') return r.active;
+      if (activeRecurringFilter === 'paused') return !r.active;
+      if (!r.next_due_at) return false;
+      var dueMs = new Date(r.next_due_at).getTime();
+      if (activeRecurringFilter === 'overdue') return r.active && dueMs <= nowMs;
+      if (activeRecurringFilter === 'due_soon') return r.active && dueMs > nowMs && (dueMs - nowMs) <= 7 * 86400000;
+      return true;
+    });
+  }
+
+  function renderRecurringSchedules() {
+    var body = document.getElementById('recurringTableBody');
+    if (!body) return;
+    var rows = recurringFiltered();
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">No schedules match this filter.</td></tr>';
+      return;
+    }
+    var nowMs = Date.now();
+    var html = '';
+    rows.forEach(function(r) {
+      var client = rsClient(r.client_id) || {};
+      var pipeline = rsPipeline(r.pipeline_key) || {};
+      var dueMs = r.next_due_at ? new Date(r.next_due_at).getTime() : null;
+      var statusBadge = '';
+      if (!r.active) {
+        statusBadge = '<span class="adm-client-status pending">Paused</span>';
+      } else if (dueMs && dueMs <= nowMs) {
+        statusBadge = '<span class="adm-client-status in-review">Overdue</span>';
+      } else if (dueMs && (dueMs - nowMs) <= 7 * 86400000) {
+        statusBadge = '<span class="adm-client-status pending">Due soon</span>';
+      } else {
+        statusBadge = '<span class="adm-client-status active">Active</span>';
+      }
+      html += '<tr>' +
+        '<td><div style="font-weight:600;">' + escapeHtml(client.name || '—') + '</div>' +
+          '<div style="font-size:0.72rem;color:var(--text-muted);">' + escapeHtml(client.email || '') + '</div></td>' +
+        '<td>' + escapeHtml(r.service || '') + '</td>' +
+        '<td><div style="font-size:0.84rem;">' + escapeHtml(pipeline.display_name || r.pipeline_key) + '</div>' +
+          '<div style="font-size:0.7rem;color:var(--text-muted);">' + escapeHtml(r.pipeline_key) + '</div></td>' +
+        '<td>' + r.interval_days + 'd</td>' +
+        '<td>' + formatRsDate(r.last_fired_at) + '</td>' +
+        '<td>' + formatRsDate(r.next_due_at) +
+          (dueMs ? '<div style="font-size:0.7rem;color:var(--text-muted);">' + escapeHtml(rsRelative(r.next_due_at)) + '</div>' : '') + '</td>' +
+        '<td>' + statusBadge + '</td>' +
+        '<td style="text-align:right;white-space:nowrap;">' +
+          '<button class="adm-btn-export" data-rs-run="' + r.id + '" style="font-size:0.74rem;padding:4px 10px;margin-right:4px;">Run</button>' +
+          '<button class="adm-btn-export" data-rs-edit="' + r.id + '" style="font-size:0.74rem;padding:4px 10px;">Edit</button>' +
+        '</td>' +
+      '</tr>';
+    });
+    body.innerHTML = html;
+
+    body.querySelectorAll('[data-rs-edit]').forEach(function(btn) {
+      btn.addEventListener('click', function() { openRecurringModal(this.getAttribute('data-rs-edit')); });
+    });
+    body.querySelectorAll('[data-rs-run]').forEach(function(btn) {
+      btn.addEventListener('click', function() { runRecurringNow(this.getAttribute('data-rs-run')); });
+    });
+  }
+
+  function runRecurringNow(scheduleId) {
+    if (!scheduleId) return;
+    var sched = recurringSchedules.find(function(r) { return r.id === scheduleId; });
+    var label = sched ? (sched.service || 'this schedule') : 'this schedule';
+    if (!confirm('Fire ' + label + ' now? A new task will be created if no active task exists for this client + pipeline.')) return;
+    sb.rpc('fn_fire_recurring_schedule_manual', {
+      p_schedule_id: scheduleId,
+      p_trigger_type: 'admin_manual'
+    }).then(function(r) {
+      if (r.error) { showToast('Failed: ' + r.error.message, 'error'); return; }
+      if (r.data) {
+        showToast('Task created — schedule advanced.', 'success');
+      } else {
+        showToast('Skipped — check schedule status (paused, missing pipeline, or active task already exists).', 'info');
+      }
+      loadDashboard();
+    });
+  }
+
+  // Filter tabs
+  document.querySelectorAll('#recurringFilters [data-recurring-filter]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      activeRecurringFilter = this.getAttribute('data-recurring-filter');
+      document.querySelectorAll('#recurringFilters [data-recurring-filter]').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-recurring-filter') === activeRecurringFilter);
+      });
+      renderRecurringSchedules();
+    });
+  });
+
+  function openRecurringModal(scheduleId) {
+    var modal = document.getElementById('recurringModal');
+    if (!modal) return;
+    var clientSel = document.getElementById('rsClient');
+    var serviceSel = document.getElementById('rsService');
+
+    // Populate client dropdown
+    var clientOpts = '<option value="">Select client…</option>';
+    clients.slice().sort(function(a, b) { return (a.name || '').localeCompare(b.name || ''); }).forEach(function(c) {
+      clientOpts += '<option value="' + c.id + '">' + escapeHtml(c.name || c.email || '—') + '</option>';
+    });
+    clientSel.innerHTML = clientOpts;
+
+    // Populate recurring pipelines dropdown
+    var svcOpts = '<option value="">Select pipeline…</option>';
+    servicePipelines.filter(function(p) { return p.is_recurring; }).forEach(function(p) {
+      svcOpts += '<option value="' + escapeHtml(p.pipeline_key) + '">' + escapeHtml(p.display_name) + '</option>';
+    });
+    serviceSel.innerHTML = svcOpts;
+
+    var sched = scheduleId ? recurringSchedules.find(function(r) { return r.id === scheduleId; }) : null;
+    document.getElementById('rsScheduleId').value = sched ? sched.id : '';
+    document.getElementById('rsModalTitle').textContent = sched ? 'Edit Recurring Schedule' : 'Add Recurring Schedule';
+    clientSel.value = sched ? sched.client_id : '';
+    serviceSel.value = sched ? sched.pipeline_key : '';
+    document.getElementById('rsIntervalDays').value = sched ? sched.interval_days : 30;
+    document.getElementById('rsActive').value = sched ? (sched.active ? 'true' : 'false') : 'true';
+
+    var nextDueInput = document.getElementById('rsNextDue');
+    if (sched && sched.next_due_at) {
+      var d = new Date(sched.next_due_at);
+      var iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      nextDueInput.value = iso;
+    } else {
+      nextDueInput.value = '';
+    }
+
+    var lastRow = document.getElementById('rsLastFiredRow');
+    if (sched && sched.last_fired_at) {
+      lastRow.style.display = 'block';
+      document.getElementById('rsLastFiredVal').textContent = new Date(sched.last_fired_at).toLocaleString();
+    } else {
+      lastRow.style.display = 'none';
+    }
+
+    document.getElementById('rsRunNow').style.display = sched ? 'inline-block' : 'none';
+    document.getElementById('rsDelete').style.display = sched ? 'inline-block' : 'none';
+    clientSel.disabled = !!sched;
+    serviceSel.disabled = !!sched;
+
+    modal.style.display = 'flex';
+    void modal.offsetHeight;
+    modal.classList.add('show');
+  }
+
+  function closeRecurringModal() {
+    var m = document.getElementById('recurringModal');
+    if (!m) return;
+    m.classList.remove('show');
+    setTimeout(function() { m.style.display = 'none'; }, 300);
+  }
+
+  var btnAdd = document.getElementById('btnAddRecurring');
+  if (btnAdd) btnAdd.addEventListener('click', function() { openRecurringModal(null); });
+
+  var rsCancel = document.getElementById('rsCancel');
+  if (rsCancel) rsCancel.addEventListener('click', closeRecurringModal);
+
+  var recurringModalEl = document.getElementById('recurringModal');
+  if (recurringModalEl) {
+    recurringModalEl.addEventListener('click', function(e) {
+      if (e.target === recurringModalEl) closeRecurringModal();
+    });
+  }
+
+  var rsRunNow = document.getElementById('rsRunNow');
+  if (rsRunNow) rsRunNow.addEventListener('click', function() {
+    var id = document.getElementById('rsScheduleId').value;
+    if (id) { closeRecurringModal(); runRecurringNow(id); }
+  });
+
+  var rsDelete = document.getElementById('rsDelete');
+  if (rsDelete) rsDelete.addEventListener('click', function() {
+    var id = document.getElementById('rsScheduleId').value;
+    if (!id) return;
+    if (!confirm('Delete this recurring schedule? Future tasks will not auto-fire. Existing tasks remain.')) return;
+    sb.from('recurring_schedules').delete().eq('id', id).then(function(r) {
+      if (r.error) { showToast('Failed: ' + r.error.message, 'error'); return; }
+      showToast('Schedule deleted', 'info');
+      closeRecurringModal();
+      loadDashboard();
+    });
+  });
+
+  var rsSave = document.getElementById('rsSave');
+  if (rsSave) rsSave.addEventListener('click', function() {
+    var id = document.getElementById('rsScheduleId').value;
+    var clientId = document.getElementById('rsClient').value;
+    var pipelineKey = document.getElementById('rsService').value;
+    var intervalDays = parseInt(document.getElementById('rsIntervalDays').value, 10);
+    var active = document.getElementById('rsActive').value === 'true';
+    var nextDueRaw = document.getElementById('rsNextDue').value;
+
+    if (!clientId) { showToast('Pick a client', 'error'); return; }
+    if (!pipelineKey) { showToast('Pick a pipeline', 'error'); return; }
+    if (!intervalDays || intervalDays < 1) { showToast('Interval must be at least 1 day', 'error'); return; }
+
+    var pipeline = rsPipeline(pipelineKey);
+    var serviceLabel = pipeline ? pipeline.display_name : pipelineKey;
+    var nextDueIso = nextDueRaw ? new Date(nextDueRaw).toISOString() : null;
+
+    if (id) {
+      var patch = { interval_days: intervalDays, active: active };
+      if (nextDueIso) patch.next_due_at = nextDueIso;
+      sb.from('recurring_schedules').update(patch).eq('id', id).then(function(r) {
+        if (r.error) { showToast('Failed: ' + r.error.message, 'error'); return; }
+        showToast('Schedule updated', 'success');
+        closeRecurringModal();
+        loadDashboard();
+      });
+    } else {
+      var sess = JSON.parse(localStorage.getItem('nri_session') || '{}');
+      var row = {
+        client_id: clientId,
+        service: serviceLabel,
+        pipeline_key: pipelineKey,
+        interval_days: intervalDays,
+        active: active,
+        created_by: sess.email || null
+      };
+      if (nextDueIso) row.next_due_at = nextDueIso;
+      sb.from('recurring_schedules').insert(row).then(function(r) {
+        if (r.error) {
+          var msg = r.error.message || '';
+          if (msg.indexOf('duplicate') !== -1 || msg.indexOf('unique') !== -1) {
+            showToast('A schedule already exists for this client + service.', 'error');
+          } else {
+            showToast('Failed: ' + msg, 'error');
+          }
+          return;
+        }
+        showToast('Schedule created', 'success');
+        closeRecurringModal();
+        loadDashboard();
+      });
+    }
+  });
 
   // Expose for Add Client/Employee triggers from sidebar
   window.admReloadDashboard = loadDashboard;

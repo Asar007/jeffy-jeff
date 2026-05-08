@@ -47,6 +47,7 @@
     <a class="adm-nav-item" data-section="completed">Completed</a>
     <a class="adm-nav-item" data-section="proofqueue">Proof Queue</a>
     <a class="adm-nav-item" data-section="escalations">Escalations <span class="adm-nav-badge red" id="badgeEscalations">0</span></a>
+    <a class="adm-nav-item" data-section="recurring">Recurring <span class="adm-nav-badge" id="badgeRecurring">—</span></a>
   </div>
 
   <div class="adm-nav-group">
@@ -366,6 +367,40 @@
       </div>
     </div>
 
+    <!-- ── Recurring Schedules ─────────────────────────────────── -->
+    <div id="sectionRecurring" style="display:none; margin-top:32px;">
+      <div class="adm-section-head" style="margin-bottom:18px;">
+        <h2>Recurring Schedules</h2>
+        <button class="adm-btn-add" id="btnAddRecurring">+ Add Schedule</button>
+      </div>
+      <div class="adm-docs-filters" id="recurringFilters" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="adm-filter-tab active" data-recurring-filter="all">All</button>
+        <button class="adm-filter-tab" data-recurring-filter="active">Active</button>
+        <button class="adm-filter-tab" data-recurring-filter="paused">Paused</button>
+        <button class="adm-filter-tab" data-recurring-filter="due_soon">Due in 7 days</button>
+        <button class="adm-filter-tab" data-recurring-filter="overdue">Overdue</button>
+      </div>
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Service</th>
+              <th>Pipeline</th>
+              <th>Interval</th>
+              <th>Last Fired</th>
+              <th>Next Due</th>
+              <th>Status</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recurringTableBody">
+            <tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div id="sectionDisputes" style="display:none; margin-top:32px;">
       <div class="adm-section-head" style="margin-bottom:18px;">
         <h2>Dispute Center</h2>
@@ -495,6 +530,50 @@
     <div class="adm-modal-actions">
       <button class="adm-btn-add" id="acSubmit">Add Client</button>
       <button class="adm-btn-export" id="acCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Recurring Schedule Modal ─────────────────────────────────── -->
+<div class="adm-modal-overlay" id="recurringModal">
+  <div class="adm-modal" style="max-width:560px;">
+    <h3 id="rsModalTitle">Add Recurring Schedule</h3>
+    <input type="hidden" id="rsScheduleId">
+    <div class="adm-form-group">
+      <label>Client</label>
+      <select id="rsClient"><option value="">Select client…</option></select>
+    </div>
+    <div class="adm-form-group">
+      <label>Service</label>
+      <select id="rsService"><option value="">Select pipeline…</option></select>
+      <div style="font-size:0.74rem;color:var(--text-muted);margin-top:6px;" id="rsServiceHint">Choose what should auto-fire on a schedule.</div>
+    </div>
+    <div class="adm-form-group" style="display:flex;gap:12px;align-items:flex-end;">
+      <div style="flex:1;">
+        <label>Interval (days)</label>
+        <input type="number" id="rsIntervalDays" min="1" value="30">
+      </div>
+      <div style="flex:1;">
+        <label>Status</label>
+        <select id="rsActive">
+          <option value="true" selected>Active</option>
+          <option value="false">Paused</option>
+        </select>
+      </div>
+    </div>
+    <div class="adm-form-group">
+      <label>Next Due (optional)</label>
+      <input type="datetime-local" id="rsNextDue">
+      <div style="font-size:0.74rem;color:var(--text-muted);margin-top:6px;">Leave blank to compute from interval.</div>
+    </div>
+    <div id="rsLastFiredRow" style="display:none;font-size:0.78rem;color:var(--text-muted);margin-bottom:12px;">
+      Last fired: <span id="rsLastFiredVal">—</span>
+    </div>
+    <div class="adm-modal-actions">
+      <button class="adm-btn-add" id="rsSave">Save Schedule</button>
+      <button class="adm-btn-export" id="rsRunNow" style="display:none;">Run Now</button>
+      <button class="adm-btn-export" id="rsDelete" style="display:none;color:#b03030;">Delete</button>
+      <button class="adm-btn-export" id="rsCancel">Cancel</button>
     </div>
   </div>
 </div>

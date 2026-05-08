@@ -2327,7 +2327,134 @@
 
         loadTaskUpdates(realTasks);
         loadAndRenderStepPipelines(realTasks);
+        loadRecurringSchedules(realTasks);
       });
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // RECURRING SCHEDULES — "Next visit" pill + manual request button
+  // ══════════════════════════════════════════════════════════════════
+  // Maps the prefix of pipeline_key to the dashboard service category
+  var RECURRING_PIPELINE_TO_CATEGORY = {
+    'home_inspection': 'home',
+    'home_maintenance': 'home',
+    'vehicle_servicing': 'vehicle',
+    'parental_checkup': 'parental',
+    'medicine_delivery': 'parental'
+  };
+
+  function loadRecurringSchedules(realTasks) {
+    if (!window.supabaseClient || !realTasks || !realTasks.length) return;
+    var clientId = realTasks[0].client_id;
+    if (!clientId) return;
+    window.supabaseClient.from('recurring_schedules')
+      .select('*')
+      .eq('client_id', clientId)
+      .then(function(r) {
+        if (r.error) { console.warn('recurring_schedules fetch failed:', r.error.message); return; }
+        renderRecurringPillsIntoCards(r.data || []);
+      });
+  }
+
+  function fmtRecurringDate(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function fmtRecurringRelative(iso) {
+    if (!iso) return '';
+    var dt = new Date(iso).getTime();
+    if (!dt) return '';
+    var days = Math.round((dt - Date.now()) / 86400000);
+    if (days === 0) return 'today';
+    if (days > 0) return 'in ' + days + 'd';
+    return Math.abs(days) + 'd ago';
+  }
+
+  function renderRecurringPillsIntoCards(schedules) {
+    if (!schedules.length) return;
+    var byCategory = {};
+    schedules.forEach(function(s) {
+      var cat = RECURRING_PIPELINE_TO_CATEGORY[s.pipeline_key];
+      if (!cat) return;
+      (byCategory[cat] = byCategory[cat] || []).push(s);
+    });
+
+    document.querySelectorAll('.dash-svc-card[data-svc-category]').forEach(function(cardEl) {
+      var cat = cardEl.getAttribute('data-svc-category');
+      var rows = byCategory[cat];
+      if (!rows || !rows.length) return;
+
+      var existing = cardEl.querySelector('.dash-svc-recurring-block');
+      if (existing) existing.remove();
+
+      var html = '<div class="dash-svc-recurring-block" style="margin-top:14px;padding:12px 14px;background:rgba(74,106,46,0.06);border-radius:10px;border:1px dashed rgba(74,106,46,0.25);">';
+      rows.forEach(function(s) {
+        var nowMs = Date.now();
+        var dueMs = s.next_due_at ? new Date(s.next_due_at).getTime() : null;
+        var statusText = '';
+        var statusColor = 'var(--text-muted)';
+        if (!s.active) {
+          statusText = 'Paused';
+        } else if (dueMs && dueMs <= nowMs) {
+          statusText = 'Overdue · ' + fmtRecurringRelative(s.next_due_at);
+          statusColor = '#b03030';
+        } else if (dueMs) {
+          statusText = 'Next visit ' + fmtRecurringDate(s.next_due_at) + ' · ' + fmtRecurringRelative(s.next_due_at);
+          statusColor = 'var(--green-pop)';
+        } else {
+          statusText = 'Scheduled';
+        }
+
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:6px 0;">' +
+          '<div style="min-width:0;flex:1;">' +
+            '<div style="font-size:0.78rem;font-weight:600;color:var(--text-dark);">' + escapeHtml(s.service || s.pipeline_key) + '</div>' +
+            '<div style="font-size:0.72rem;color:' + statusColor + ';margin-top:2px;">' + escapeHtml(statusText) + '</div>' +
+          '</div>' +
+          '<button class="dash-recurring-request-btn" data-recurring-id="' + escapeHtml(s.id) + '" ' +
+            (s.active ? '' : 'disabled ') +
+            'style="font-size:0.72rem;padding:6px 12px;border-radius:8px;border:1px solid var(--green-pop);background:#fff;color:var(--green-pop);font-weight:600;cursor:' + (s.active ? 'pointer' : 'not-allowed') + ';white-space:nowrap;' + (s.active ? '' : 'opacity:0.5;') + '">' +
+            'Request next visit' +
+          '</button>' +
+        '</div>';
+      });
+      html += '</div>';
+
+      var temp = document.createElement('div');
+      temp.innerHTML = html;
+      cardEl.appendChild(temp.firstChild);
+    });
+
+    document.querySelectorAll('.dash-recurring-request-btn[data-recurring-id]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (this.disabled) return;
+        var id = this.getAttribute('data-recurring-id');
+        if (!id) return;
+        if (!confirm('Request the next visit now? Your assigned manager will be notified and the next visit will be scheduled.')) return;
+        var b = this;
+        b.disabled = true;
+        b.textContent = 'Requesting…';
+        window.supabaseClient.rpc('fn_fire_recurring_schedule_manual', {
+          p_schedule_id: id,
+          p_trigger_type: 'client_manual'
+        }).then(function(r) {
+          if (r.error) {
+            alert('Could not request: ' + r.error.message);
+            b.disabled = false; b.textContent = 'Request next visit';
+            return;
+          }
+          if (r.data) {
+            alert('Visit requested. A new task has been created and your manager will reach out.');
+          } else {
+            alert('A visit is already in progress for this service. Please wait for it to complete.');
+          }
+          b.disabled = false; b.textContent = 'Request next visit';
+          loadRealTimeStatus();
+        });
+      });
+    });
   }
 
   // ══════════════════════════════════════════════════════════════════
