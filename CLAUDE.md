@@ -58,9 +58,9 @@ Three user types with role detection in `supabase-client.js`:
 
 | Role | Detection | Portal |
 |------|-----------|--------|
-| **Admin** | Email in `ADMIN_EMAILS` array (hardcoded in `nav.js` and `supabase-client.js`) | `admin.html` |
-| **Employee** | Row in `employees` table matching auth email; status prefix: `employee-approved`, `employee-pending`, `employee-rejected`, `employee-suspended` | `employee.html` (status-gated) |
-| **Client** | Default — any authenticated user not admin or employee | `dashboard.html` |
+| **Admin** | JWT `app_metadata.role === 'admin'` (set server-side via `fn_grant_admin`; mirrored by `private.is_admin()` for RLS) | `admin.html` |
+| **Employee** | `employees.user_id = auth.uid()`; status prefix: `employee-approved`, `employee-pending`, `employee-rejected`, `employee-suspended` | `employee.html` (status-gated) |
+| **Client** | Default — any authenticated user not admin or employee; `clients.user_id` links to `auth.users(id)` | `dashboard.html` |
 
 - `getUserRole()` — async, returns cached role from `sessionStorage.nri_role`
 - `homePathForRole(role)` — maps role to landing page
@@ -75,7 +75,7 @@ Migrations live in `supabase/migrations/`. Key tables:
 | `clients` | Client profiles (name, email, country, city, services[], status) |
 | `tasks` | Service tasks with status, progress %, deadline, `assigned_employee_email`, `current_step` (pipeline stepper state) |
 | `task_updates` | Proof-of-work timeline — note, status, progress, photos[], author info |
-| `task_update_acks` | Client acknowledgments/concerns on task updates |
+| _(no separate acks table)_ | Acknowledgments are stored as columns on `task_updates`: `acknowledged_at`, `acknowledged_note`, `ack_kind` |
 | `employees` | Employee profiles — KYC fields (id_doc_path, address_doc_path), skills[], city, pin_code, status |
 | `disputes` | Client-raised disputes with attachments |
 | `payments` | Payment records with Razorpay integration |

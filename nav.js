@@ -56,9 +56,9 @@
     }
   }
 
-  var ADMIN_EMAILS = ['iqbalahmedkm@gmail.com', 'arfan@nribridgeindia.com', 'admin@nribridgeindia.com', 'admin@gmail.com', 'asif.mohamed1616@gmail.com', 'jeffrinmac@gmail.com'];
-
   // ── Helper: render the logged-in nav state ────────────────────────────────
+  // Role comes from getUserRole() (supabase-client.js), which reads
+  // app_metadata.role from the JWT for admin detection.
   function renderLoggedIn(name, email, role) {
     hideGetStartedButtons();
     var navActions = document.getElementById('navActions');
@@ -66,7 +66,7 @@
 
     var firstName = name.split(' ')[0];
     var initials = name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
-    var isAdmin = email && ADMIN_EMAILS.indexOf(email.toLowerCase()) !== -1;
+    var isAdmin = role === 'admin';
     var isEmployee = role && role.indexOf('employee-') === 0;
 
     var adminLink = isAdmin

@@ -1,15 +1,9 @@
 (function() {
   'use strict';
 
-  // ── Admin email whitelist ──
-  var ADMIN_EMAILS = [
-    'iqbalahmedkm@gmail.com',
-    'arfan@nribridgeindia.com',
-    'admin@nribridgeindia.com',
-    'admin@gmail.com',
-    'asif.mohamed1616@gmail.com',
-    'jeffrinmac@gmail.com'
-  ];
+  // Admin gate: relies on auth.jwt().app_metadata.role === 'admin'
+  // (set server-side; not editable by users). Mirrors the RLS check
+  // in private.is_admin().
 
   // ── Toast helper ──
   function showToast(message, type) {
@@ -68,26 +62,17 @@
   }
 
   waitForSupabase(function() {
-    // Auth check — try Supabase session first, fall back to localStorage
+    // Auth check — must have a Supabase session AND admin role in JWT.
+    // localStorage fallback is intentionally gone: an admin session must
+    // exist in Supabase auth, otherwise RLS denies every query anyway.
     sb.auth.getSession().then(function(result) {
       var s = result.data && result.data.session;
-      var email = '';
-
-      if (s && s.user) {
-        email = (s.user.email || '').toLowerCase();
-      } else {
-        // Fallback: check localStorage session (for email/password signups)
-        var local = JSON.parse(localStorage.getItem('nri_session') || 'null');
-        if (local && local.email) {
-          email = local.email.toLowerCase();
-        }
-      }
-
-      if (!email) {
+      if (!s || !s.user) {
         window.location.href = 'login.html';
         return;
       }
-      if (ADMIN_EMAILS.indexOf(email) === -1) {
+      var meta = s.user.app_metadata || {};
+      if (meta.role !== 'admin') {
         window.location.href = 'login.html';
         return;
       }

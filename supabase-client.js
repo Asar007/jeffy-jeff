@@ -20,13 +20,24 @@ window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ── Role detection ───────────────────────────────────────────────────────────
 // Returns one of: 'admin' | 'employee-approved' | 'employee-pending'
 // | 'employee-rejected' | 'employee-suspended' | 'client'.
+//
+// Source of truth:
+//   * 'admin'     → JWT app_metadata.role === 'admin' (set server-side via
+//                   fn_grant_admin; not user-editable, not in code).
+//   * 'employee-*'→ employees row matching auth.uid() with this status.
+//   * 'client'    → default for any other authenticated user.
+//
 // Cached in sessionStorage under `nri_role` for the session lifetime.
-var ADMIN_EMAILS = ['iqbalahmedkm@gmail.com','arfan@nribridgeindia.com','admin@nribridgeindia.com','admin@gmail.com','asif.mohamed1616@gmail.com','jeffrinmac@gmail.com'];
+function isAdminFromSession(session) {
+  var meta = session && session.user && session.user.app_metadata;
+  return !!(meta && meta.role === 'admin');
+}
 
-function detectRole(email) {
-  email = (email || '').toLowerCase();
+function detectRoleFromSession(session) {
+  if (!session || !session.user) return Promise.resolve('client');
+  if (isAdminFromSession(session)) return Promise.resolve('admin');
+  var email = (session.user.email || '').toLowerCase();
   if (!email) return Promise.resolve('client');
-  if (ADMIN_EMAILS.indexOf(email) !== -1) return Promise.resolve('admin');
   return window.supabaseClient.from('employees').select('status').eq('email', email).maybeSingle().then(function(r) {
     if (r && r.data && r.data.status) return 'employee-' + r.data.status;
     return 'client';
@@ -36,12 +47,12 @@ function detectRole(email) {
 window.getUserRole = function() {
   var cached = sessionStorage.getItem('nri_role');
   if (cached) return Promise.resolve(cached);
-  var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
-  var email = session && session.email;
-  if (!email) return Promise.resolve('client');
-  return detectRole(email).then(function(role) {
-    sessionStorage.setItem('nri_role', role);
-    return role;
+  return window.supabaseClient.auth.getSession().then(function(r) {
+    var session = r && r.data && r.data.session;
+    return detectRoleFromSession(session).then(function(role) {
+      sessionStorage.setItem('nri_role', role);
+      return role;
+    });
   });
 };
 
@@ -63,22 +74,33 @@ window.supabaseClient.auth.onAuthStateChange((event, session) => {
 
       localStorage.setItem('nri_session', JSON.stringify({ name: name, email: userEmail }));
 
-      // Cache role for this tab (admin check is synchronous; employee check is async)
-      detectRole(userEmail).then(function(role) {
+      // Cache role for this tab. Detect from session (JWT app_metadata).
+      detectRoleFromSession(session).then(function(role) {
         sessionStorage.setItem('nri_role', role);
       });
 
       var isEmployee = meta.role === 'employee';
+      var isAdmin = isAdminFromSession(session);
 
       // Dual-write: insert into clients table for admin dashboard (deduplicated).
-      // Skip for admins and employee signups.
-      if (!isEmployee && ADMIN_EMAILS.indexOf(lowerEmail) === -1 && !_clientInsertDone[userEmail]) {
+      // Skip for admins and employee signups. The insert also stamps user_id
+      // so RLS recognises this row as the caller's own.
+      if (!isEmployee && !isAdmin && !_clientInsertDone[userEmail]) {
         _clientInsertDone[userEmail] = true;
-        window.supabaseClient.from('clients').select('id').eq('email', userEmail).then(function(res) {
-          if (res.data && res.data.length > 0) return;
+        var userId = session.user.id;
+        window.supabaseClient.from('clients').select('id, user_id').eq('email', userEmail).then(function(res) {
+          if (res.data && res.data.length > 0) {
+            // Backfill user_id on a pre-existing row if missing.
+            var row = res.data[0];
+            if (!row.user_id) {
+              window.supabaseClient.from('clients').update({ user_id: userId }).eq('id', row.id).then(function() {});
+            }
+            return;
+          }
           window.supabaseClient.from('clients').insert([{
             name: name,
             email: userEmail,
+            user_id: userId,
             country: meta.country || '',
             city: '',
             services: [],
