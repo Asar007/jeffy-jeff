@@ -21,12 +21,12 @@
 <script src="footer.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="upload-helpers.js"></script>
 
 <script>
 (function() {
   'use strict';
 
-  var MAX_BYTES = 5 * 1024 * 1024;
   var sb = window.supabaseClient;
   var mainEl = document.getElementById('empMain');
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
@@ -403,7 +403,10 @@
         btn.textContent = 'Uploading…';
 
         var uploads = files.map(function(f) {
-          if (f.size > MAX_BYTES) { showToast(f.name + ' exceeds 5 MB', 'error'); return Promise.resolve(null); }
+          var check = window.UploadHelpers.validateFile(f, {
+            allowed: window.UploadHelpers.PROFILES.PHOTOS
+          });
+          if (!check.ok) { showToast(check.error, 'error'); return Promise.resolve(null); }
           var path = 'task-proofs/' + stepId + '/' + Date.now() + '-' + f.name.replace(/[^a-zA-Z0-9.\-_]/g, '-');
           return sb.storage.from('documents').upload(path, f).then(function(r) {
             if (r.error) throw new Error(r.error.message);
@@ -555,7 +558,10 @@
     photoInput.addEventListener('change', function() {
       var incoming = Array.prototype.slice.call(photoInput.files || []);
       incoming.forEach(function(f) {
-        if (f.size > MAX_BYTES) { showToast('"' + f.name + '" exceeds 5 MB — skipped', 'error'); return; }
+        var check = window.UploadHelpers.validateFile(f, {
+          allowed: window.UploadHelpers.PROFILES.PHOTOS
+        });
+        if (!check.ok) { showToast(check.error + ' — skipped', 'error'); return; }
         selected.push(f);
       });
       photoInput.value = '';

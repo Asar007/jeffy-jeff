@@ -109,12 +109,12 @@
 <script src="footer.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="upload-helpers.js"></script>
 
 <script>
 (function() {
   'use strict';
 
-  var MAX_BYTES = 5 * 1024 * 1024;
   var sb = window.supabaseClient;
   if (!sb) {
     console.error('Supabase client not initialised');
@@ -138,8 +138,11 @@
     input.addEventListener('change', function() {
       var file = input.files && input.files[0];
       if (!file) return;
-      if (file.size > MAX_BYTES) {
-        alert('"' + file.name + '" exceeds 5 MB. Please pick a smaller file.');
+      var check = window.UploadHelpers.validateFile(file, {
+        allowed: window.UploadHelpers.PROFILES.DOCS
+      });
+      if (!check.ok) {
+        showToast(check.error, 'error');
         input.value = '';
         return;
       }

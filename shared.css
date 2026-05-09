@@ -5203,3 +5203,26 @@ body.emp-page {
 .esc-proof-round { background: var(--bg-cream); border-radius: 8px; padding: 10px; margin-top: 8px; }
 .esc-proof-round-head { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
 .esc-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+/* ══════════════════════════════════════════
+   MOBILE: prevent iOS Safari auto-zoom on input focus.
+   iOS zooms the viewport when an input has computed font-size < 16px and
+   does not zoom back out. Force 16px at small widths only — desktop styles
+   keep their compact look.
+   ══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="search"],
+  input[type="url"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}

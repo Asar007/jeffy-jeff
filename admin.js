@@ -829,7 +829,6 @@
   var teInitialStatus = '';
   var teInitialProgress = 0;
   var teSelectedPhotos = [];
-  var TE_MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 
   function openTaskEdit(taskId) {
     var t = tasks.find(function(x) { return x.id === taskId; });
@@ -987,10 +986,10 @@
     var files = Array.prototype.slice.call(e.target.files || []);
     var valid = [];
     for (var i = 0; i < files.length; i++) {
-      if (files[i].size > TE_MAX_PHOTO_BYTES) {
-        showToast('"' + files[i].name + '" exceeds 5 MB and was skipped', 'error');
-        continue;
-      }
+      var check = window.UploadHelpers.validateFile(files[i], {
+        allowed: window.UploadHelpers.PROFILES.PHOTOS
+      });
+      if (!check.ok) { showToast(check.error + ' — skipped', 'error'); continue; }
       valid.push(files[i]);
     }
     teSelectedPhotos = valid;
@@ -1398,6 +1397,16 @@
     var sess = JSON.parse(localStorage.getItem('nri_session') || 'null') || {};
     var idDocFile = document.getElementById('aeIdDoc').files[0];
     var addrDocFile = document.getElementById('aeAddrDoc').files[0];
+
+    var docOpts = { allowed: window.UploadHelpers.PROFILES.DOCS };
+    if (idDocFile) {
+      var idCheck = window.UploadHelpers.validateFile(idDocFile, docOpts);
+      if (!idCheck.ok) { showToast(idCheck.error, 'error'); submitBtn.disabled = false; submitBtn.textContent = 'Add Employee'; return; }
+    }
+    if (addrDocFile) {
+      var addrCheck = window.UploadHelpers.validateFile(addrDocFile, docOpts);
+      if (!addrCheck.ok) { showToast(addrCheck.error, 'error'); submitBtn.disabled = false; submitBtn.textContent = 'Add Employee'; return; }
+    }
 
     var uploads = [];
     var idDocPath = null;

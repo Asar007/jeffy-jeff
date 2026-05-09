@@ -309,6 +309,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="upload-helpers.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="invoice-generator.js"></script>
 
@@ -975,9 +976,7 @@
       var pay = payments[idx];
       if (!pay) return;
 
-      // Use stored invoice data or generate on-the-fly
       var invData = pay.invoiceData || {
-        invoiceNo: 'NBI-' + (new Date(pay.date.replace('Due: ', '')).getTime() || Date.now()).toString().slice(-8),
         txnId: pay.ref || 'TXN' + Date.now().toString().slice(-6),
         date: pay.date.replace('Due: ', ''),
         planName: pay.title,
@@ -986,6 +985,8 @@
         customerName: fullName,
         customerEmail: session.email
       };
+      // Prefer the canonical sequential invoice number from the payments row when present.
+      if (pay.invoice_number) invData.invoiceNumber = pay.invoice_number;
 
       if (window.downloadInvoice) {
         window.downloadInvoice(invData, session);
@@ -1286,9 +1287,11 @@
     var ext = file.name.split('.').pop();
     var storagePath = sanitizePath(session.email) + '/' + sanitizePath(docService) + '/' + sanitizePath(docName) + '-' + Date.now() + '.' + ext;
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      showToast('File too large. Maximum 10 MB allowed.', 'error');
+    var check = window.UploadHelpers.validateFile(file, {
+      allowed: window.UploadHelpers.PROFILES.OFFICE_DOCS
+    });
+    if (!check.ok) {
+      showToast(check.error, 'error');
       this.value = '';
       pendingUploadDoc = null;
       return;
@@ -2063,23 +2066,20 @@
 
   disputeAttachmentsInput.addEventListener('change', function() {
     var incoming = Array.prototype.slice.call(this.files || []);
-    var rejected = [];
+    var errors = [];
     incoming.forEach(function(file) {
-      if (file.size > DISPUTE_MAX_BYTES) {
-        rejected.push(file.name);
-        return;
-      }
+      var check = window.UploadHelpers.validateFile(file, {
+        allowed: window.UploadHelpers.PROFILES.OFFICE_DOCS
+      });
+      if (!check.ok) { errors.push(check.error); return; }
       var already = selectedDisputeFiles.some(function(f) {
         return f.name === file.name && f.size === file.size;
       });
       if (!already) selectedDisputeFiles.push(file);
     });
     this.value = '';
-    if (rejected.length) {
-      showToast(rejected.length === 1
-        ? rejected[0] + ' exceeds the 5 MB limit'
-        : rejected.length + ' files exceeded the 5 MB limit',
-        'error');
+    if (errors.length) {
+      showToast(errors.length === 1 ? errors[0] : errors.length + ' files were skipped', 'error');
     }
     renderDisputeFileList();
   });
