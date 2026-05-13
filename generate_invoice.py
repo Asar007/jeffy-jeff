@@ -128,9 +128,7 @@ def build():
             "<b>From</b><br/>"
             "[Your Name]<br/>"
             "[Your City, India]<br/>"
-            "[Email] · [Phone]<br/>"
-            "<font color='#6e6e5a'>GSTIN: Not Applicable — turnover below "
-            "₹20L threshold</font>",
+            "[Email] · [Phone]",
             BODY,
         ),
         Paragraph(
@@ -331,11 +329,7 @@ def build():
     story.append(oos_table)
 
     story.append(Spacer(1, 18))
-    story.append(Paragraph(
-        "Thank you for the engagement. GST not applicable as turnover is "
-        "below the ₹20L registration threshold under the CGST Act.",
-        SMALL,
-    ))
+    story.append(Paragraph("Thank you for the engagement.", SMALL))
 
     doc.build(story)
     print(f"Generated: {OUTPUT}")
