@@ -1,12 +1,11 @@
 // invoice-generator.js
-// Generates a tax invoice PDF via html2pdf.js. GST-compliant for Indian intra-state supply.
+// Generates an invoice PDF via html2pdf.js.
 //
-// Edit BUSINESS below before going live: GSTIN, address, email, phone.
+// Edit BUSINESS below before going live: address, email, phone.
 // SAC_BY_KEYWORD maps service-line text to SAC codes; tweak with your CA.
 
 var BUSINESS = {
   name: 'NRI Bridge India',
-  gstin: '33XXXXX0000X1Z5',                 // TODO replace with actual GSTIN before going live
   address: 'S.No 340B/1A3B1, Vinayaka Avenue, Okkiyam Thoraipakkam, OMR, Chennai – 600 097.',
   state: 'Tamil Nadu',
   stateCode: '33',
@@ -86,17 +85,7 @@ function _generatePdf(invoiceData, sessionData) {
   });
 
   var totalDiscount = invoiceData.discount ? parseFloat(invoiceData.discount) : 0;
-  var taxableAmount = subtotal - totalDiscount;
-
-  // Place of supply — defaults to supplier state (intra-state, CGST + SGST). For inter-state
-  // supply pass invoiceData.placeOfSupply !== BUSINESS.state and we'll switch to IGST.
-  var placeOfSupply = invoiceData.placeOfSupply || BUSINESS.state;
-  var isIntraState = placeOfSupply === BUSINESS.state;
-  var cgst = isIntraState ? taxableAmount * 0.09 : 0;
-  var sgst = isIntraState ? taxableAmount * 0.09 : 0;
-  var igst = isIntraState ? 0 : taxableAmount * 0.18;
-  var totalTax = cgst + sgst + igst;
-  var grandTotal = taxableAmount + totalTax;
+  var netAmount = subtotal - totalDiscount;
 
   var html = `
     <style>
@@ -130,7 +119,7 @@ function _generatePdf(invoiceData, sessionData) {
         font-size: 2.8rem; font-weight: 700; letter-spacing: 0.15em;
         margin: 0 0 8px 0;
       }
-      .header-tax-label {
+      .header-subtitle {
         font-size: 0.85rem; letter-spacing: 0.18em; font-weight: 600;
         opacity: 0.9; margin-bottom: 14px;
       }
@@ -163,10 +152,6 @@ function _generatePdf(invoiceData, sessionData) {
       .client-details {
         text-align: right; font-size: 0.82rem; color: #3d4228; line-height: 1.6;
       }
-      .place-of-supply {
-        margin: 18px 60px 0; font-size: 0.8rem; color: #3d4228; font-weight: 600;
-      }
-      .place-of-supply span { font-weight: 400; }
       .table-area { padding: 18px 60px 16px; }
       .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
       .inv-table th {
@@ -238,7 +223,7 @@ function _generatePdf(invoiceData, sessionData) {
         <div class="circle-2"></div>
         <div style="position: relative; z-index: 5;">
           <h1 class="header-title">INVOICE</h1>
-          <div class="header-tax-label">TAX INVOICE</div>
+          <div class="header-subtitle">SERVICE INVOICE</div>
           <div class="header-meta">
             <strong>Invoice No:</strong> ${invoiceNo}<br>
             <strong>Date:</strong> ${formattedDate}
@@ -247,7 +232,6 @@ function _generatePdf(invoiceData, sessionData) {
         <div class="supplier-block">
           <div class="supplier-name">${BUSINESS.name}</div>
           ${BUSINESS.address}<br>
-          <strong>GSTIN:</strong> ${BUSINESS.gstin}<br>
           <strong>State:</strong> ${BUSINESS.state} (${BUSINESS.stateCode})
         </div>
       </div>
@@ -261,10 +245,6 @@ function _generatePdf(invoiceData, sessionData) {
           ${sessionData.email || ''}<br>
           ${sessionData.phone || ''}
         </div>
-      </div>
-
-      <div class="place-of-supply">
-        Place of Supply: <span>${placeOfSupply}</span>
       </div>
 
       <div class="table-area">
@@ -289,12 +269,8 @@ function _generatePdf(invoiceData, sessionData) {
           <div class="label">Subtotal</div>
           <div class="val">₹${subtotal.toLocaleString('en-IN')}</div>
           ${totalDiscount > 0 ? '<div class="label">Discount</div><div class="val">-₹' + totalDiscount.toLocaleString('en-IN') + '</div>' : ''}
-          <div class="label">Taxable Amount</div>
-          <div class="val">₹${Math.round(taxableAmount).toLocaleString('en-IN')}</div>
-          ${isIntraState
-            ? '<div class="label">CGST @ 9%</div><div class="val">₹' + Math.round(cgst).toLocaleString('en-IN') + '</div>' +
-              '<div class="label">SGST @ 9%</div><div class="val">₹' + Math.round(sgst).toLocaleString('en-IN') + '</div>'
-            : '<div class="label">IGST @ 18%</div><div class="val">₹' + Math.round(igst).toLocaleString('en-IN') + '</div>'}
+          <div class="label">Total Due</div>
+          <div class="val">₹${Math.round(netAmount).toLocaleString('en-IN')}</div>
         </div>
       </div>
 
@@ -309,7 +285,7 @@ function _generatePdf(invoiceData, sessionData) {
         </div>
         <div class="grand-total-block">
           <div class="label">Total</div>
-          <div class="val">₹${Math.round(grandTotal).toLocaleString('en-IN')}</div>
+          <div class="val">₹${Math.round(netAmount).toLocaleString('en-IN')}</div>
         </div>
       </div>
 

@@ -42,6 +42,7 @@
   var employeeMetrics = [];
   var servicePipelines = [];
   var recurringSchedules = [];
+  var documentRequests = [];
   var activeDisputeFilter = 'all';
   var activeEmpFilter = 'all';
   var activeRecurringFilter = 'all';
@@ -105,7 +106,8 @@
       sb.from('step_proofs').select('*').order('round', { ascending: true }),
       sb.from('employee_metrics').select('*').order('performance_score', { ascending: false }),
       sb.from('service_pipelines').select('*').order('pipeline_key', { ascending: true }),
-      sb.from('recurring_schedules').select('*').order('next_due_at', { ascending: true })
+      sb.from('recurring_schedules').select('*').order('next_due_at', { ascending: true }),
+      sb.from('document_requests').select('*').order('created_at', { ascending: false })
     ]).then(function(results) {
       if (results[0].error) console.error('Clients fetch error:', results[0].error);
       if (results[1].error) console.error('Tasks fetch error:', results[1].error);
@@ -118,6 +120,7 @@
       if (results[8] && results[8].error) console.error('Employee metrics fetch error:', results[8].error);
       if (results[9] && results[9].error) console.error('Service pipelines fetch error:', results[9].error);
       if (results[10] && results[10].error) console.error('Recurring schedules fetch error:', results[10].error);
+      if (results[11] && results[11].error) console.error('Document requests fetch error:', results[11].error);
 
       clients = results[0].data || [];
       tasks = results[1].data || [];
@@ -130,8 +133,9 @@
       employeeMetrics = (results[8] && results[8].data) || [];
       servicePipelines = (results[9] && results[9].data) || [];
       recurringSchedules = (results[10] && results[10].data) || [];
+      documentRequests = (results[11] && results[11].data) || [];
 
-      console.log('Dashboard loaded:', { clients: clients.length, tasks: tasks.length, requests: requests.length, appointments: appointments.length, disputes: disputes.length, employees: employees.length, taskSteps: taskSteps.length, stepProofs: stepProofs.length });
+      console.log('Dashboard loaded:', { clients: clients.length, tasks: tasks.length, requests: requests.length, appointments: appointments.length, disputes: disputes.length, employees: employees.length, taskSteps: taskSteps.length, stepProofs: stepProofs.length, documentRequests: documentRequests.length });
       renderStats();
       renderOperationsBoard();
       populateOpsFilters();
@@ -147,6 +151,7 @@
       renderLeaderboard();
       renderEscalations();
       renderProofQueue();
+      renderDocumentRequestClientOptions();
     });
   }
 
@@ -1339,10 +1344,99 @@
     setTimeout(function() { aeModal.style.display = 'none'; }, 300);
   }
 
+  function submitDocumentRequest() {
+    var clientEmail = (document.getElementById('docReqClientSelect').value || '').trim().toLowerCase();
+    var serviceType = document.getElementById('docReqServiceInput').value.trim();
+    var title = document.getElementById('docReqTitleInput').value.trim();
+    var note = document.getElementById('docReqNoteInput').value.trim();
+    var dueRaw = document.getElementById('docReqDueInput').value;
+    var submitBtn = document.getElementById('docReqSubmitBtn');
+
+    if (!clientEmail) {
+      showToast('Select a client first', 'error');
+      return;
+    }
+    if (!title) {
+      showToast('Document title is required', 'error');
+      return;
+    }
+
+    var client = clients.find(function(item) { return item.email === clientEmail; }) || {};
+    var sess = JSON.parse(localStorage.getItem('nri_session') || 'null') || {};
+    var dueAt = dueRaw ? new Date(dueRaw + 'T23:59:59').toISOString() : null;
+    var row = {
+      client_email: clientEmail,
+      service_type: serviceType || null,
+      document_title: title,
+      request_note: note || null,
+      due_at: dueAt,
+      status: 'requested',
+      sensitivity: 'sensitive',
+      requested_by: sess.email || 'admin'
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+
+    sb.from('document_requests').insert([row]).select().single().then(function(insertResult) {
+      if (insertResult.error || !insertResult.data) {
+        throw new Error(insertResult.error ? insertResult.error.message : 'Failed to create request');
+      }
+
+      var requestRow = insertResult.data;
+      return invokeDocumentRequestEmail({
+        requestId: requestRow.id,
+        clientEmail: clientEmail,
+        clientName: client.name || '',
+        serviceType: serviceType || '',
+        documentTitle: title,
+        requestNote: note || '',
+        dueAt: dueAt
+      }).then(function(mailResult) {
+        if (mailResult.error || !mailResult.data) {
+          var errMsg = mailResult.error && mailResult.error.message
+            ? mailResult.error.message
+            : 'Email send failed';
+          return sb.from('document_requests').update({
+            status: 'email_failed',
+            email_error: errMsg
+          }).eq('id', requestRow.id).then(function() {
+            throw new Error(errMsg);
+          });
+        }
+
+        return sb.from('document_requests').update({
+          status: 'email_sent',
+          email_subject: mailResult.data.emailSubject || null,
+          email_sent_at: mailResult.data.sentAt || new Date().toISOString(),
+          email_error: null
+        }).eq('id', requestRow.id);
+      });
+    }).then(function(updateResult) {
+      if (updateResult && updateResult.error) {
+        throw new Error(updateResult.error.message || 'Request saved but status update failed');
+      }
+      document.getElementById('docReqClientSelect').value = '';
+      document.getElementById('docReqServiceInput').value = '';
+      document.getElementById('docReqTitleInput').value = '';
+      document.getElementById('docReqNoteInput').value = '';
+      document.getElementById('docReqDueInput').value = '';
+      showToast('Document request email sent', 'success');
+      loadDocuments();
+    }).catch(function(err) {
+      showToast(err && err.message ? err.message : 'Failed to send document request', 'error');
+      loadDocuments();
+    }).finally(function() {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send Request';
+    });
+  }
+
   document.getElementById('btnAddEmployee').addEventListener('click', openAddEmployee);
   document.getElementById('navAddEmployee').addEventListener('click', openAddEmployee);
   document.getElementById('aeCancel').addEventListener('click', closeAddEmployee);
   aeModal.addEventListener('click', function(e) { if (e.target === aeModal) closeAddEmployee(); });
+  document.getElementById('docReqSubmitBtn').addEventListener('click', submitDocumentRequest);
 
   // ── Admin access (promote / revoke) ──
   // Calls public.fn_grant_admin / fn_revoke_admin (admin-only RPCs).
@@ -1593,6 +1687,83 @@
     return 'doc-type-other';
   }
 
+  function renderDocumentRequestClientOptions() {
+    var select = document.getElementById('docReqClientSelect');
+    if (!select) return;
+    var currentValue = select.value;
+    var options = '<option value="">Select a client</option>';
+    clients.slice().sort(function(a, b) {
+      return String(a.name || a.email || '').localeCompare(String(b.name || b.email || ''));
+    }).forEach(function(client) {
+      var label = (client.name || client.email || 'Unnamed client') + (client.email ? ' (' + client.email + ')' : '');
+      options += '<option value="' + escapeHtml(client.email || '') + '">' + escapeHtml(label) + '</option>';
+    });
+    select.innerHTML = options;
+    if (currentValue) select.value = currentValue;
+  }
+
+  function formatDateLong(value) {
+    if (!value) return '—';
+    return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function getDocumentRequestStatusMeta(status) {
+    var normalized = String(status || 'requested').toLowerCase();
+    if (normalized === 'uploaded') return { label: 'Uploaded', color: '#1f7a5a', bg: 'rgba(31,122,90,0.12)' };
+    if (normalized === 'email_sent') return { label: 'Email Sent', color: '#855b00', bg: 'rgba(133,91,0,0.12)' };
+    if (normalized === 'email_failed') return { label: 'Email Failed', color: '#a23636', bg: 'rgba(162,54,54,0.12)' };
+    if (normalized === 'cancelled') return { label: 'Cancelled', color: '#5c6670', bg: 'rgba(92,102,112,0.12)' };
+    return { label: 'Requested', color: '#4a3f35', bg: 'rgba(74,63,53,0.1)' };
+  }
+
+  function renderDocumentRequestsList() {
+    var wrap = document.getElementById('documentRequestList');
+    var summary = document.getElementById('documentRequestSummary');
+    if (!wrap || !summary) return;
+
+    var openCount = documentRequests.filter(function(item) {
+      return item.status !== 'uploaded' && item.status !== 'cancelled';
+    }).length;
+    summary.textContent = documentRequests.length + ' total · ' + openCount + ' open';
+
+    if (!documentRequests.length) {
+      wrap.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:24px;">No custom document requests sent yet.</div>';
+      return;
+    }
+
+    var html = '<div style="display:grid;gap:10px;">';
+    documentRequests.slice(0, 12).forEach(function(item) {
+      var client = clients.find(function(c) { return c.email === item.client_email; });
+      var clientName = client && client.name ? client.name : (item.client_email || 'Unknown client');
+      var meta = getDocumentRequestStatusMeta(item.status);
+      var dueText = item.due_at ? 'Due ' + formatDateLong(item.due_at) : 'No due date';
+      var sentText = item.email_sent_at ? 'Email sent ' + formatDateLong(item.email_sent_at) : (item.status === 'email_failed' ? 'Email send failed' : 'Awaiting email delivery');
+      html +=
+        '<div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--bg-deep);">' +
+          '<div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">' +
+            '<div>' +
+              '<div style="font-weight:700;">' + escapeHtml(item.document_title || 'Untitled request') + '</div>' +
+              '<div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px;">' + escapeHtml(clientName) + ' · ' + escapeHtml(item.client_email || '') + '</div>' +
+            '</div>' +
+            '<span style="padding:5px 10px;border-radius:999px;font-size:0.74rem;font-weight:700;background:' + meta.bg + ';color:' + meta.color + ';">' + meta.label + '</span>' +
+          '</div>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:0.76rem;color:var(--text-muted);">' +
+            '<span>' + escapeHtml(item.service_type || 'General') + '</span>' +
+            '<span>' + escapeHtml(dueText) + '</span>' +
+            '<span>' + escapeHtml(sentText) + '</span>' +
+          '</div>' +
+          (item.request_note ? '<div style="margin-top:10px;font-size:0.82rem;color:var(--text-mid);">' + escapeHtml(item.request_note) + '</div>' : '') +
+          (item.email_error ? '<div style="margin-top:10px;font-size:0.78rem;color:#a23636;">' + escapeHtml(item.email_error) + '</div>' : '') +
+        '</div>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+
+  function invokeDocumentRequestEmail(payload) {
+    return sb.functions.invoke('send-document-request-email', { body: payload });
+  }
+
   // ── Analytics ─────────────────────────────────────────────────
   function renderAnalytics() {
     var now = new Date();
@@ -1789,44 +1960,51 @@
   }
 
   function loadDocuments() {
-    sb.from('documents')
-      .select('*')
-      .order('uploaded_at', { ascending: false })
-      .then(function(result) {
-        if (result.error) {
-          console.error('Documents fetch error:', result.error);
-          document.getElementById('docsGrid').innerHTML =
-            '<div style="text-align:center;color:var(--text-muted);padding:40px;">Could not load documents</div>';
-          return;
-        }
-        adminDocs = result.data || [];
-        document.getElementById('badgeDocs').textContent = adminDocs.length;
-        document.getElementById('docCountLabel').textContent = adminDocs.length + ' document' + (adminDocs.length !== 1 ? 's' : '') + ' uploaded';
+    Promise.all([
+      sb.from('documents').select('*').order('uploaded_at', { ascending: false }),
+      sb.from('document_requests').select('*').order('created_at', { ascending: false })
+    ]).then(function(results) {
+      var docResult = results[0];
+      var requestResult = results[1];
+      if (docResult.error) {
+        console.error('Documents fetch error:', docResult.error);
+        document.getElementById('docsGrid').innerHTML =
+          '<div style="text-align:center;color:var(--text-muted);padding:40px;">Could not load documents</div>';
+        return;
+      }
+      if (requestResult.error) {
+        console.error('Document requests fetch error:', requestResult.error);
+      }
 
-        // Build filter tabs
-        var serviceTypes = {};
-        adminDocs.forEach(function(d) {
-          var svc = d.service_type || 'Other';
-          serviceTypes[svc] = (serviceTypes[svc] || 0) + 1;
-        });
-        var filtersHtml = '<button class="adm-filter-tab' + (activeDocFilter === 'all' ? ' active' : '') + '" data-doc-filter="all">All (' + adminDocs.length + ')</button>';
-        Object.keys(serviceTypes).forEach(function(svc) {
-          filtersHtml += '<button class="adm-filter-tab' + (activeDocFilter === svc ? ' active' : '') + '" data-doc-filter="' + svc + '">' + svc + ' (' + serviceTypes[svc] + ')</button>';
-        });
-        document.querySelector('.adm-docs-filters').innerHTML = filtersHtml;
+      adminDocs = docResult.data || [];
+      documentRequests = requestResult.data || documentRequests;
+      document.getElementById('badgeDocs').textContent = adminDocs.length;
+      document.getElementById('docCountLabel').textContent = adminDocs.length + ' document' + (adminDocs.length !== 1 ? 's' : '') + ' uploaded';
+      renderDocumentRequestClientOptions();
+      renderDocumentRequestsList();
 
-        // Attach filter handlers
-        document.querySelectorAll('[data-doc-filter]').forEach(function(btn) {
-          btn.addEventListener('click', function() {
-            document.querySelectorAll('[data-doc-filter]').forEach(function(b) { b.classList.remove('active'); });
-            this.classList.add('active');
-            activeDocFilter = this.getAttribute('data-doc-filter');
-            renderDocsGrid();
-          });
-        });
-
-        renderDocsGrid();
+      var serviceTypes = {};
+      adminDocs.forEach(function(d) {
+        var svc = d.service_type || 'Other';
+        serviceTypes[svc] = (serviceTypes[svc] || 0) + 1;
       });
+      var filtersHtml = '<button class="adm-filter-tab' + (activeDocFilter === 'all' ? ' active' : '') + '" data-doc-filter="all">All (' + adminDocs.length + ')</button>';
+      Object.keys(serviceTypes).sort().forEach(function(svc) {
+        filtersHtml += '<button class="adm-filter-tab' + (activeDocFilter === svc ? ' active' : '') + '" data-doc-filter="' + svc + '">' + svc + ' (' + serviceTypes[svc] + ')</button>';
+      });
+      document.getElementById('docsFilterTabs').innerHTML = filtersHtml;
+
+      document.querySelectorAll('#docsFilterTabs [data-doc-filter]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('#docsFilterTabs [data-doc-filter]').forEach(function(b) { b.classList.remove('active'); });
+          this.classList.add('active');
+          activeDocFilter = this.getAttribute('data-doc-filter');
+          renderDocsGrid();
+        });
+      });
+
+      renderDocsGrid();
+    });
   }
 
   function renderDocsGrid() {

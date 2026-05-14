@@ -16,6 +16,8 @@ if (!SUPABASE_URL || SUPABASE_URL === "YOUR_SUPABASE_URL") {
 }
 
 window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.NRI_SUPABASE_URL = SUPABASE_URL;
+window.NRI_SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
 
 // ── Role detection ───────────────────────────────────────────────────────────
 // Returns one of: 'admin' | 'employee-approved' | 'employee-pending'

@@ -327,7 +327,52 @@
         <h2>Client Documents</h2>
         <span style="font-size:0.78rem;color:var(--text-muted);" id="docCountLabel"></span>
       </div>
-      <div class="adm-docs-filters" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px 18px 16px;margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px;">
+          <div>
+            <div style="font-weight:700;font-size:1rem;margin-bottom:4px;">Request Sensitive Documents</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);max-width:700px;">Send a secure upload request to a client by email. The email tells them to upload through their dashboard only, which keeps sensitive files out of email attachments.</div>
+          </div>
+          <div id="documentRequestSummary" style="font-size:0.78rem;color:var(--text-muted);">Loading requests…</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:start;">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:600;">
+            <span>Client *</span>
+            <select id="docReqClientSelect" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-deep);color:var(--text);font-size:0.9rem;">
+              <option value="">Select a client</option>
+            </select>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:600;">
+            <span>Service</span>
+            <input type="text" id="docReqServiceInput" placeholder="e.g. Legal & Documentation" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-deep);color:var(--text);font-size:0.9rem;">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:600;">
+            <span>Document Title *</span>
+            <input type="text" id="docReqTitleInput" placeholder="e.g. Sale deed copy" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-deep);color:var(--text);font-size:0.9rem;">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:600;">
+            <span>Due Date</span>
+            <input type="date" id="docReqDueInput" style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-deep);color:var(--text);font-size:0.9rem;">
+          </label>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:0.8rem;font-weight:600;margin-top:12px;">
+          <span>Instructions</span>
+          <textarea id="docReqNoteInput" rows="3" placeholder="Explain what version is needed, how recent it should be, or any naming guidance for the upload." style="padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-deep);color:var(--text);font-size:0.9rem;resize:vertical;"></textarea>
+        </label>
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px;">
+          <div style="font-size:0.76rem;color:var(--text-muted);">Delivery email includes a secure portal reminder and avoids asking clients to send attachments over email.</div>
+          <button class="adm-btn-add" id="docReqSubmitBtn" type="button">Send Request</button>
+        </div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px;">
+        <div class="adm-section-head" style="margin-bottom:12px;">
+          <h3 style="font-size:0.98rem;margin:0;">Requested Documents</h3>
+        </div>
+        <div id="documentRequestList">
+          <div style="text-align:center;color:var(--text-muted);padding:24px;">Loading requests…</div>
+        </div>
+      </div>
+      <div class="adm-docs-filters" id="docsFilterTabs" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
         <button class="adm-filter-tab active" data-doc-filter="all">All</button>
       </div>
       <div id="docsGrid">

@@ -404,6 +404,8 @@
   var disputes = [];
   var disputeServiceOptions = [];
   var activeDisputeServiceMeta = null;
+  var documentRequests = [];
+  var documentRequestDocuments = {};
 
   var SVC_NAMES = {
     home: 'Home Management',
@@ -1119,6 +1121,94 @@
 
   document.getElementById('docsList').innerHTML = sideDocsHtml;
 
+  function buildSidebarDocumentEntries() {
+    var entries = [];
+    var uploadedDocs = user.uploadedDocs || {};
+
+    activeServices.forEach(function(svc) {
+      var pipeline = SERVICE_PIPELINES[svc];
+      if (!pipeline) return;
+      var timeStatus = getTimeBasedStep(svc, 0);
+      var totalDocs = pipeline.requiredDocs.length;
+      var threshold = Math.min(Math.round(totalDocs * (timeStatus.progress / 100)), totalDocs);
+
+      pipeline.requiredDocs.forEach(function(doc, di) {
+        var docKey = SVC_NAMES[svc] + '/' + doc.name;
+        var uploaded = uploadedDocs[docKey];
+        var isReceived = uploaded ? true : di < threshold;
+        entries.push({
+          name: doc.name,
+          meta: SVC_NAMES[svc],
+          status: isReceived ? 'received' : 'pending',
+          action: isReceived ? 'View' : 'Upload',
+          uploaded: uploaded || null,
+          requestId: null,
+          requestNote: '',
+          dueAt: null,
+          isSecureRequest: false
+        });
+      });
+    });
+
+    documentRequests.forEach(function(req) {
+      var reqDoc = documentRequestDocuments[req.id] || null;
+      var fallbackKey = (req.service_type || 'General') + '/' + req.document_title;
+      var uploaded = reqDoc || uploadedDocs[fallbackKey] || null;
+      var isReceived = !!uploaded || req.status === 'uploaded';
+      entries.push({
+        name: req.document_title,
+        meta: req.service_type || 'Secure Request',
+        status: isReceived ? 'received' : 'pending',
+        action: isReceived ? 'View' : 'Upload',
+        uploaded: uploaded,
+        requestId: req.id,
+        requestNote: req.request_note || '',
+        dueAt: req.due_at || null,
+        isSecureRequest: true
+      });
+    });
+
+    if (entries.length === 0) {
+      return [
+        { name: 'Sale Deed / Title Deed', meta: 'Home Management', status: 'received', action: 'View', uploaded: null, requestId: null, requestNote: '', dueAt: null, isSecureRequest: false },
+        { name: 'Encumbrance Certificate', meta: 'Home Management', status: 'received', action: 'View', uploaded: null, requestId: null, requestNote: '', dueAt: null, isSecureRequest: false },
+        { name: 'PAN Card', meta: 'Legal & Documentation', status: 'pending', action: 'Upload', uploaded: null, requestId: null, requestNote: '', dueAt: null, isSecureRequest: false }
+      ];
+    }
+
+    var pendingDocs = entries.filter(function(d) { return d.status === 'pending'; });
+    var receivedDocs = entries.filter(function(d) { return d.status === 'received'; });
+    return pendingDocs.concat(receivedDocs).slice(0, 6);
+  }
+
+  function renderSidebarDocuments() {
+    var docs = buildSidebarDocumentEntries();
+    var html = '';
+    docs.forEach(function(doc) {
+      var actionClass = doc.status === 'pending' ? 'upload-cta' : '';
+      var statusIcon = doc.status === 'received' ? checkIconSmall : clockIconSmall;
+      var statusText = doc.status === 'received' ? 'Received' : 'Pending';
+      var dueText = doc.dueAt ? ' &middot; Due ' + new Date(doc.dueAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      var requestText = doc.requestNote ? '<span style="display:block;color:var(--text-mid);margin-top:2px;">' + escapeHtml(doc.requestNote) + '</span>' : '';
+      html +=
+        '<div class="dash-doc-row" data-doc-name="' + escapeHtml(doc.name) + '" data-doc-service="' + escapeHtml(doc.meta) + '" data-request-id="' + escapeHtml(doc.requestId || '') + '">' +
+          '<div class="dash-doc-left">' +
+            '<div class="dash-doc-icon">' + docIcon + '</div>' +
+            '<div class="dash-doc-info">' +
+              '<strong>' + escapeHtml(doc.name) + (doc.isSecureRequest ? ' <span style="font-size:0.68rem;color:#855b00;font-weight:700;">SECURE REQUEST</span>' : '') + '</strong>' +
+              '<span>' + escapeHtml(doc.meta) + ' &middot; ' + statusIcon + ' ' + statusText + dueText + '</span>' +
+              requestText +
+            '</div>' +
+          '</div>' +
+          '<button class="dash-doc-action ' + actionClass + '" data-doc-name="' + escapeHtml(doc.name) + '" data-doc-service="' + escapeHtml(doc.meta) + '" data-doc-status="' + escapeHtml(doc.status) + '" data-request-id="' + escapeHtml(doc.requestId || '') + '">' + escapeHtml(doc.action) + '</button>' +
+        '</div>';
+    });
+    document.getElementById('docsList').innerHTML = html;
+    attachDocumentActionHandlers();
+  }
+
+  renderSidebarDocuments();
+
   // ── Animate on scroll ──
   var observer = new IntersectionObserver(function(entries) {
     entries.forEach(function(entry) {
@@ -1284,6 +1374,7 @@
     var docName = pendingUploadDoc.name;
     var docService = pendingUploadDoc.service;
     var docKey = docService + '/' + docName;
+    var requestId = pendingUploadDoc.requestId || null;
     var ext = file.name.split('.').pop();
     var storagePath = sanitizePath(session.email) + '/' + sanitizePath(docService) + '/' + sanitizePath(docName) + '-' + Date.now() + '.' + ext;
 
@@ -1308,19 +1399,19 @@
           .then(function(result) {
             if (result.error) {
               // Storage bucket may not exist — save with base64 content
-              saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl);
+              saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl, requestId);
               showToast('Document uploaded successfully', 'success');
             } else {
-              saveDocLocally(docKey, docName, docService, file.name, storagePath, null);
+              saveDocLocally(docKey, docName, docService, file.name, storagePath, null, requestId);
               showToast('Document uploaded successfully', 'success');
             }
           })
           .catch(function() {
-            saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl);
+            saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl, requestId);
             showToast('Document uploaded successfully', 'success');
           });
       } else {
-        saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl);
+        saveDocLocally(docKey, docName, docService, file.name, null, fileDataUrl, requestId);
         showToast('Document uploaded successfully', 'success');
       }
     };
@@ -1334,17 +1425,28 @@
     pendingUploadDoc = null;
   });
 
-  function saveDocLocally(docKey, docName, docService, fileName, storagePath, fileDataUrl) {
+  function saveDocLocally(docKey, docName, docService, fileName, storagePath, fileDataUrl, requestId) {
     user.uploadedDocs = user.uploadedDocs || {};
     user.uploadedDocs[docKey] = {
       status: 'received',
       fileName: fileName,
       storagePath: storagePath,
-      uploadedAt: new Date().toISOString()
+      uploadedAt: new Date().toISOString(),
+      requestId: requestId || null
     };
     localStorage.setItem('nri_users', JSON.stringify(users));
     refreshDocRow(docName, docService, 'received');
     refreshDocChecklist(docName, docService);
+    if (requestId) {
+      documentRequestDocuments[requestId] = {
+        document_request_id: requestId,
+        file_name: fileName,
+        storage_path: storagePath,
+        file_data: fileDataUrl,
+        uploaded_at: new Date().toISOString()
+      };
+    }
+    renderSidebarDocuments();
 
     // Dual-write to Supabase documents table for admin dashboard
     if (window.supabaseClient) {
@@ -1354,7 +1456,8 @@
         doc_name: docName,
         file_name: fileName,
         storage_path: storagePath,
-        status: 'uploaded'
+        status: 'uploaded',
+        document_request_id: requestId || null
       };
       // Store base64 file content when no storage path available
       if (!storagePath && fileDataUrl) {
@@ -1364,6 +1467,8 @@
         .then(function(result) {
           if (result.error) {
             console.error('Document insert error:', result.error);
+          } else if (requestId) {
+            loadDocumentRequests();
           }
         })
         .catch(function(err) {
@@ -1373,7 +1478,7 @@
   }
 
   // Attach click handlers to all doc action buttons
-  document.querySelectorAll('.dash-doc-action').forEach(function(btn) {
+  if (false) document.querySelectorAll('.dash-doc-action').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var docName = this.getAttribute('data-doc-name');
       var docService = this.getAttribute('data-doc-service');
@@ -1410,6 +1515,45 @@
       }
     });
   });
+
+  function attachDocumentActionHandlers() {
+    document.querySelectorAll('.dash-doc-action').forEach(function(btn) {
+      btn.onclick = function() {
+        var docName = this.getAttribute('data-doc-name');
+        var docService = this.getAttribute('data-doc-service');
+        var docStatus = this.getAttribute('data-doc-status');
+        var requestId = this.getAttribute('data-request-id') || '';
+        var docKey = docService + '/' + docName;
+        var uploaded = requestId
+          ? (documentRequestDocuments[requestId] || (user.uploadedDocs || {})[docKey] || null)
+          : (user.uploadedDocs || {})[docKey];
+
+        if (docStatus === 'pending' || this.textContent.trim() === 'Upload') {
+          pendingUploadDoc = { name: docName, service: docService, requestId: requestId || null };
+          docFileInput.click();
+          return false;
+        }
+
+        openDashDocPreview(docName, docService, uploaded && uploaded.file_name ? uploaded.file_name : (uploaded && uploaded.fileName ? uploaded.fileName : docName));
+        if (uploaded && (uploaded.storage_path || uploaded.storagePath) && window.supabaseClient && window.supabaseClient.storage) {
+          window.supabaseClient.storage.from('documents').createSignedUrl(uploaded.storage_path || uploaded.storagePath, 3600)
+            .then(function(result) {
+              if (result.error || !result.data || !result.data.signedUrl) {
+                fetchAndPreviewFromDB(docName, docService, requestId || null);
+              } else {
+                renderDashDocPreview(result.data.signedUrl, uploaded.file_name || uploaded.fileName || docName);
+              }
+            })
+            .catch(function() {
+              fetchAndPreviewFromDB(docName, docService, requestId || null);
+            });
+        } else {
+          fetchAndPreviewFromDB(docName, docService, requestId || null);
+        }
+        return false;
+      };
+    });
+  }
 
   // ══════════════════════════════════════════════════════════════════
   // ── DOCUMENT PREVIEW MODAL ──────────────────────────────────────
@@ -1497,20 +1641,20 @@
     }
   }
 
-  function fetchAndPreviewFromDB(docName, docService) {
+  function fetchAndPreviewFromDB(docName, docService, requestId) {
     if (!window.supabaseClient) {
       dashDocLoader.style.display = 'none';
       dashDocError.style.display = 'flex';
       return;
     }
-    window.supabaseClient.from('documents')
-      .select('file_data, file_name, storage_path')
+    var query = window.supabaseClient.from('documents')
+      .select('file_data, file_name, storage_path, document_request_id')
       .eq('client_email', session.email)
-      .eq('doc_name', docName)
-      .eq('service_type', docService)
       .order('uploaded_at', { ascending: false })
-      .limit(1)
-      .then(function(result) {
+      .limit(1);
+    if (requestId) query = query.eq('document_request_id', requestId);
+    else query = query.eq('doc_name', docName).eq('service_type', docService);
+    query.then(function(result) {
         if (result.error || !result.data || result.data.length === 0) {
           dashDocLoader.style.display = 'none';
           dashDocError.style.display = 'flex';
@@ -1756,6 +1900,47 @@
       // Re-render custom cards
       loadQuotations();
     });
+  }
+
+  function loadDocumentRequests() {
+    if (!window.supabaseClient) return;
+    window.supabaseClient.from('document_requests')
+      .select('*')
+      .eq('client_email', session.email)
+      .neq('status', 'cancelled')
+      .order('created_at', { ascending: false })
+      .then(function(result) {
+        if (result.error) {
+          console.error('Document request fetch error:', result.error);
+          return;
+        }
+        documentRequests = result.data || [];
+        if (!documentRequests.length) {
+          documentRequestDocuments = {};
+          renderSidebarDocuments();
+          return;
+        }
+
+        var requestIds = documentRequests.map(function(item) { return item.id; });
+        window.supabaseClient.from('documents')
+          .select('id, document_request_id, file_name, storage_path, file_data, uploaded_at')
+          .in('document_request_id', requestIds)
+          .order('uploaded_at', { ascending: false })
+          .then(function(docResult) {
+            if (docResult.error) {
+              console.error('Requested documents fetch error:', docResult.error);
+              documentRequestDocuments = {};
+              renderSidebarDocuments();
+              return;
+            }
+            documentRequestDocuments = {};
+            (docResult.data || []).forEach(function(doc) {
+              if (!doc.document_request_id || documentRequestDocuments[doc.document_request_id]) return;
+              documentRequestDocuments[doc.document_request_id] = doc;
+            });
+            renderSidebarDocuments();
+          });
+      });
   }
 
   var disputeModal = document.getElementById('disputeModal');
@@ -2968,6 +3153,7 @@
     if (window.supabaseClient) {
       loadRealTimeStatus();
       loadQuotations();
+      loadDocumentRequests();
       loadDisputes();
     } else {
       setTimeout(waitForSupabaseAndLoad, 100);
@@ -2978,6 +3164,7 @@
   // Auto-refresh every 60 seconds
   setInterval(function() {
     loadRealTimeStatus();
+    loadDocumentRequests();
     loadDisputes();
   }, 60000);
 
