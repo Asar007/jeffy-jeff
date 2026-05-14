@@ -16,7 +16,32 @@
   .progress-line.done{background:var(--green-pop)}
   .progress-label{font-size:.6rem;text-align:center;color:var(--text-mid);margin-top:6px;font-weight:500}
   .onboard-step{display:none}.onboard-step.active{display:block;animation:fadeUp .4s ease both}
-  .onboard-card{background:var(--bg-cream);border-radius:var(--radius-lg);padding:48px 40px;max-width:720px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+  .onboard-card{background:var(--bg-cream);border-radius:var(--radius-lg);padding:48px 40px;max-width:820px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.15);position:relative}
+  .onboard-flex-container{display:flex;gap:30px;align-items:flex-start}
+  .onboard-main-content{flex:1;min-width:0}
+  
+  /* Plan Details Sidebar */
+  .onboard-flex-container { position: relative; display: flex; gap: 30px; align-items: flex-start; }
+  .plan-details-panel {
+    width: 280px; background: var(--white); border-radius: var(--radius-md);
+    padding: 24px; border: 1.5px solid var(--green-pop);
+    position: absolute; left: 100%; margin-left: 20px;
+    top: 0; opacity: 0; visibility: hidden;
+    transform: translateX(20px); transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s, top 0.3s ease;
+    box-shadow: 0 15px 40px rgba(74,106,46,0.12);
+    z-index: 1000; pointer-events: none;
+  }
+  .plan-details-panel.visible { opacity: 1; visibility: visible; transform: translateX(0); }
+  .auth-page { overflow: visible !important; } /* Prevent clipping of floating panel */
+  .plan-details-panel h4 { font-family: 'Playfair Display', serif; color: var(--green-pop); margin-bottom: 12px; font-size: 1.1rem; }
+  .plan-details-list { list-style: none; padding: 0; margin: 0; }
+  .plan-details-list li { 
+    font-size: 0.82rem; color: var(--text-mid); margin-bottom: 8px; 
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .plan-details-list li svg { width: 14px; height: 14px; margin-top: 2px; flex-shrink: 0; }
+  .plan-details-list li.excluded { opacity: 0.5; text-decoration: line-through; }
+
   .onboard-heading{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--text-dark);margin-bottom:6px}
   .onboard-sub{font-size:.88rem;color:var(--text-mid);margin-bottom:28px}
   .btn-back{background:none;border:none;color:var(--text-mid);font-size:.85rem;font-weight:500;cursor:pointer;padding:8px 0;font-family:inherit;display:flex;align-items:center;gap:6px;margin-bottom:16px;transition:color .3s}
@@ -148,25 +173,21 @@
           <div class="svc-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
           <h3>Home Management</h3>
           <p>Property, tenants, rent, maintenance</p>
-          <span class="svc-badge">From ₹4,999/mo</span>
         </div>
         <div class="svc-check cat-vehicle" data-svc="vehicle" onclick="toggleService('vehicle',this)">
           <div class="svc-icon"><svg viewBox="0 0 24 24"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 5h3v6h-2"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
           <h3>Vehicle Management</h3>
           <p>Insurance, servicing, parking, RTO</p>
-          <span class="svc-badge">From ₹1,499/mo</span>
         </div>
         <div class="svc-check cat-parental" data-svc="parental" onclick="toggleService('parental',this)">
           <div class="svc-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
           <h3>Parental Care</h3>
           <p>Health, doctors, medicine, emergency</p>
-          <span class="svc-badge">From ₹4,999/mo</span>
         </div>
         <div class="svc-check cat-legal" data-svc="legal" onclick="toggleService('legal',this)">
           <div class="svc-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
           <h3>Legal & Documentation</h3>
           <p>POA, tax, court, government docs</p>
-          <span class="svc-badge">From ₹2,999/mo</span>
         </div>
       </div>
       <div class="form-error" id="svcError" style="text-align:center;margin-bottom:14px">Please select at least one service category</div>
@@ -177,20 +198,31 @@
     <div class="onboard-step" id="step2">
       <button type="button" class="btn-back" onclick="goToStep(1)">← Back to Services</button>
       <h1 class="onboard-heading">Add Your Details</h1>
-      <p class="onboard-sub">Tell us about what you need managed. You can always update these later.</p>
+      <p class="onboard-sub">Tell us about what you need managed. All fields are mandatory.</p>
       <div id="detailsForms"></div>
-      <div class="form-error" id="detailError" style="text-align:center;margin-bottom:14px">Please fill in required details</div>
+      <div class="form-error" id="detailError" style="text-align:center;margin-bottom:14px">Please fill in all required details for every item.</div>
       <button type="button" class="btn-auth" onclick="validateStep2()">Continue — Select Plans →</button>
     </div>
 
     <!-- STEP 3: Plans -->
     <div class="onboard-step" id="step3">
       <button type="button" class="btn-back" onclick="goToStep(2)">← Back to Details</button>
-      <h1 class="onboard-heading">Choose Plans</h1>
-      <p class="onboard-sub">Select a plan for each service. Bundle discount applied automatically!</p>
-      <div id="planSelections"></div>
-      <div class="form-error" id="planError" style="text-align:center;margin-bottom:14px">Please select a plan for each service</div>
-      <button type="button" class="btn-auth" onclick="validateStep3()">Continue — Payment →</button>
+      <div class="onboard-flex-container">
+        <div class="onboard-main-content">
+          <h1 class="onboard-heading">Choose Plans</h1>
+          <p class="onboard-sub">Select a plan for each service. Hover over plans to see inclusions.</p>
+          <div id="planSelections"></div>
+          <div class="form-error" id="planError" style="text-align:center;margin-bottom:14px">Please select a plan for each service</div>
+          <button type="button" class="btn-auth" onclick="validateStep3()">Continue — Payment →</button>
+        </div>
+        
+        <aside class="plan-details-panel" id="planDetailsPanel">
+          <h4 id="panelPlanName">Plan Details</h4>
+          <ul class="plan-details-list" id="panelDetailsList">
+            <!-- Details populated by JS -->
+          </ul>
+        </aside>
+      </div>
     </div>
 
     <!-- STEP 4: Payment -->
@@ -317,6 +349,98 @@
   }
   var SVC_NAMES = {home:'Home Management',vehicle:'Vehicle Management',parental:'Parental Care',legal:'Legal & Documentation'};
 
+  var PLAN_INCLUSIONS = {
+    home: {
+      starter: {
+        inc: ['Property Inspection (Monthly)', 'Rent Collection', 'Utility Bill Management'],
+        exc: ['Tenant Sourcing', 'Legal Compliance', 'Repair Coordination']
+      },
+      standard: {
+        inc: ['Everything in Starter', 'Tenant Sourcing', 'Lease Agreement', 'Repair Coordination'],
+        exc: ['Tax Filing Support', 'Deep Cleaning (Annual)']
+      },
+      premium: {
+        inc: ['Everything in Standard', 'Tax Filing Support', 'Deep Cleaning (Annual)', 'Interior Work Support'],
+        exc: []
+      }
+    },
+    vehicle: {
+      starter: {
+        inc: ['Insurance Reminders', 'PUC Reminders', 'Document Storage'],
+        exc: ['Service Coordination', 'Driver Verification']
+      },
+      standard: {
+        inc: ['Everything in Starter', 'Service Pickup/Drop', 'Breakdown Support', 'RTO Assistance'],
+        exc: ['Chauffeur Sourcing']
+      },
+      premium: {
+        inc: ['Everything in Standard', 'Chauffeur Sourcing', 'Fitness Check', 'VIP Parking'],
+        exc: []
+      }
+    },
+    parental: {
+      starter: {
+        inc: ['Health Checkup Reminders', 'Medicine Delivery', 'Basic Tele-consult'],
+        exc: ['Emergency Response', 'Physical Companion']
+      },
+      standard: {
+        inc: ['Everything in Starter', 'Emergency Response', 'Doctor Appointments', 'Lab Tests'],
+        exc: ['Physical Companion (24/7)']
+      },
+      premium: {
+        inc: ['Everything in Standard', 'Physical Companion', 'Home Nursing Support', 'Specialized Care'],
+        exc: []
+      }
+    },
+    legal: {
+      starter: {
+        inc: ['Document Verification', 'Legal Consultation', 'POA Drafting'],
+        exc: ['Court Representation', 'Government Liaison']
+      },
+      standard: {
+        inc: ['Everything in Starter', 'Court Case Monitoring', 'Property Registration', 'Tax Filing'],
+        exc: ['High Court Representation']
+      },
+      premium: {
+        inc: ['Everything in Standard', 'High Court Support', 'Complex Succession', 'Custom Legal Suits'],
+        exc: []
+      }
+    }
+  };
+
+  window.showPlanDetails = function(svc, tier, el) {
+    var panel = document.getElementById('planDetailsPanel');
+    var list = document.getElementById('panelDetailsList');
+    var name = document.getElementById('panelPlanName');
+    
+    if(!PLAN_INCLUSIONS[svc] || !PLAN_INCLUSIONS[svc][tier]) return;
+    
+    var data = PLAN_INCLUSIONS[svc][tier];
+    name.textContent = getPlanName(svc, tier) + ' Details';
+    list.innerHTML = '';
+    
+    data.inc.forEach(function(item) {
+      list.innerHTML += '<li><svg viewBox="0 0 24 24" fill="none" stroke="var(--green-pop)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' + item + '</li>';
+    });
+    
+    data.exc.forEach(function(item) {
+      list.innerHTML += '<li class="excluded"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' + item + '</li>';
+    });
+    
+    if (el) {
+      var container = document.querySelector('.onboard-flex-container');
+      var rect = el.getBoundingClientRect();
+      var contRect = container.getBoundingClientRect();
+      panel.style.top = (rect.top - contRect.top) + 'px';
+    }
+
+    panel.classList.add('visible');
+  };
+
+  window.hidePlanDetails = function() {
+    document.getElementById('planDetailsPanel').classList.remove('visible');
+  };
+
   // Pre-select from URL
   var urlParams = new URLSearchParams(window.location.search);
   var preCat = urlParams.get('category');
@@ -439,9 +563,22 @@
   window.validateStep2 = function(){
     collectDetails();
     var valid = true;
+    // Check if at least one item per service
     selectedServices.forEach(function(svc){
       if(getItems(svc).length===0)valid=false;
     });
+    
+    // Check if all fields are filled
+    var inputs = document.querySelectorAll('#detailsForms input, #detailsForms select');
+    inputs.forEach(function(input) {
+      if(!input.value.trim() && input.offsetParent !== null) { // Only check visible inputs
+        valid = false;
+        input.style.borderColor = 'red';
+      } else {
+        input.style.borderColor = '';
+      }
+    });
+
     if(!valid){document.getElementById('detailError').classList.add('visible');return}
     document.getElementById('detailError').classList.remove('visible');
     goToStep(3);
@@ -516,8 +653,6 @@
     var container = document.getElementById('opts-'+planKey);
     if(!container)return;
     container.innerHTML='';
-    var prices = PLAN_PRICES[svc];
-    var billing = serviceBilling[planKey]||'monthly';
     var currentPlan = servicePlans[planKey]||'';
 
     var tiers = ['starter','standard','premium'];
@@ -527,22 +662,16 @@
     }
 
     tiers.forEach(function(tier){
-      var basePrice = prices[tier];
-      var label = '';
-      if(typeof basePrice==='string'){
-        label = basePrice;
-      } else {
-        var price = basePrice;
-        if(isAddon) price = Math.round(price*0.8);
-        if(billing==='annual') price = Math.round(price*12*0.85);
-        label = '\u20B9'+price.toLocaleString('en-IN')+(billing==='annual'?'/yr':'/mo');
-        if(isAddon && typeof basePrice==='number') label += ' (20% off)';
-      }
       var opt = document.createElement('div');
       opt.className='plan-opt'+(currentPlan===tier?' selected':'');
       opt.setAttribute('data-plan',tier);
       opt.onclick=function(){selectItemPlan(planKey,tier)};
-      opt.innerHTML='<div><span class="plan-opt-name">'+getPlanName(svc, tier)+'</span></div><div style="display:flex;align-items:center;gap:10px"><span class="plan-opt-price">'+label+'</span><div class="plan-radio"></div></div>';
+      
+      // Hover listeners
+      opt.onmouseenter = function() { showPlanDetails(svc, tier, this); };
+      opt.onmouseleave = function() { hidePlanDetails(); };
+
+      opt.innerHTML='<div><span class="plan-opt-name">'+getPlanName(svc, tier)+'</span></div><div style="display:flex;align-items:center;gap:10px"><div class="plan-radio"></div></div>';
       container.appendChild(opt);
     });
 
@@ -626,8 +755,7 @@
     var methods={card:'Credit/Debit Card',upi:'UPI',netbanking:'Net Banking'};
     document.getElementById('revPayMethod').textContent=methods[selectedPayMethod]||'Card';
 
-    var html='';var total=0;
-    var hasDiscount = selectedServices.length>1;
+    var html='';
     var allKeys = getAllPlanKeys();
 
     allKeys.forEach(function(entry){
@@ -635,11 +763,6 @@
       var planKey = entry.key;
       var plan = servicePlans[planKey];
       var billing = serviceBilling[planKey]||'monthly';
-      var prices = PLAN_PRICES[svc];
-      var basePrice = prices[plan];
-      var svcIdx = selectedServices.indexOf(svc);
-      var isAddon = hasDiscount && svcIdx > 0;
-      var amount = 0; var priceStr = '';
 
       // Build a descriptive title
       var title = '';
@@ -651,37 +774,22 @@
         title = icons[svc]+' '+getItemLabel(svc, entry.item);
       }
 
-      if(typeof basePrice==='string'){
-        priceStr=basePrice;
-        if(svc==='home' && entry.item && entry.item.rent){
-          amount = Math.round(parseInt(entry.item.rent)*0.1);
-        }
-      } else {
-        amount=basePrice;
-        if(isAddon)amount=Math.round(amount*0.8);
-        if(billing==='annual'){amount=Math.round(amount*12*0.85);priceStr='\u20B9'+amount.toLocaleString('en-IN')+'/yr'}
-        else{priceStr='\u20B9'+amount.toLocaleString('en-IN')+'/mo'}
-        if(isAddon)priceStr+=' (20% add-on discount)';
-      }
-      total+=amount;
-
       html+='<div class="review-block"><h5>'+title+'</h5>'+
         '<div class="review-row"><span class="review-label">Plan</span><span class="review-plan-badge">'+getPlanName(svc, plan)+'</span></div>'+
-        '<div class="review-row"><span class="review-label">Billing</span><span class="review-value">'+(billing==='annual'?'Annual':'Monthly')+'</span></div>'+
-        '<div class="review-row"><span class="review-label">Price</span><span class="review-value">'+priceStr+'</span></div></div>';
+        '<div class="review-row"><span class="review-label">Billing</span><span class="review-value">'+(billing==='annual'?'Annual':'Monthly')+'</span></div></div>';
     });
 
     document.getElementById('revServices').innerHTML=html;
 
-    var discountHtml='';
-    if(hasDiscount){discountHtml='<div class="review-row"><span class="review-label" style="color:var(--green-pop)">Add-on bundle discount (20%)</span><span class="review-value" style="color:var(--green-pop)">Applied ✓</span></div>'}
-    var hasAnnual=Object.keys(serviceBilling).some(function(k){return serviceBilling[k]==='annual'});
-    if(hasAnnual){discountHtml+='<div class="review-row"><span class="review-label" style="color:var(--green-pop)">Annual billing discount (15%)</span><span class="review-value" style="color:var(--green-pop)">Applied ✓</span></div>'}
-    document.getElementById('revDiscounts').innerHTML=discountHtml;
+    // Hide pricing summary sections
+    var summarySection = document.querySelector('#step5 .review-section:last-child');
+    if(summarySection) {
+      var rows = summarySection.querySelectorAll('.review-row');
+      rows.forEach(function(r){ r.style.display = 'none'; });
+      document.getElementById('revDiscounts').style.display = 'none';
+    }
 
-    document.getElementById('revSubtotal').textContent='\u20B9'+total.toLocaleString('en-IN');
-    document.getElementById('revTotal').textContent='\u20B9'+total.toLocaleString('en-IN');
-    document.getElementById('revNote').textContent='You can cancel or change plans anytime from your dashboard.';
+    document.getElementById('revNote').textContent='Our team will contact you with a customized quote based on your requirements.';
   }
 
   window.confirmAndPay = function(){
