@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "token_hash" }],
+      "destination": "/auth-callback.html"
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "query", "key": "access_token" }],
+      "destination": "/auth-callback.html"
+    }
+  ],
+  "rewrites": [
+    { "source": "/", "destination": "/propnri-saas-site.html" }
+  ]
+}
