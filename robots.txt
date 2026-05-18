@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Private / application pages — keep out of search results
+Disallow: /admin.html
+Disallow: /dashboard.html
+Disallow: /employee.html
+Disallow: /employee-signup.html
+Disallow: /login.html
+Disallow: /account.html
+Disallow: /payment.html
+Disallow: /complete-profile.html
+Disallow: /auth-callback.html
+Disallow: /onboarding.html
+
+Sitemap: https://nribridgeindia.com/sitemap.xml
