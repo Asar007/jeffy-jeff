@@ -272,11 +272,6 @@
   // ── Clients by Service ──
   var AVATAR_COLORS = ['green', 'orange', 'blue', 'red', 'muted'];
 
-  function getInitials(name) {
-    if (!name) return '?';
-    return name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
-  }
-
   // Always include standard service categories
   var STANDARD_SERVICES = ['Property', 'Tax Filing', 'Banking', 'Aadhaar/OCI', 'Legal'];
 
@@ -1074,6 +1069,33 @@
         });
       }).then(function(r) {
         if (r && r.error) { finish('Task saved but update post failed: ' + r.error.message, 'error'); return; }
+        
+        // Trigger Task Update Email
+        try {
+          var t = tasks.find(function(x) { return x.id === currentTaskId; });
+          var client = t && t.clients;
+          if (client && client.email) {
+            sb.functions.invoke('send-email', {
+              body: {
+                to: client.email,
+                templateId: '20737c37-dd98-4dbb-845d-e72a7d3b92e9', // Task Update Template
+                subject: 'Service Update - NRI Bridge India',
+                payload: {
+                  FIRST_NAME: client.name ? client.name.split(' ')[0] : 'there',
+                  NEW_STATUS: newStatus,
+                  PROPERTY_NAME: client.city || 'your property',
+                  TASK_TITLE: t.service || 'Service Update',
+                  TASK_DESC: t.description || '',
+                  COMMENT: note || '',
+                  DASHBOARD_URL: window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'dashboard.html'
+                }
+              }
+            });
+          }
+        } catch (emailErr) {
+          console.warn('Task update email trigger failed:', emailErr);
+        }
+
         finish('Task updated & client notified');
       }).catch(function(err) {
         finish('Photo upload failed: ' + (err.message || 'unknown'), 'error');
@@ -2035,6 +2057,11 @@
       var colorClass = AVATAR_COLORS[idx % AVATAR_COLORS.length];
       var fileExt = (doc.file_name || '').split('.').pop().toUpperCase() || '—';
 
+      // Categorize
+      var type = 'General';
+      if (doc.document_request_id) type = 'Requested';
+      else if (doc.service_type && doc.service_type !== 'Other') type = 'Service';
+
       // Documents are clickable if they have a storage_path OR file_data (base64)
       var hasViewableContent = doc.storage_path || doc.file_data;
       var viewAttr = 'data-doc-id="' + doc.id + '" data-path="' + (doc.storage_path || '') + '" data-doc-name="' + (doc.doc_name || '') + '" data-file-name="' + (doc.file_name || '') + '" data-client="' + clientName + '" data-service="' + (doc.service_type || '') + '" data-date="' + uploadDate + '"';
@@ -2050,30 +2077,37 @@
           '<div class="adm-dcard-file">' + (doc.file_name || '') + '</div>' +
           '<div class="adm-dcard-meta">' +
             '<div class="adm-dcard-details">' +
-              '<span class="adm-svc-tag" style="font-size:0.68rem;padding:2px 8px;">' + (doc.service_type || '—') + '</span>' +
+              '<span class="adm-svc-tag" style="font-size:0.68rem;padding:2px 8px;' + (type === 'Requested' ? 'background:rgba(133,91,0,0.1);color:#855b00;' : '') + '">' + type + ' · ' + (doc.service_type || '—') + '</span>' +
               '<span class="adm-dcard-date">' + uploadDate + '</span>' +
             '</div>' +
           '</div>' +
         '</div>';
 
       if (!groups[clientName]) {
-        groups[clientName] = { email: clientEmail, initials: initials, color: colorClass, cards: [] };
+        groups[clientName] = { email: clientEmail, initials: initials, color: colorClass, Requested: [], Service: [], General: [] };
       }
-      groups[clientName].cards.push(htmlCard);
+      groups[clientName][type].push(htmlCard);
     });
 
     var html = '';
     Object.keys(groups).forEach(function(cName) {
       var g = groups[cName];
-      html += '<div style="margin-bottom: 32px;">';
-      html +=   '<div class="adm-dcard-client" style="margin-bottom: 16px; align-items: center;">';
-      html +=     '<div class="adm-avatar-sm ' + g.color + '" style="width: 32px; height: 32px; font-size: 0.8rem;">' + g.initials + '</div>';
-      html +=     '<strong style="font-size: 1.05rem; color: var(--text-dark);">' + cName + '</strong>';
-      html +=     '<span style="opacity: 0.5; font-size: 0.85rem; margin-left: 8px;">(' + g.email + ')</span>';
+      html += '<div style="margin-bottom: 48px;">';
+      html +=   '<div class="adm-dcard-client" style="margin-bottom: 24px; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 12px;">';
+      html +=     '<div class="adm-avatar-sm ' + g.color + '" style="width: 40px; height: 40px; font-size: 0.9rem;">' + g.initials + '</div>';
+      html +=     '<div>';
+      html +=       '<strong style="font-size: 1.2rem; color: var(--text-dark); display: block;">' + cName + '</strong>';
+      html +=       '<span style="opacity: 0.5; font-size: 0.85rem;">' + g.email + '</span>';
+      html +=     '</div>';
       html +=   '</div>';
-      html +=   '<div class="adm-docs-grid">';
-      html +=     g.cards.join('');
-      html +=   '</div>';
+
+      ['Requested', 'Service', 'General'].forEach(function(type) {
+        if (g[type].length > 0) {
+          html += '<h5 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 24px 0 12px;">' + type + ' Documents (' + g[type].length + ')</h5>';
+          html += '<div class="adm-docs-grid" style="margin-bottom: 32px;">' + g[type].join('') + '</div>';
+        }
+      });
+      
       html += '</div>';
     });
     grid.innerHTML = html;
@@ -2902,22 +2936,58 @@
   function renderProofQueue() {
     var body = document.getElementById('proofQueueBody');
     if (!body) return;
+
+    // 1. Task Proofs (Awaiting Client Review)
     var pendingSteps = taskSteps.filter(function(s) {
       return s.status === 'proof_submitted' || s.status === 'resubmitted';
     });
-    var countLabel = document.getElementById('proofQueueCount');
-    if (countLabel) countLabel.textContent = pendingSteps.length + ' awaiting client review';
 
-    if (!pendingSteps.length) {
-      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">No proofs awaiting review.</td></tr>';
+    // 2. Document Requests (Awaiting Admin Review)
+    var pendingDocReqs = documentRequests.filter(function(r) {
+      return r.status === 'uploaded';
+    });
+
+    var countLabel = document.getElementById('proofQueueCount');
+    if (countLabel) {
+      countLabel.textContent = (pendingSteps.length + pendingDocReqs.length) + ' items in queue (' + pendingDocReqs.length + ' pending admin review)';
+    }
+
+    if (!pendingSteps.length && !pendingDocReqs.length) {
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">No items awaiting review.</td></tr>';
       return;
     }
+
     var html = '';
+
+    // Render Document Requests (Higher priority for admin)
+    pendingDocReqs.forEach(function(r) {
+      var client = clients.find(function(c) { return c.email.toLowerCase() === r.client_email.toLowerCase(); }) || { name: r.client_email };
+      var submittedAt = r.updated_at ? new Date(r.updated_at).toLocaleString() : '—';
+      
+      html += '<tr class="proof-row-doc-req" style="background: rgba(133, 91, 0, 0.03);">' +
+        '<td>' + escapeHtml(client.name || 'Unknown') + '</td>' +
+        '<td>' + escapeHtml(r.service_type || 'General') + '</td>' +
+        '<td><strong>' + escapeHtml(r.document_title) + '</strong></td>' +
+        '<td><em>Secure Document Request</em></td>' +
+        '<td>' + submittedAt + '</td>' +
+        '<td><span class="adm-badge uploaded">Uploaded</span></td>' +
+        '<td>' +
+          '<div style="display:flex;gap:6px;">' +
+            '<button class="adm-btn-export btn-view-doc" data-req-id="' + r.id + '" title="View Document" style="padding:4px 8px;font-size:0.7rem;">View</button>' +
+            '<button class="adm-btn-add btn-accept-doc" data-req-id="' + r.id + '" title="Accept" style="padding:4px 8px;font-size:0.7rem;background:#2d5a27;">Accept</button>' +
+            '<button class="adm-btn-export btn-reject-doc" data-req-id="' + r.id + '" title="Reject" style="padding:4px 8px;font-size:0.7rem;color:#dc3545;border-color:#dc3545;">Reject</button>' +
+          '</div>' +
+        '</td>' +
+      '</tr>';
+    });
+
+    // Render Task Proofs
     pendingSteps.forEach(function(s) {
       var task = tasks.find(function(t) { return t.id === s.task_id; });
       var client = task && task.clients ? task.clients : {};
       var latestProof = stepProofs.filter(function(p) { return p.task_step_id === s.id; }).sort(function(a, b) { return b.round - a.round; })[0];
       var submittedAt = latestProof ? new Date(latestProof.submitted_at).toLocaleString() : '—';
+      
       html += '<tr>' +
         '<td>' + escapeHtml(client.name || 'Unknown') + '</td>' +
         '<td>' + escapeHtml(task ? task.service : '') + '</td>' +
@@ -2925,9 +2995,84 @@
         '<td>' + escapeHtml(s.assigned_employee_email || '') + '</td>' +
         '<td>' + submittedAt + '</td>' +
         '<td><span class="adm-badge ' + s.status + '">' + s.status.replace('_', ' ') + '</span></td>' +
+        '<td><em style="font-size:0.7rem;color:var(--text-muted);">Awaiting client</em></td>' +
       '</tr>';
     });
+
     body.innerHTML = html;
+
+    // Attach handlers
+    body.querySelectorAll('.btn-view-doc').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var reqId = this.getAttribute('data-req-id');
+        viewDocumentRequest(reqId);
+      });
+    });
+
+    body.querySelectorAll('.btn-accept-doc').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var reqId = this.getAttribute('data-req-id');
+        acceptDocumentRequest(reqId);
+      });
+    });
+
+    body.querySelectorAll('.btn-reject-doc').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var reqId = this.getAttribute('data-req-id');
+        var reason = prompt('Reason for rejection? (Optional)');
+        rejectDocumentRequest(reqId, reason);
+      });
+    });
+  }
+
+  function viewDocumentRequest(reqId) {
+    var req = documentRequests.find(function(r) { return r.id === reqId; });
+    if (!req) return;
+    
+    // Find the associated document
+    sb.from('documents')
+      .select('*')
+      .eq('document_request_id', reqId)
+      .order('uploaded_at', { ascending: false })
+      .limit(1)
+      .then(function(result) {
+        if (result.error || !result.data || !result.data.length) {
+          showToast('Could not find uploaded document', 'error');
+          return;
+        }
+        var doc = result.data[0];
+        var client = clients.find(function(c) { return c.email.toLowerCase() === req.client_email.toLowerCase(); }) || { name: req.client_email };
+        
+        openDocPreview(doc, client.name);
+      });
+  }
+
+  function acceptDocumentRequest(reqId) {
+    if (!confirm('Accept this document? It will be marked as verified.')) return;
+    sb.from('document_requests')
+      .update({ status: 'accepted', accepted_at: new Date().toISOString() })
+      .eq('id', reqId)
+      .then(function(r) {
+        if (r.error) { showToast('Failed to accept: ' + r.error.message, 'error'); return; }
+        showToast('Document accepted', 'success');
+        loadDashboard();
+      });
+  }
+
+  function rejectDocumentRequest(reqId, reason) {
+    if (!confirm('Reject this document? The client will be able to upload again.')) return;
+    sb.from('document_requests')
+      .update({ 
+        status: 'rejected', 
+        rejected_at: new Date().toISOString(),
+        admin_note: reason || null
+      })
+      .eq('id', reqId)
+      .then(function(r) {
+        if (r.error) { showToast('Failed to reject: ' + r.error.message, 'error'); return; }
+        showToast('Document rejected', 'info');
+        loadDashboard();
+      });
   }
 
   // ══════════════════════════════════════════

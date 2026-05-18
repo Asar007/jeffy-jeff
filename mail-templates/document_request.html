@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action Required: Document Request - NRI Bridge India</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f2efe5; font-family: 'DM Sans', Arial, sans-serif; color: #1a1e0e; }
+        .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05); }
+        .header { background-color: #4a6a2e; padding: 40px 20px; text-align: center; }
+        .header h1 { color: #f2efe5; font-family: 'Playfair Display', Georgia, serif; font-size: 28px; margin: 0; letter-spacing: -0.5px; }
+        .content { padding: 40px; line-height: 1.6; }
+        .content h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; color: #4a6a2e; margin-top: 0; }
+        .alert-box { background-color: rgba(232,93,58,0.05); border-left: 4px solid #e85d3a; padding: 16px 20px; margin: 24px 0; font-size: 14px; color: #3d4228; }
+        .request-details { background-color: #f9f8f4; border-radius: 12px; padding: 24px; margin: 24px 0; border: 1px solid rgba(74,106,46,0.1); }
+        .request-row { margin-bottom: 12px; }
+        .request-label { color: #4a6a2e; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+        .request-value { color: #1a1e0e; font-weight: 500; font-size: 16px; }
+        .button { display: inline-block; padding: 14px 32px; background-color: #4a6a2e; color: #f2efe5 !important; text-decoration: none; border-radius: 100px; font-weight: 600; margin: 20px 0; }
+        .footer { background-color: #3d3f2e; color: #9a9d7e; padding: 30px 40px; font-size: 14px; text-align: left; }
+        .footer strong { color: #f2efe5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>NRI BRIDGE INDIA</h1>
+        </div>
+        <div class="content">
+            <h2>Secure Document Request</h2>
+            <p>Hi {{name}},</p>
+            <p>Our team requires a specific document from you to proceed with your service request.</p>
+            
+            <div class="alert-box">
+                <strong>Important:</strong> Because this involves sensitive information, please upload the document only through your secure dashboard. <strong>Do not reply to this email with attachments.</strong>
+            </div>
+            
+            <div class="request-details">
+                <div class="request-row">
+                    <span class="request-label">Requested Document</span>
+                    <span class="request-value">{{document_title}}</span>
+                </div>
+                <div class="request-row">
+                    <span class="request-label">Related Service</span>
+                    <span class="request-value">{{service_type}}</span>
+                </div>
+                <div class="request-row">
+                    <span class="request-label">Due Date</span>
+                    <span class="request-value">{{due_date}}</span>
+                </div>
+                {{#if instructions}}
+                <div class="request-row">
+                    <span class="request-label">Instructions</span>
+                    <span class="request-value">{{instructions}}</span>
+                </div>
+                {{/if}}
+            </div>
+            
+            <a href="{{upload_url}}" class="button">Upload Securely</a>
+            
+            <p>If you have any questions, please reach out to us through the dashboard support or reply to this email (without attachments).</p>
+            
+            <p>Best regards,<br>
+            <strong>Jeff</strong><br>
+            NRI Bridge India Team</p>
+        </div>
+        <div class="footer">
+            <p><strong>NRI Bridge India</strong><br>
+            Your Trusted Property Partner in India</p>
+            <p>&copy; 2026 NRI Bridge India. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

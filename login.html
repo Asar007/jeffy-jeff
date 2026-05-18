@@ -182,9 +182,10 @@
           '<p>Signed in successfully. Redirecting\u2026</p>' +
         '</div>';
 
-      // Check if a plan was selected before login
+      // Check if a plan was selected or a document was requested before login
       var urlParams = new URLSearchParams(window.location.search);
       var planParam = urlParams.get('plan');
+      var requestId = urlParams.get('request_id');
 
       // Role-aware redirect: admins → admin, employees → employee portal, else default.
       var rolePromise = typeof window.getUserRole === 'function'
@@ -195,6 +196,10 @@
         setTimeout(function() {
           if (planParam) {
             window.location.href = 'onboarding.html?plan=' + planParam;
+            return;
+          }
+          if (requestId) {
+            window.location.href = 'dashboard.html?request_id=' + requestId;
             return;
           }
           if (role === 'admin') {
