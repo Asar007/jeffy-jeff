@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Update - NRI Bridge India</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f2efe5; font-family: 'DM Sans', Arial, sans-serif; color: #1a1e0e; }
+        .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05); }
+        .header { background-color: #4a6a2e; padding: 40px 20px; text-align: center; }
+        .header h1 { color: #f2efe5; font-family: 'Playfair Display', Georgia, serif; font-size: 28px; margin: 0; letter-spacing: -0.5px; }
+        .content { padding: 40px; line-height: 1.6; }
+        .content h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; color: #4a6a2e; margin-top: 0; }
+        .status-update { display: flex; align-items: center; gap: 12px; margin: 24px 0; padding: 16px; background-color: rgba(74,106,46,0.05); border-radius: 12px; }
+        .status-badge { background-color: #4a6a2e; color: #ffffff; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .task-info { border-left: 2px solid rgba(74,106,46,0.1); padding-left: 20px; margin: 24px 0; }
+        .task-title { font-weight: 700; color: #1a1e0e; display: block; margin-bottom: 4px; }
+        .task-desc { color: #3d4228; font-size: 14px; opacity: 0.8; }
+        .button { display: inline-block; padding: 14px 32px; background-color: #4a6a2e; color: #f2efe5 !important; text-decoration: none; border-radius: 100px; font-weight: 600; margin: 20px 0; }
+        .footer { background-color: #3d3f2e; color: #9a9d7e; padding: 30px 40px; font-size: 14px; text-align: left; }
+        .footer strong { color: #f2efe5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>NRI BRIDGE INDIA</h1>
+        </div>
+        <div class="content">
+            <h2>Progress Update</h2>
+            <p>Hi {{name}},</p>
+            <p>We've made progress on your service request. Here's the latest update from our team:</p>
+            
+            <div class="status-update">
+                <span class="status-badge">{{new_status}}</span>
+                <span>Update for your property at <strong>{{property_name}}</strong></span>
+            </div>
+            
+            <div class="task-info">
+                <span class="task-title">{{task_title}}</span>
+                <span class="task-desc">{{task_description}}</span>
+            </div>
+            
+            {{#if comment}}
+            <p><strong>Team Note:</strong><br>
+            <em>"{{comment}}"</em></p>
+            {{/if}}
+            
+            <a href="{{dashboard_url}}" class="button">Track Progress</a>
+            
+            <p>We'll keep you informed as we move to the next steps.</p>
+            
+            <p>Best regards,<br>
+            <strong>Jeff</strong><br>
+            NRI Bridge India Team</p>
+        </div>
+        <div class="footer">
+            <p><strong>NRI Bridge India</strong><br>
+            Your Trusted Property Partner in India</p>
+            <p>&copy; 2026 NRI Bridge India. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

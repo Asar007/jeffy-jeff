@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign Up — NRI Bridge India</title>
+<meta name="description" content="Create your NRI Bridge India account to manage your property, vehicle, and family care in India remotely with trusted professional support.">
+<link rel="icon" type="image/png" href="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png">
 <link rel="canonical" href="https://nribridgeindia.com/signup.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NRI Bridge India">
@@ -205,6 +207,32 @@
       btn.textContent = 'Create Account';
       showError(email, 'emailError', error.message);
       return;
+    }
+
+    // Trigger Welcome Email
+    try {
+      const supabaseUrl = window.supabaseClient.supabaseUrl.replace(/\/$/, '');
+      const anonKey = window.supabaseClient.supabaseKey;
+      
+      fetch(`${supabaseUrl}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${anonKey}`,
+          'apikey': anonKey
+        },
+        body: JSON.stringify({
+          to: email.value.trim(),
+          templateId: '01682539-4627-45d5-a98d-2433adb773ee', // Welcome Email Template
+          subject: 'Welcome to NRI Bridge India!',
+          payload: {
+            FIRST_NAME: name.value.trim().split(' ')[0],
+            LOGIN_URL: window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'login.html'
+          }
+        })
+      });
+    } catch (emailErr) {
+      console.warn('Welcome email trigger failed:', emailErr);
     }
 
     // Preserve plan param if present

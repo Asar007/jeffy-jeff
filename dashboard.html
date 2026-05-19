@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Dashboard — NRI Bridge India</title>
+<link rel="icon" type="image/png" href="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png">
 <meta name="robots" content="noindex,nofollow">
 <meta name="description" content="Track your active services, payments, documents, and subscription — all from one clean dashboard.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,6 +19,9 @@
 <!-- MAIN DASHBOARD -->
 <main class="dash-container">
   <div class="dash-grid">
+
+    <!-- DEEP LINK ACTION BANNER (shown when request_id is present) -->
+    <div id="deepLinkBanner" style="display:none; grid-column: 1 / -1; margin-bottom: 24px;"></div>
 
     <!-- WELCOME BANNER (full-width) -->
     <div class="dash-welcome" id="welcomeBanner">
@@ -383,9 +387,14 @@
   })();
 
   // ── Auth Check ──
+  var urlParams = new URLSearchParams(window.location.search);
+  var deepLinkRequestId = urlParams.get('request_id');
+
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
   if (!session) {
-    window.location.href = 'login.html';
+    var redirectUrl = 'login.html';
+    if (deepLinkRequestId) redirectUrl += '?request_id=' + deepLinkRequestId;
+    window.location.href = redirectUrl;
     return;
   }
 
@@ -1156,15 +1165,28 @@
       var reqDoc = documentRequestDocuments[req.id] || null;
       var fallbackKey = (req.service_type || 'General') + '/' + req.document_title;
       var uploaded = reqDoc || uploadedDocs[fallbackKey] || null;
-      var isReceived = !!uploaded || req.status === 'uploaded';
+      
+      var status = 'pending';
+      var action = 'Upload';
+      var note = req.request_note || '';
+
+      if (req.status === 'accepted' || req.status === 'uploaded' || !!uploaded) {
+        status = 'received';
+        action = 'View';
+      } else if (req.status === 'rejected') {
+        status = 'pending';
+        action = 'Upload';
+        if (req.admin_note) note = 'Rejected: ' + req.admin_note;
+      }
+
       entries.push({
         name: req.document_title,
         meta: req.service_type || 'Secure Request',
-        status: isReceived ? 'received' : 'pending',
-        action: isReceived ? 'View' : 'Upload',
+        status: status,
+        action: action,
         uploaded: uploaded,
         requestId: req.id,
-        requestNote: req.request_note || '',
+        requestNote: note,
         dueAt: req.due_at || null,
         isSecureRequest: true
       });
@@ -1180,33 +1202,83 @@
 
     var pendingDocs = entries.filter(function(d) { return d.status === 'pending'; });
     var receivedDocs = entries.filter(function(d) { return d.status === 'received'; });
-    return pendingDocs.concat(receivedDocs).slice(0, 6);
+    var allSorted = pendingDocs.concat(receivedDocs);
+
+    // If we have a deep-linked request, ensure it's in the top list
+    if (deepLinkRequestId) {
+      var targetIdx = -1;
+      for (var i = 0; i < allSorted.length; i++) {
+        if (allSorted[i].requestId === deepLinkRequestId) {
+          targetIdx = i;
+          break;
+        }
+      }
+      if (targetIdx > 9) {
+        // Move it to the 6th position if it's buried
+        var item = allSorted.splice(targetIdx, 1)[0];
+        allSorted.splice(5, 0, item);
+      }
+    }
+
+    return allSorted.slice(0, 10);
   }
 
   function renderSidebarDocuments() {
-    var docs = buildSidebarDocumentEntries();
+    var entries = buildSidebarDocumentEntries();
+    var listWrap = document.getElementById('docsList');
+    if (!listWrap) return;
+
+    // Separate by category
+    var pendingReqs = entries.filter(function(e) { return e.isSecureRequest && e.status === 'pending'; });
+    var serviceDocs = entries.filter(function(e) { return !e.isSecureRequest && e.status === 'pending'; });
+    var vaultDocs = entries.filter(function(e) { return e.status === 'received'; });
+
     var html = '';
-    docs.forEach(function(doc) {
-      var actionClass = doc.status === 'pending' ? 'upload-cta' : '';
-      var statusIcon = doc.status === 'received' ? checkIconSmall : clockIconSmall;
-      var statusText = doc.status === 'received' ? 'Received' : 'Pending';
-      var dueText = doc.dueAt ? ' &middot; Due ' + new Date(doc.dueAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
-      var requestText = doc.requestNote ? '<span style="display:block;color:var(--text-mid);margin-top:2px;">' + escapeHtml(doc.requestNote) + '</span>' : '';
-      html +=
-        '<div class="dash-doc-row" data-doc-name="' + escapeHtml(doc.name) + '" data-doc-service="' + escapeHtml(doc.meta) + '" data-request-id="' + escapeHtml(doc.requestId || '') + '">' +
-          '<div class="dash-doc-left">' +
-            '<div class="dash-doc-icon">' + docIcon + '</div>' +
-            '<div class="dash-doc-info">' +
-              '<strong>' + escapeHtml(doc.name) + (doc.isSecureRequest ? ' <span style="font-size:0.68rem;color:#855b00;font-weight:700;">SECURE REQUEST</span>' : '') + '</strong>' +
-              '<span>' + escapeHtml(doc.meta) + ' &middot; ' + statusIcon + ' ' + statusText + dueText + '</span>' +
-              requestText +
-            '</div>' +
-          '</div>' +
-          '<button class="dash-doc-action ' + actionClass + '" data-doc-name="' + escapeHtml(doc.name) + '" data-doc-service="' + escapeHtml(doc.meta) + '" data-doc-status="' + escapeHtml(doc.status) + '" data-request-id="' + escapeHtml(doc.requestId || '') + '">' + escapeHtml(doc.action) + '</button>' +
-        '</div>';
-    });
-    document.getElementById('docsList').innerHTML = html;
+
+    if (pendingReqs.length > 0) {
+      html += '<div class="dash-doc-section-head">Action Required</div>';
+      pendingReqs.forEach(function(doc) { html += buildDocRowHtml(doc, 'secure-request'); });
+    }
+
+    if (serviceDocs.length > 0) {
+      html += '<div class="dash-doc-section-head">Service Documents</div>';
+      serviceDocs.forEach(function(doc) { html += buildDocRowHtml(doc, 'pending'); });
+    }
+
+    if (vaultDocs.length > 0) {
+      html += '<div class="dash-doc-section-head">Digital Vault</div>';
+      vaultDocs.forEach(function(doc) { html += buildDocRowHtml(doc, 'received'); });
+    }
+
+    if (html === '') {
+      html = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.82rem;">No documents needed</div>';
+    }
+
+    listWrap.innerHTML = html;
     attachDocumentActionHandlers();
+  }
+
+  function buildDocRowHtml(doc, typeClass) {
+    var actionClass = doc.status === 'pending' ? 'upload-cta' : '';
+    var statusIcon = doc.status === 'received' ? checkIconSmall : clockIconSmall;
+    var statusText = doc.status === 'received' ? 'Received' : 'Pending';
+    var dueText = doc.dueAt ? ' &middot; Due ' + new Date(doc.dueAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+    var requestText = doc.requestNote ? '<span style="display:block;color:var(--text-mid);margin-top:2px;font-size:0.75rem;">' + escapeHtml(doc.requestNote) + '</span>' : '';
+    
+    var rowClass = 'dash-doc-row ' + typeClass;
+    var badge = doc.isSecureRequest ? ' <span class="secure-badge">SECURE</span>' : '';
+
+    return '<div class="' + rowClass + '" data-doc-name="' + escapeHtml(doc.name) + '" data-doc-service="' + escapeHtml(doc.meta) + '" data-request-id="' + escapeHtml(doc.requestId || '') + '">' +
+      '<div class="dash-doc-left">' +
+        '<div class="dash-doc-icon">' + docIcon + '</div>' +
+        '<div class="dash-doc-info">' +
+          '<strong>' + escapeHtml(doc.name) + badge + '</strong>' +
+          '<span>' + escapeHtml(doc.meta) + ' &middot; ' + statusIcon + ' ' + statusText + dueText + '</span>' +
+          requestText +
+        '</div>' +
+      '</div>' +
+      '<button class="dash-doc-action ' + actionClass + '" data-doc-name="' + escapeHtml(doc.name) + '" data-doc-service="' + escapeHtml(doc.meta) + '" data-doc-status="' + escapeHtml(doc.status) + '" data-request-id="' + escapeHtml(doc.requestId || '') + '">' + escapeHtml(doc.action) + '</button>' +
+    '</div>';
   }
 
   renderSidebarDocuments();
@@ -1447,6 +1519,9 @@
         file_data: fileDataUrl,
         uploaded_at: new Date().toISOString()
       };
+      // Hide deep link banner if this was the requested doc
+      var banner = document.getElementById('deepLinkBanner');
+      if (banner) banner.style.display = 'none';
     }
     renderSidebarDocuments();
 
@@ -1908,7 +1983,7 @@
     if (!window.supabaseClient) return;
     window.supabaseClient.from('document_requests')
       .select('*')
-      .eq('client_email', session.email)
+      .ilike('client_email', session.email)
       .neq('status', 'cancelled')
       .order('created_at', { ascending: false })
       .then(function(result) {
@@ -3150,6 +3225,94 @@
     setTimeout(function() { modal.style.display = 'none'; }, 250);
   }
 
+  function handleDeepLinks() {
+    var params = new URLSearchParams(window.location.search);
+    var requestId = params.get('request_id');
+    if (!requestId) return;
+
+    // Remove the param from URL without refreshing
+    var newUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState({}, document.title, newUrl);
+
+    // Fetch specifically this request to ensure it's valid and show banner ASAP
+    // This is more robust than waiting for the full list to populate
+    var checkInterval = setInterval(function() {
+      if (window.supabaseClient) {
+        clearInterval(checkInterval);
+        window.supabaseClient.from('document_requests')
+          .select('*')
+          .eq('id', requestId)
+          .single()
+          .then(function(result) {
+            if (result.error) {
+              console.error('Deep link request fetch error:', result.error);
+              return;
+            }
+            var req = result.data;
+            if (req) {
+              // Safety check: ensure it belongs to the logged-in user (case-insensitive)
+              var sessionEmail = (session.email || '').toLowerCase();
+              var reqEmail = (req.client_email || '').toLowerCase();
+              if (reqEmail !== sessionEmail) {
+                console.warn('Deep link request email mismatch:', reqEmail, 'vs', sessionEmail);
+                showToast('This document request belongs to a different account.', 'error');
+                return;
+              }
+
+              if (req.status === 'requested' || req.status === 'email_sent' || req.status === 'rejected') {
+                showDeepLinkBanner(req);
+              } else if (req.status === 'uploaded' || req.status === 'accepted') {
+                showToast('Document already uploaded: ' + req.document_title, 'info');
+              }
+            }
+          });
+      }
+    }, 200);
+
+    // Stop checking after 5 seconds
+    setTimeout(function() { clearInterval(checkInterval); }, 5000);
+  }
+
+  function showDeepLinkBanner(req) {
+    var banner = document.getElementById('deepLinkBanner');
+    if (!banner) return;
+
+    var noteHtml = req.request_note ? '<p style="margin: 4px 0 12px; font-size: 0.88rem; opacity: 0.9;">' + escapeHtml(req.request_note) + '</p>' : '';
+    var dueHtml = req.due_at ? '<span style="font-size: 0.75rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; margin-left: 8px;">Due ' + new Date(req.due_at).toLocaleDateString() + '</span>' : '';
+
+    banner.innerHTML = 
+      '<div style="background: linear-gradient(135deg, #855b00 0%, #a67c00 100%); color: #fff; padding: 20px 24px; border-radius: 16px; box-shadow: 0 8px 24px rgba(133, 91, 0, 0.2); display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">' +
+        '<div style="flex: 1; min-width: 280px;">' +
+          '<div style="display: flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; opacity: 0.9;">' +
+            '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' +
+            'Action Required: Secure Document Request' + dueHtml +
+          '</div>' +
+          '<h3 style="margin: 0; font-size: 1.25rem; font-family: \'Playfair Display\', serif;">' + escapeHtml(req.document_title) + '</h3>' +
+          noteHtml +
+          '<div style="font-size: 0.78rem; opacity: 0.8; margin-top: 4px;">Service: ' + escapeHtml(req.service_type || 'General') + '</div>' +
+        '</div>' +
+        '<div style="display: flex; gap: 12px; align-items: center;">' +
+          '<button id="deepLinkUploadBtn" class="dash-inline-btn" style="background: #fff; color: #855b00; border: none; padding: 12px 24px; font-weight: 700; border-radius: 10px; cursor: pointer; transition: transform 0.2s;">' +
+            'Upload Document' +
+          '</button>' +
+          '<button id="deepLinkCloseBtn" style="background: none; border: 1px solid rgba(255,255,255,0.3); color: #fff; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">' +
+            '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+
+    banner.style.display = 'block';
+
+    document.getElementById('deepLinkUploadBtn').onclick = function() {
+      pendingUploadDoc = { name: req.document_title, service: req.service_type || 'Secure Request', requestId: req.id };
+      docFileInput.click();
+    };
+
+    document.getElementById('deepLinkCloseBtn').onclick = function() {
+      banner.style.display = 'none';
+    };
+  }
+
   // Wait for Supabase client to be ready, then load real-time status
   function waitForSupabaseAndLoad() {
     if (window.supabaseClient) {
@@ -3157,6 +3320,7 @@
       loadQuotations();
       loadDocumentRequests();
       loadDisputes();
+      handleDeepLinks();
     } else {
       setTimeout(waitForSupabaseAndLoad, 100);
     }

@@ -4,7 +4,14 @@
       "Bash(git commit *)",
       "Bash(supabase db *)",
       "Bash(rm supabase/migrations/20260506_recurring_cron.sql supabase/migrations/20260506_recurring_functions.sql supabase/migrations/20260506_recurring_pipelines_seed.sql supabase/migrations/20260506_recurring_schedules.sql)",
-      "Read(//c/c/Users/iqbal/Downloads/jeffy-jeff/jeffy-jeff/supabase/**)"
+      "Read(//c/c/Users/iqbal/Downloads/jeffy-jeff/jeffy-jeff/supabase/**)",
+      "WebFetch(domain:nribridgeindia.com)",
+      "Bash(where chrome.exe)",
+      "Bash(where msedge.exe)",
+      "Bash(where wkhtmltopdf *)",
+      "Bash(where pandoc *)",
+      "Bash(where python *)",
+      "PowerShell(Test-Path *)"
     ]
   }
 }
