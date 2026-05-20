@@ -275,6 +275,12 @@
   // Always include standard service categories
   var STANDARD_SERVICES = ['Property', 'Tax Filing', 'Banking', 'Aadhaar/OCI', 'Legal'];
 
+  // Canonical document service categories (mirrors dashboard.html SVC_NAMES). Anything else → "Custom".
+  var DOC_STANDARD_CATEGORIES = ['Home Management', 'Vehicle Management', 'Parental Care', 'Legal & Documentation'];
+  function bucketDocCategory(svc) {
+    return DOC_STANDARD_CATEGORIES.indexOf(svc) !== -1 ? svc : 'Custom';
+  }
+
   function getServiceCategories() {
     var cats = ['All'];
     STANDARD_SERVICES.forEach(function(s) { cats.push(s); });
@@ -1612,6 +1618,22 @@
   // ── Auto-refresh every 30s ──
   setInterval(function() { loadDashboard(); }, 30000);
 
+  // ── Document Sub-Tabs ──
+  document.querySelectorAll('#docsSubNav [data-docs-tab]').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var targetTab = this.getAttribute('data-docs-tab');
+      document.querySelectorAll('#docsSubNav [data-docs-tab]').forEach(function(t) { t.classList.remove('active'); });
+      this.classList.add('active');
+      var tabFiles = document.getElementById('docsTabFiles');
+      var tabRequests = document.getElementById('docsTabRequests');
+      var tabProof = document.getElementById('docsTabProofQueue');
+      if (tabFiles) tabFiles.style.display = targetTab === 'files' ? 'block' : 'none';
+      if (tabRequests) tabRequests.style.display = targetTab === 'requests' ? 'block' : 'none';
+      if (tabProof) tabProof.style.display = targetTab === 'proofqueue' ? 'block' : 'none';
+      if (targetTab === 'proofqueue' && typeof renderProofQueue === 'function') renderProofQueue();
+    });
+  });
+
   // ── Search ──
   document.getElementById('admSearch').addEventListener('input', function() {
     var q = this.value.toLowerCase().trim();
@@ -1686,6 +1708,7 @@
   // ── Documents Section ──
   var adminDocs = [];
   var activeDocFilter = 'all';
+  var activeDocClient = null;
 
   var DOC_TYPE_ICONS = {
     pdf: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
@@ -1761,7 +1784,7 @@
       var dueText = item.due_at ? 'Due ' + formatDateLong(item.due_at) : 'No due date';
       var sentText = item.email_sent_at ? 'Email sent ' + formatDateLong(item.email_sent_at) : (item.status === 'email_failed' ? 'Email send failed' : 'Awaiting email delivery');
       html +=
-        '<div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--bg-deep);">' +
+        '<div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--white);">' +
           '<div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">' +
             '<div>' +
               '<div style="font-weight:700;">' + escapeHtml(item.document_title || 'Untitled request') + '</div>' +
@@ -2005,36 +2028,58 @@
       renderDocumentRequestClientOptions();
       renderDocumentRequestsList();
 
-      var serviceTypes = {};
-      adminDocs.forEach(function(d) {
-        var svc = d.service_type || 'Other';
-        serviceTypes[svc] = (serviceTypes[svc] || 0) + 1;
-      });
-      var filtersHtml = '<button class="adm-filter-tab' + (activeDocFilter === 'all' ? ' active' : '') + '" data-doc-filter="all">All (' + adminDocs.length + ')</button>';
-      Object.keys(serviceTypes).sort().forEach(function(svc) {
-        filtersHtml += '<button class="adm-filter-tab' + (activeDocFilter === svc ? ' active' : '') + '" data-doc-filter="' + svc + '">' + svc + ' (' + serviceTypes[svc] + ')</button>';
-      });
-      document.getElementById('docsFilterTabs').innerHTML = filtersHtml;
-
-      document.querySelectorAll('#docsFilterTabs [data-doc-filter]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          document.querySelectorAll('#docsFilterTabs [data-doc-filter]').forEach(function(b) { b.classList.remove('active'); });
-          this.classList.add('active');
-          activeDocFilter = this.getAttribute('data-doc-filter');
-          renderDocsGrid();
-        });
-      });
-
       renderDocsGrid();
     });
   }
 
+  function renderDocFilterPills() {
+    var scopeDocs = activeDocClient
+      ? adminDocs.filter(function(d) { return (d.client_email || '—') === activeDocClient; })
+      : adminDocs;
+
+    var bucketCounts = {};
+    scopeDocs.forEach(function(d) {
+      var bucket = bucketDocCategory(d.service_type);
+      bucketCounts[bucket] = (bucketCounts[bucket] || 0) + 1;
+    });
+    var orderedBuckets = DOC_STANDARD_CATEGORIES.filter(function(c) { return bucketCounts[c]; });
+    if (bucketCounts['Custom']) orderedBuckets.push('Custom');
+
+    // If current filter is no longer available in this scope, reset to 'all'
+    if (activeDocFilter !== 'all' && orderedBuckets.indexOf(activeDocFilter) === -1) {
+      activeDocFilter = 'all';
+    }
+
+    var filtersHtml = '<button class="adm-filter-tab' + (activeDocFilter === 'all' ? ' active' : '') + '" data-doc-filter="all">All (' + scopeDocs.length + ')</button>';
+    orderedBuckets.forEach(function(bucket) {
+      filtersHtml += '<button class="adm-filter-tab' + (activeDocFilter === bucket ? ' active' : '') + '" data-doc-filter="' + bucket + '">' + bucket + ' (' + bucketCounts[bucket] + ')</button>';
+    });
+    document.getElementById('docsFilterTabs').innerHTML = filtersHtml;
+
+    document.querySelectorAll('#docsFilterTabs [data-doc-filter]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#docsFilterTabs [data-doc-filter]').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        activeDocFilter = this.getAttribute('data-doc-filter');
+        renderDocsGrid();
+      });
+    });
+  }
+
+  function docClientLabel(email) {
+    var c = clients.find(function(x) { return x.email === email; });
+    return c ? c.name : (email || '—');
+  }
+
+  function escapeAttr(s) { return String(s == null ? '' : s).replace(/"/g, '&quot;'); }
+
   function renderDocsGrid() {
+    var grid = document.getElementById('docsGrid');
+    renderDocFilterPills();
     var filtered = activeDocFilter === 'all'
       ? adminDocs
-      : adminDocs.filter(function(d) { return (d.service_type || 'Other') === activeDocFilter; });
+      : adminDocs.filter(function(d) { return bucketDocCategory(d.service_type) === activeDocFilter; });
 
-    var grid = document.getElementById('docsGrid');
     if (filtered.length === 0) {
       grid.innerHTML =
         '<div class="adm-docs-empty">' +
@@ -2045,29 +2090,120 @@
       return;
     }
 
-    var groups = {};
-    filtered.forEach(function(doc, idx) {
+    if (activeDocClient) {
+      renderClientDocs(filtered, grid);
+    } else {
+      renderClientCards(filtered, grid);
+    }
+  }
+
+  function renderClientCards(filtered, grid) {
+    var byClient = {};
+    filtered.forEach(function(doc) {
+      var email = doc.client_email || '—';
+      if (!byClient[email]) byClient[email] = [];
+      byClient[email].push(doc);
+    });
+
+    var emails = Object.keys(byClient).sort(function(a, b) {
+      return docClientLabel(a).localeCompare(docClientLabel(b));
+    });
+
+    var html = '<div class="adm-docs-grid">';
+    emails.forEach(function(email, idx) {
+      var docs = byClient[email];
+      var name = docClientLabel(email);
+      var initials = name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+      var colorClass = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+
+      var counts = { Requested: 0, Service: 0, General: 0 };
+      var latest = null;
+      docs.forEach(function(d) {
+        if (d.document_request_id) counts.Requested++;
+        else if (d.service_type && d.service_type !== 'Other') counts.Service++;
+        else counts.General++;
+        if (d.uploaded_at && (!latest || new Date(d.uploaded_at) > new Date(latest))) latest = d.uploaded_at;
+      });
+      var latestLabel = latest
+        ? new Date(latest).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : '—';
+
+      var breakdown = '';
+      ['Requested', 'Service', 'General'].forEach(function(t) {
+        if (counts[t] > 0) {
+          var bg = t === 'Requested' ? 'background:rgba(133,91,0,0.1);color:#855b00;' : '';
+          breakdown += '<span class="adm-svc-tag" style="font-size:0.68rem;padding:2px 8px;' + bg + '">' + t + ' · ' + counts[t] + '</span>';
+        }
+      });
+
+      html +=
+        '<div class="adm-dcard adm-dcard-clickable adm-client-card" data-client-email="' + escapeAttr(email) + '">' +
+          '<div class="adm-dcard-top">' +
+            '<div class="adm-avatar ' + colorClass + '" style="width:40px;height:40px;font-size:0.9rem;">' + initials + '</div>' +
+            '<span class="adm-dcard-ext">' + docs.length + ' file' + (docs.length !== 1 ? 's' : '') + '</span>' +
+          '</div>' +
+          '<div class="adm-dcard-name">' + name + '</div>' +
+          '<div class="adm-dcard-file">' + email + '</div>' +
+          '<div class="adm-dcard-meta">' +
+            '<div class="adm-dcard-details" style="flex-wrap:wrap;gap:4px;">' + breakdown + '</div>' +
+            '<span class="adm-dcard-date" style="margin-top:6px;display:block;">Latest: ' + latestLabel + '</span>' +
+          '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    grid.innerHTML = html;
+
+    grid.querySelectorAll('.adm-client-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        activeDocClient = this.getAttribute('data-client-email');
+        renderDocsGrid();
+        var mainContainer = document.querySelector('.adm-main');
+        if (mainContainer) mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+  }
+
+  function renderClientDocs(filtered, grid) {
+    var clientDocs = filtered.filter(function(d) { return (d.client_email || '—') === activeDocClient; });
+    var name = docClientLabel(activeDocClient);
+    var initials = name.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+
+    var headerHtml =
+      '<div class="adm-dcard-client" style="margin-bottom:20px;align-items:center;gap:14px;border-bottom:2px solid var(--border);padding-bottom:14px;">' +
+        '<button id="docsBackBtn" class="adm-btn-export" style="padding:6px 12px;font-size:0.78rem;">&larr; All Clients</button>' +
+        '<div class="adm-avatar green" style="width:44px;height:44px;font-size:0.95rem;">' + initials + '</div>' +
+        '<div style="flex:1;">' +
+          '<strong style="font-size:1.2rem;color:var(--text-dark);display:block;">' + name + '</strong>' +
+          '<span style="opacity:0.6;font-size:0.85rem;">' + activeDocClient + ' · ' + clientDocs.length + ' file' + (clientDocs.length !== 1 ? 's' : '') + '</span>' +
+        '</div>' +
+      '</div>';
+
+    if (clientDocs.length === 0) {
+      grid.innerHTML = headerHtml +
+        '<div class="adm-docs-empty">' +
+          '<h4>No documents in this category</h4>' +
+          '<p>Try selecting a different filter above.</p>' +
+        '</div>';
+      attachDocsBack(grid);
+      return;
+    }
+
+    var groups = { Requested: [], Service: [], General: [] };
+    clientDocs.forEach(function(doc) {
       var uploadDate = doc.uploaded_at
         ? new Date(doc.uploaded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : '—';
-      var clientEmail = doc.client_email || '—';
-      var clientObj = clients.find(function(c) { return c.email === doc.client_email; });
-      var clientName = clientObj ? clientObj.name : clientEmail;
-      var initials = clientName.split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
-      var colorClass = AVATAR_COLORS[idx % AVATAR_COLORS.length];
       var fileExt = (doc.file_name || '').split('.').pop().toUpperCase() || '—';
 
-      // Categorize
       var type = 'General';
       if (doc.document_request_id) type = 'Requested';
       else if (doc.service_type && doc.service_type !== 'Other') type = 'Service';
 
-      // Documents are clickable if they have a storage_path OR file_data (base64)
       var hasViewableContent = doc.storage_path || doc.file_data;
-      var viewAttr = 'data-doc-id="' + doc.id + '" data-path="' + (doc.storage_path || '') + '" data-doc-name="' + (doc.doc_name || '') + '" data-file-name="' + (doc.file_name || '') + '" data-client="' + clientName + '" data-service="' + (doc.service_type || '') + '" data-date="' + uploadDate + '"';
+      var viewAttr = 'data-doc-id="' + doc.id + '" data-path="' + escapeAttr(doc.storage_path || '') + '" data-doc-name="' + escapeAttr(doc.doc_name || '') + '" data-file-name="' + escapeAttr(doc.file_name || '') + '" data-client="' + escapeAttr(name) + '" data-service="' + escapeAttr(doc.service_type || '') + '" data-date="' + uploadDate + '"';
       var cardClickable = hasViewableContent ? ' adm-dcard-clickable' : '';
 
-      var htmlCard =
+      groups[type].push(
         '<div class="adm-dcard' + cardClickable + '" ' + viewAttr + '>' +
           '<div class="adm-dcard-top">' +
             '<div class="adm-dcard-icon ' + getDocColorClass(doc.file_name) + '">' + getDocIcon(doc.file_name) + '</div>' +
@@ -2081,38 +2217,21 @@
               '<span class="adm-dcard-date">' + uploadDate + '</span>' +
             '</div>' +
           '</div>' +
-        '</div>';
+        '</div>'
+      );
+    });
 
-      if (!groups[clientName]) {
-        groups[clientName] = { email: clientEmail, initials: initials, color: colorClass, Requested: [], Service: [], General: [] };
+    var body = '';
+    ['Requested', 'Service', 'General'].forEach(function(type) {
+      if (groups[type].length > 0) {
+        body += '<h5 style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin:24px 0 12px;">' + type + ' Documents (' + groups[type].length + ')</h5>';
+        body += '<div class="adm-docs-grid" style="margin-bottom:32px;">' + groups[type].join('') + '</div>';
       }
-      groups[clientName][type].push(htmlCard);
     });
+    grid.innerHTML = headerHtml + body;
 
-    var html = '';
-    Object.keys(groups).forEach(function(cName) {
-      var g = groups[cName];
-      html += '<div style="margin-bottom: 48px;">';
-      html +=   '<div class="adm-dcard-client" style="margin-bottom: 24px; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 12px;">';
-      html +=     '<div class="adm-avatar-sm ' + g.color + '" style="width: 40px; height: 40px; font-size: 0.9rem;">' + g.initials + '</div>';
-      html +=     '<div>';
-      html +=       '<strong style="font-size: 1.2rem; color: var(--text-dark); display: block;">' + cName + '</strong>';
-      html +=       '<span style="opacity: 0.5; font-size: 0.85rem;">' + g.email + '</span>';
-      html +=     '</div>';
-      html +=   '</div>';
+    attachDocsBack(grid);
 
-      ['Requested', 'Service', 'General'].forEach(function(type) {
-        if (g[type].length > 0) {
-          html += '<h5 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 24px 0 12px;">' + type + ' Documents (' + g[type].length + ')</h5>';
-          html += '<div class="adm-docs-grid" style="margin-bottom: 32px;">' + g[type].join('') + '</div>';
-        }
-      });
-      
-      html += '</div>';
-    });
-    grid.innerHTML = html;
-
-    // Attach click handlers for clickable cards
     grid.querySelectorAll('.adm-dcard-clickable').forEach(function(card) {
       card.addEventListener('click', function() {
         var docId = this.getAttribute('data-doc-id');
@@ -2122,18 +2241,21 @@
         var client = this.getAttribute('data-client') || '';
         var service = this.getAttribute('data-service') || '';
         var date = this.getAttribute('data-date') || '';
-
-        // Find the doc object to check for file_data
         var docObj = adminDocs.find(function(d) { return d.id === docId; });
-
         if (path) {
-          // Use Supabase Storage signed URL
           openDocPreview(path, docName, fileName, client, service, date, null);
         } else if (docObj && docObj.file_data) {
-          // Use base64 data URL directly
           openDocPreview(null, docName, fileName, client, service, date, docObj.file_data);
         }
       });
+    });
+  }
+
+  function attachDocsBack(grid) {
+    var back = grid.querySelector('#docsBackBtn');
+    if (back) back.addEventListener('click', function() {
+      activeDocClient = null;
+      renderDocsGrid();
     });
   }
 
@@ -2531,12 +2653,11 @@
       var disputeSection = document.getElementById('sectionDisputes');
       var empSection = document.getElementById('sectionEmployees');
 
-      var fullWidthSections = ['documents','disputes','analytics','employees','employeesPending','opsboard','scorecards','leaderboard','escalations','proofqueue','recurring'];
+      var fullWidthSections = ['documents','disputes','analytics','employees','employeesPending','opsboard','scorecards','leaderboard','escalations','recurring'];
       var opsSection = document.getElementById('sectionOpsboard');
       var scoreSection = document.getElementById('sectionScorecards');
       var leaderSection = document.getElementById('sectionLeaderboard');
       var escSection = document.getElementById('sectionEscalations');
-      var proofSection = document.getElementById('sectionProofqueue');
       var recurringSection = document.getElementById('sectionRecurring');
 
       if (fullWidthSections.indexOf(section) !== -1) {
@@ -2550,7 +2671,6 @@
         if (scoreSection) scoreSection.style.display = section === 'scorecards' ? 'block' : 'none';
         if (leaderSection) leaderSection.style.display = section === 'leaderboard' ? 'block' : 'none';
         if (escSection) escSection.style.display = section === 'escalations' ? 'block' : 'none';
-        if (proofSection) proofSection.style.display = section === 'proofqueue' ? 'block' : 'none';
         if (recurringSection) recurringSection.style.display = section === 'recurring' ? 'block' : 'none';
         if (section === 'documents') loadDocuments();
         if (section === 'disputes') renderDisputes();
@@ -2559,11 +2679,12 @@
         if (section === 'scorecards') renderScoreCards();
         if (section === 'leaderboard') renderLeaderboard();
         if (section === 'escalations') renderEscalations();
-        if (section === 'proofqueue') renderProofQueue();
         if (section === 'recurring') renderRecurringSchedules();
         if (section === 'employees') { activeEmpFilter = 'all'; document.querySelectorAll('#empFilters [data-emp-filter]').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-emp-filter') === 'all'); }); renderEmployeesTable(); }
         if (section === 'employeesPending') { activeEmpFilter = 'pending'; document.querySelectorAll('#empFilters [data-emp-filter]').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-emp-filter') === 'pending'); }); renderEmployeesTable(); }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        var mainContainer = document.querySelector('.adm-main');
+        if (mainContainer) mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         defaultSections.forEach(function(el) { if (el) el.style.display = ''; });
         if (rightPanel) rightPanel.style.display = '';
@@ -2575,13 +2696,13 @@
         if (scoreSection) scoreSection.style.display = 'none';
         if (leaderSection) leaderSection.style.display = 'none';
         if (escSection) escSection.style.display = 'none';
-        if (proofSection) proofSection.style.display = 'none';
         if (recurringSection) recurringSection.style.display = 'none';
       }
 
       switch (section) {
         case 'dashboard':
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          var mainContainer = document.querySelector('.adm-main');
+          if (mainContainer) mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
           renderTaskTable('all');
           break;
         case 'analytics':
@@ -2590,12 +2711,18 @@
         case 'clients':
         case 'byservice':
           var el = document.getElementById('sectionClients');
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          var mainContainer = document.querySelector('.adm-main');
+          if (el && mainContainer) {
+            mainContainer.scrollTo({ top: el.offsetTop - 30, behavior: 'smooth' });
+          }
           break;
         case 'tasks':
           renderTaskTable('all');
           var tasksEl = document.getElementById('sectionTasks');
-          if (tasksEl) tasksEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          var mainContainer = document.querySelector('.adm-main');
+          if (tasksEl && mainContainer) {
+            mainContainer.scrollTo({ top: tasksEl.offsetTop - 30, behavior: 'smooth' });
+          }
           break;
         case 'pending':
           renderTaskTable('pending');
