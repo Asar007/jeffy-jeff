@@ -3169,8 +3169,18 @@
         }
         var doc = result.data[0];
         var client = clients.find(function(c) { return c.email.toLowerCase() === req.client_email.toLowerCase(); }) || { name: req.client_email };
-        
-        openDocPreview(doc, client.name);
+        var uploadDate = doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : '';
+        var docName = doc.doc_name || req.document_title || 'Document';
+        var fileName = doc.file_name || '';
+        var service = doc.service_type || req.service_type || '';
+
+        if (doc.storage_path) {
+          openDocPreview(doc.storage_path, docName, fileName, client.name, service, uploadDate, null);
+        } else if (doc.file_data) {
+          openDocPreview(null, docName, fileName, client.name, service, uploadDate, doc.file_data);
+        } else {
+          showToast('Uploaded document has no viewable content', 'error');
+        }
       });
   }
 
