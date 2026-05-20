@@ -1851,28 +1851,36 @@ footer {
 }
 
 .dash-doc-row.secure-request {
-  background: rgba(133, 91, 0, 0.04);
+  background: rgba(183, 122, 16, 0.035);
   margin: 4px -8px;
   padding: 14px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(133, 91, 0, 0.12);
+  border: 1px solid rgba(183, 122, 16, 0.14);
   transition: all 0.2s ease;
 }
 .dash-doc-row.secure-request:hover {
-  background: rgba(133, 91, 0, 0.07);
-  border-color: rgba(133, 91, 0, 0.2);
+  background: rgba(183, 122, 16, 0.06);
+  border-color: rgba(183, 122, 16, 0.24);
 }
 
 .secure-badge {
-  background: #855b00;
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  max-width: max-content;
+  background: transparent;
+  color: #b77a10;
+  border: 1px solid rgba(183, 122, 16, 0.45);
   font-size: 0.6rem;
   font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: 6px;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: 999px;
+  margin-left: 8px;
   vertical-align: middle;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .dash-inline-btn {
