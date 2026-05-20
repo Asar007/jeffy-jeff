@@ -9,7 +9,7 @@
 <meta name="description" content="Track your active services, payments, documents, and subscription — all from one clean dashboard.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css?v=6">
+<link rel="stylesheet" href="shared.css?v=7">
 </head>
 <body class="dash-page">
 
@@ -49,14 +49,6 @@
         <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
         Request Additional Service
       </a>
-      <a href="contact.html" class="dash-quick-btn">
-        <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-        Contact Support
-      </a>
-      <button class="dash-quick-btn" data-panel-jump="paymentsPanel" type="button">
-        <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
-        Payment History
-      </button>
     </div>
 
     <!-- SECTION TABS -->
@@ -69,6 +61,11 @@
       <button type="button" class="dash-subnav-tab" data-panel="paymentsPanel" role="tab" aria-selected="false" aria-controls="paymentsPanel">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
         <span>Payments</span>
+      </button>
+      <button type="button" class="dash-subnav-tab" data-panel="documentsPanel" role="tab" aria-selected="false" aria-controls="documentsPanel">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+        <span>Documents</span>
+        <em class="dash-subnav-count" id="subnavDocsCount" style="display:none;"></em>
       </button>
       <button type="button" class="dash-subnav-tab" data-panel="disputesPanel" role="tab" aria-selected="false" aria-controls="disputesPanel">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
@@ -102,6 +99,21 @@
         </div>
       </section>
 
+      <!-- Documents Panel -->
+      <section class="dash-panel" id="documentsPanel" role="tabpanel" aria-labelledby="documentsPanel" hidden>
+        <div class="dash-documents-panel">
+          <div class="dash-section-header">
+            <h2>My Documents <span class="dash-em">— Action items first</span></h2>
+          </div>
+          <div class="dash-documents-intro">
+            Pending requests appear at the top. Use the Digital Vault to view documents we've already received.
+          </div>
+          <div class="dash-docs-list" id="docsList">
+            <!-- JS renders docs here -->
+          </div>
+        </div>
+      </section>
+
       <!-- Disputes Panel -->
       <section class="dash-panel" id="disputesPanel" role="tabpanel" aria-labelledby="disputesPanel" hidden>
         <div class="dash-disputes-panel" id="disputesSection">
@@ -130,25 +142,6 @@
         <div id="subContent">
           <!-- JS renders subscription details -->
         </div>
-      </div>
-
-      <!-- My Documents -->
-      <div class="dash-docs-card">
-        <div class="dash-section-header" style="margin-bottom:14px;">
-          <h2 style="font-size:1.05rem;">My Documents</h2>
-        </div>
-        <div class="dash-docs-list" id="docsList">
-          <!-- JS renders docs here -->
-        </div>
-      </div>
-
-      <div class="dash-dispute-summary-card">
-        <div class="dash-sub-header">
-          <h3>Dispute Status</h3>
-        </div>
-        <div class="dash-dispute-summary-count" id="disputeSummaryCount">0</div>
-        <div class="dash-dispute-summary-copy" id="disputeSummaryCopy">No open disputes</div>
-        <button class="dash-inline-btn dash-inline-btn-block" id="openDisputeSidebarBtn" type="button">Open Dispute Center</button>
       </div>
 
       <!-- Request Additional Service -->
@@ -429,7 +422,8 @@
     home: ['Inspection Issue', 'Tenant Issue', 'Rent Issue', 'Maintenance Issue', 'Document Delay'],
     vehicle: ['Registration Issue', 'Insurance Issue', 'Servicing Issue', 'Delivery Delay', 'Document Issue'],
     parental: ['Caretaker Issue', 'Appointment Issue', 'Medicine Issue', 'Emergency Response Issue', 'Reporting Issue'],
-    legal: ['Filing Delay', 'Drafting Issue', 'Documentation Mismatch', 'Compliance Issue', 'Case Follow-up Issue']
+    legal: ['Filing Delay', 'Drafting Issue', 'Documentation Mismatch', 'Compliance Issue', 'Case Follow-up Issue'],
+    other: ['Billing / Payment', 'Account / Login', 'Communication Gap', 'Feature Request', 'General Feedback', 'Other']
   };
 
   // SVG icons for service categories
@@ -1256,6 +1250,17 @@
 
     listWrap.innerHTML = html;
     attachDocumentActionHandlers();
+
+    var pendingCount = pendingReqs.length + serviceDocs.length;
+    var subnavDocsCount = document.getElementById('subnavDocsCount');
+    if (subnavDocsCount) {
+      if (pendingCount > 0) {
+        subnavDocsCount.textContent = pendingCount;
+        subnavDocsCount.style.display = 'inline-flex';
+      } else {
+        subnavDocsCount.style.display = 'none';
+      }
+    }
   }
 
   function buildDocRowHtml(doc, typeClass) {
@@ -2051,6 +2056,12 @@
         });
       });
     });
+    options.push({
+      serviceKey: 'other',
+      serviceLabel: 'Other / General',
+      serviceItemLabel: '',
+      displayLabel: 'Other / General Issue'
+    });
     disputeServiceOptions = options;
   }
 
@@ -2099,11 +2110,6 @@
     var openCount = disputes.filter(function(item) {
       return openStatuses.indexOf(item.status) !== -1;
     }).length;
-    document.getElementById('disputeSummaryCount').textContent = disputes.length;
-    document.getElementById('disputeSummaryCopy').textContent = disputes.length === 0
-      ? 'No disputes raised yet'
-      : openCount + ' open case' + (openCount === 1 ? '' : 's') + ' under review';
-
     var subnavDispCount = document.getElementById('subnavDisputesCount');
     if (subnavDispCount) {
       if (openCount > 0) {
@@ -2404,11 +2410,6 @@
   });
 
   document.getElementById('openDisputeModalBtn').addEventListener('click', openDisputeModal);
-  document.getElementById('openDisputeSidebarBtn').addEventListener('click', function() {
-    activatePanel('disputesPanel');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    openDisputeModal();
-  });
   document.getElementById('disputeModalClose').addEventListener('click', closeDisputeModal);
   document.getElementById('cancelDisputeBtn').addEventListener('click', closeDisputeModal);
   disputeModal.addEventListener('click', function(e) {
