@@ -3141,9 +3141,15 @@ footer {
 .adm-nav-badge.red { background: #dc3545; }
 
 /* ── Main Layout ─────────────────────────────────────────────────── */
-.adm-body { margin-left: 260px; flex: 1; display: flex; min-height: 100vh; }
-.adm-main { flex: 1; padding: 28px 32px; max-width: 100%; }
-.adm-right { width: 340px; min-width: 340px; padding: 28px 24px; border-left: 1px solid #e8e4d4; background: #faf8f2; }
+.adm-body { margin-left: 260px; flex: 1; display: flex; height: 100vh; overflow: hidden; position: relative; }
+.adm-main { flex: 1; padding: 28px 32px; max-width: 100%; overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
+.adm-right { width: 340px; min-width: 340px; padding: 28px 24px; border-left: 1px solid #e8e4d4; background: #faf8f2; overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
+
+/* Custom Scrollbar for independent areas */
+.adm-main::-webkit-scrollbar, .adm-right::-webkit-scrollbar, .ops-cards::-webkit-scrollbar, .adm-client-list::-webkit-scrollbar { width: 6px; }
+.adm-main::-webkit-scrollbar-track, .adm-right::-webkit-scrollbar-track, .ops-cards::-webkit-scrollbar-track, .adm-client-list::-webkit-scrollbar-track { background: transparent; }
+.adm-main::-webkit-scrollbar-thumb, .adm-right::-webkit-scrollbar-thumb, .ops-cards::-webkit-scrollbar-thumb, .adm-client-list::-webkit-scrollbar-thumb { background: #d4d2c8; border-radius: 10px; }
+.adm-main::-webkit-scrollbar-thumb:hover, .adm-right::-webkit-scrollbar-thumb:hover, .ops-cards::-webkit-scrollbar-thumb:hover, .adm-client-list::-webkit-scrollbar-thumb:hover { background: #c4c2b8; }
 
 /* ── Header ──────────────────────────────────────────────────────── */
 .adm-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
@@ -3218,6 +3224,14 @@ footer {
 .adm-stat-sub.green { color: var(--green-pop); }
 .adm-stat-sub.orange { color: #e8a83a; }
 
+.adm-form-input {
+  width: 100%; padding: 10px 14px; border: 1.5px solid #eae7dc; border-radius: 10px;
+  background: var(--bg-cream); color: var(--text-dark); font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; outline: none; transition: all 0.15s;
+}
+.adm-form-input:focus { border-color: var(--green-pop); box-shadow: 0 0 0 3px rgba(74,106,46,0.1); }
+.adm-form-input::placeholder { color: var(--text-muted); opacity: 0.6; }
+
 /* ── Section Headers ─────────────────────────────────────────────── */
 .adm-section-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -3232,6 +3246,33 @@ footer {
   color: var(--green-pop); text-decoration: none; cursor: pointer;
 }
 .adm-link:hover { text-decoration: underline; }
+
+/* ── Generic Admin Card ──────────────────────────────────────────── */
+.adm-card {
+  background: var(--white); border-radius: var(--radius-md); padding: 24px;
+  border: 1px solid #eae7dc; margin-bottom: 24px;
+}
+.adm-card-title {
+  font-weight: 700; font-size: 1.05rem; color: var(--text-dark); margin-bottom: 4px;
+}
+.adm-card-desc {
+  font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;
+}
+
+/* ── Sub-Navigation ──────────────────────────────────────────────── */
+.adm-sub-nav {
+  display: flex; gap: 24px; border-bottom: 1.5px solid #eae7dc; margin-bottom: 24px;
+}
+.adm-sub-nav-item {
+  padding: 10px 4px; font-size: 0.88rem; font-weight: 600; color: var(--text-muted);
+  cursor: pointer; position: relative; transition: all 0.2s;
+}
+.adm-sub-nav-item:hover { color: var(--text-dark); }
+.adm-sub-nav-item.active { color: var(--green-pop); }
+.adm-sub-nav-item.active::after {
+  content: ''; position: absolute; bottom: -1.5px; left: 0; right: 0;
+  height: 2.5px; background: var(--green-pop); border-radius: 2px 2px 0 0;
+}
 
 /* ── Work Tracker Table ──────────────────────────────────────────── */
 .adm-table-wrap {
@@ -3302,9 +3343,9 @@ footer {
 .adm-deadline { font-size: 0.82rem; color: var(--text-mid); white-space: nowrap; }
 
 /* ── Clients by Service ──────────────────────────────────────────── */
-.adm-clients-section { margin-bottom: 32px; }
+.adm-clients-section { margin-bottom: 32px; display: flex; flex-direction: column; max-height: 80vh; }
 .adm-filter-tabs {
-  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px;
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; flex-shrink: 0;
 }
 .adm-filter-tab {
   padding: 6px 16px; border-radius: var(--radius-pill); border: 1.5px solid #d4d2c8;
@@ -3316,7 +3357,7 @@ footer {
   background: var(--green-pop); color: #fff; border-color: var(--green-pop);
 }
 
-.adm-client-list { display: flex; flex-direction: column; gap: 10px; }
+.adm-client-list { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-right: 6px; }
 
 /* Client Card */
 .adm-client-card {
@@ -5117,13 +5158,13 @@ body.emp-page {
 /* ══════════════════════════════════════════
    OPERATIONS BOARD
    ══════════════════════════════════════════ */
-.ops-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; min-height: 400px; }
-.ops-column { flex: 0 0 260px; background: #f7f5ee; border-radius: var(--radius-md); padding: 14px; }
-.ops-column-head { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.ops-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; height: calc(100vh - 220px); min-height: 400px; align-items: stretch; }
+.ops-column { flex: 0 0 280px; background: #f7f5ee; border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; height: 100%; }
+.ops-column-head { flex-shrink: 0; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
 .ops-column-count { background: var(--bg-cream); border-radius: var(--radius-pill); padding: 2px 8px; font-size: 0.68rem; font-weight: 600; color: var(--text-mid); }
 .ops-column.escalated .ops-column-head { color: #dc3545; }
 .ops-column.escalated .ops-column-count { background: #fde8ea; color: #dc3545; }
-.ops-cards { display: flex; flex-direction: column; gap: 10px; }
+.ops-cards { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
 
 .ops-card { background: var(--white); border-radius: var(--radius-md); padding: 14px; border: 1.5px solid #eae7dc; cursor: pointer; transition: box-shadow 0.2s, border-color 0.2s; }
 .ops-card:hover { border-color: var(--green-pop); box-shadow: 0 2px 8px rgba(74,106,46,0.1); }
