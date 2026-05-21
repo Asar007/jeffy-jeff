@@ -397,67 +397,84 @@
   }
 
   // ── Custom Requests ──
-  function renderRequests() {
-    var html = '';
-    requests.forEach(function(r) {
-      var stClass = statusClass(r.status);
-      var actionsHtml = '';
-      var amountDisplay = '';
+  var activeRequestFilter = 'all';
+  var requestsSearchTerm = '';
+  var REQUEST_STATUSES = ['New', 'In Review', 'Quoted', 'Accepted', 'Declined'];
 
-      if (r.status === 'New') {
-        actionsHtml =
-          '<div class="adm-request-actions">' +
-            '<button class="adm-req-btn adm-req-accept" data-id="' + r.id + '">Review &amp; Quote</button>' +
-            '<button class="adm-req-btn adm-req-decline" data-id="' + r.id + '">Decline</button>' +
-          '</div>';
-      } else if (r.status === 'Quoted') {
-        amountDisplay = '\u20B9' + (r.quoted_amount || 0).toLocaleString('en-IN');
-        var responseNote = r.customer_response
-          ? ' \u00B7 Customer ' + r.customer_response
-          : ' \u00B7 Awaiting customer response';
-        actionsHtml = '<span style="font-size:0.75rem;color:var(--text-muted);">' + responseNote + '</span>';
-      } else if (r.status === 'Accepted') {
-        amountDisplay = '\u20B9' + (r.quoted_amount || r.amount || 0).toLocaleString('en-IN');
-        actionsHtml = '<span class="adm-status-badge accepted" style="font-size:0.72rem;">Accepted</span>';
-      } else if (r.status === 'Declined') {
-        actionsHtml = '<span class="adm-status-badge declined" style="font-size:0.72rem;">Declined</span>';
-      } else {
-        actionsHtml = '<span class="adm-status-badge ' + stClass + '" style="font-size:0.72rem;">' + r.status + '</span>';
-      }
+  function buildRequestCard(r) {
+    var stClass = statusClass(r.status);
+    var actionsHtml = '';
+    var amountDisplay = '';
 
-      if (!amountDisplay && r.amount) {
-        amountDisplay = '\u20B9' + r.amount.toLocaleString('en-IN');
-      }
-
-      html +=
-        '<div class="adm-request-card">' +
-          '<div class="adm-request-head">' +
-            '<span class="adm-status-badge ' + stClass + '" style="font-size:0.7rem;">' + r.status + '</span>' +
-            '<strong>' + r.client_name + '</strong>' +
-            (amountDisplay ? '<span class="adm-request-amount">' + amountDisplay + '</span>' : '') +
-          '</div>' +
-          '<div class="adm-request-desc">' + (r.description || '') + '</div>' +
-          '<div class="adm-request-foot">' +
-            '<span class="adm-request-date">Received: ' + formatDate(r.received_at) + '</span>' +
-            actionsHtml +
-          '</div>' +
+    if (r.status === 'New') {
+      actionsHtml =
+        '<div class="adm-request-actions">' +
+          '<button class="adm-req-btn adm-req-accept" data-id="' + r.id + '">Review &amp; Quote</button>' +
+          '<button class="adm-req-btn adm-req-decline" data-id="' + r.id + '">Decline</button>' +
         '</div>';
-    });
-
-    if (requests.length === 0) {
-      html = '<div style="color:var(--text-muted);font-size:0.88rem;padding:16px 0;">No requests yet</div>';
+    } else if (r.status === 'In Review') {
+      actionsHtml =
+        '<div class="adm-request-actions">' +
+          '<button class="adm-req-btn adm-req-accept" data-id="' + r.id + '">Continue Quote</button>' +
+        '</div>';
+    } else if (r.status === 'Quoted') {
+      amountDisplay = '\u20B9' + (r.quoted_amount || 0).toLocaleString('en-IN');
+      var responseNote = r.customer_response
+        ? ' \u00B7 Customer ' + r.customer_response
+        : ' \u00B7 Awaiting customer response';
+      actionsHtml = '<span style="font-size:0.75rem;color:var(--text-muted);">' + responseNote + '</span>';
+    } else if (r.status === 'Accepted') {
+      amountDisplay = '\u20B9' + (r.quoted_amount || r.amount || 0).toLocaleString('en-IN');
+      actionsHtml = '<span class="adm-status-badge accepted" style="font-size:0.72rem;">Accepted</span>';
+    } else if (r.status === 'Declined') {
+      actionsHtml = '<span class="adm-status-badge declined" style="font-size:0.72rem;">Declined</span>';
+    } else {
+      actionsHtml = '<span class="adm-status-badge ' + stClass + '" style="font-size:0.72rem;">' + r.status + '</span>';
     }
-    document.getElementById('requestsList').innerHTML = html;
 
-    // Attach Review & Quote handler
-    document.querySelectorAll('.adm-req-accept').forEach(function(btn) {
+    if (!amountDisplay && r.amount) {
+      amountDisplay = '\u20B9' + r.amount.toLocaleString('en-IN');
+    }
+
+    var emailLine = r.customer_email
+      ? '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">' + escapeHtml(r.customer_email) + '</div>'
+      : '';
+    var serviceTag = r.service_type
+      ? '<span class="adm-svc-tag" style="font-size:0.68rem;padding:2px 8px;">' + escapeHtml(r.service_type) + '</span>'
+      : '';
+
+    return (
+      '<div class="adm-request-card">' +
+        '<div class="adm-request-head">' +
+          '<span class="adm-status-badge ' + stClass + '" style="font-size:0.7rem;">' + r.status + '</span>' +
+          '<div style="display:flex;flex-direction:column;min-width:0;">' +
+            '<strong>' + escapeHtml(r.client_name || 'Unknown') + '</strong>' +
+            emailLine +
+          '</div>' +
+          (amountDisplay ? '<span class="adm-request-amount">' + amountDisplay + '</span>' : '') +
+        '</div>' +
+        (serviceTag ? '<div style="margin-bottom:8px;">' + serviceTag + '</div>' : '') +
+        '<div class="adm-request-desc">' + escapeHtml(r.description || '') + '</div>' +
+        '<div class="adm-request-foot">' +
+          '<span class="adm-request-date">Received: ' + formatDate(r.received_at) + '</span>' +
+          actionsHtml +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function attachRequestHandlers(scope) {
+    var root = scope || document;
+    root.querySelectorAll('.adm-req-accept').forEach(function(btn) {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
       btn.addEventListener('click', function() {
-        var id = this.getAttribute('data-id');
-        openQuoteModal(id);
+        openQuoteModal(this.getAttribute('data-id'));
       });
     });
-    // Attach Decline handler
-    document.querySelectorAll('.adm-req-decline').forEach(function(btn) {
+    root.querySelectorAll('.adm-req-decline').forEach(function(btn) {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
       btn.addEventListener('click', function() {
         var id = this.getAttribute('data-id');
         sb.from('requests').update({ status: 'Declined' }).eq('id', id).then(function(result) {
@@ -466,6 +483,102 @@
           loadDashboard();
         });
       });
+    });
+  }
+
+  function renderRequestsWidget() {
+    var widgetList = document.getElementById('requestsWidgetList');
+    if (!widgetList) return;
+    var actionable = requests.filter(function(r) {
+      return r.status === 'New' || r.status === 'In Review';
+    });
+    var displayList = (actionable.length ? actionable : requests).slice(0, 4);
+    if (displayList.length === 0) {
+      widgetList.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px 0;">No requests yet</div>';
+      return;
+    }
+    widgetList.innerHTML = displayList.map(buildRequestCard).join('');
+    attachRequestHandlers(widgetList);
+  }
+
+  function renderRequestsFullGrid() {
+    var grid = document.getElementById('requestsFullGrid');
+    if (!grid) return;
+
+    var counts = { all: requests.length };
+    REQUEST_STATUSES.forEach(function(s) { counts[s] = 0; });
+    requests.forEach(function(r) {
+      if (counts[r.status] !== undefined) counts[r.status]++;
+    });
+
+    var nEl = document.getElementById('reqStatNew');
+    var rvEl = document.getElementById('reqStatReview');
+    var qEl = document.getElementById('reqStatQuoted');
+    var aEl = document.getElementById('reqStatAccepted');
+    var dEl = document.getElementById('reqStatDeclined');
+    if (nEl) nEl.textContent = counts['New'] || 0;
+    if (rvEl) rvEl.textContent = counts['In Review'] || 0;
+    if (qEl) qEl.textContent = counts['Quoted'] || 0;
+    if (aEl) aEl.textContent = counts['Accepted'] || 0;
+    if (dEl) dEl.textContent = counts['Declined'] || 0;
+
+    var totalLabel = document.getElementById('requestsCountLabel');
+    if (totalLabel) totalLabel.textContent = requests.length + ' total request' + (requests.length === 1 ? '' : 's');
+
+    var filtersWrap = document.getElementById('requestsFilters');
+    if (filtersWrap) {
+      var filterHtml = '<button class="adm-filter-tab' + (activeRequestFilter === 'all' ? ' active' : '') + '" data-req-filter="all">All (' + counts.all + ')</button>';
+      REQUEST_STATUSES.forEach(function(s) {
+        filterHtml += '<button class="adm-filter-tab' + (activeRequestFilter === s ? ' active' : '') + '" data-req-filter="' + s + '">' + s + ' (' + (counts[s] || 0) + ')</button>';
+      });
+      filtersWrap.innerHTML = filterHtml;
+      filtersWrap.querySelectorAll('[data-req-filter]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          activeRequestFilter = this.getAttribute('data-req-filter');
+          renderRequestsFullGrid();
+        });
+      });
+    }
+
+    var term = (requestsSearchTerm || '').trim().toLowerCase();
+    var filtered = requests.filter(function(r) {
+      if (activeRequestFilter !== 'all' && r.status !== activeRequestFilter) return false;
+      if (!term) return true;
+      var hay = (r.client_name || '') + ' ' + (r.customer_email || '') + ' ' + (r.description || '') + ' ' + (r.service_type || '');
+      return hay.toLowerCase().indexOf(term) !== -1;
+    });
+
+    if (filtered.length === 0) {
+      var emptyMsg = requests.length === 0
+        ? 'No custom requests yet.'
+        : 'No requests match the current filter or search.';
+      grid.innerHTML = '<div style="color:var(--text-muted);font-size:0.9rem;padding:40px;grid-column:1/-1;text-align:center;">' + emptyMsg + '</div>';
+      return;
+    }
+
+    grid.innerHTML = filtered.map(buildRequestCard).join('');
+    attachRequestHandlers(grid);
+  }
+
+  function renderRequests() {
+    renderRequestsWidget();
+    renderRequestsFullGrid();
+  }
+
+  // Wire search + "View all" link once at load
+  var reqSearchInput = document.getElementById('requestsSearchInput');
+  if (reqSearchInput) {
+    reqSearchInput.addEventListener('input', function() {
+      requestsSearchTerm = this.value;
+      renderRequestsFullGrid();
+    });
+  }
+  var reqViewAll = document.getElementById('requestsWidgetViewAll');
+  if (reqViewAll) {
+    reqViewAll.addEventListener('click', function(e) {
+      e.preventDefault();
+      var navItem = document.querySelector('.adm-nav-item[data-section="requests"]');
+      if (navItem) navItem.click();
     });
   }
 
@@ -565,44 +678,51 @@
   });
 
   // ── Call Appointments ──
-  function renderAppointments() {
-    var html = '';
-    appointments.forEach(function(a) {
-      var stClass = statusClass(a.status);
-      var actionsHtml = '';
-      if (a.status === 'New') {
-        actionsHtml =
-          '<div class="adm-request-actions">' +
-            '<button class="adm-req-btn adm-req-accept appt-done" data-id="' + a.id + '">Mark Contacted</button>' +
-          '</div>';
-      } else {
-        actionsHtml = '<span class="adm-status-badge ' + stClass + '" style="font-size:0.72rem;">' + a.status + '</span>';
-      }
+  var activeAppointmentFilter = 'all';
+  var appointmentsSearchTerm = '';
+  var APPOINTMENT_STATUSES = ['New', 'Contacted', 'Done'];
 
-      html +=
-        '<div class="adm-request-card">' +
-          '<div class="adm-request-head">' +
-            '<span class="adm-status-badge ' + stClass + '" style="font-size:0.7rem;">' + a.status + '</span>' +
-            '<strong>' + a.name + '</strong>' +
-          '</div>' +
-          '<div class="adm-request-desc">' +
-            (a.email ? a.email + '<br>' : '') +
-            (a.phone ? a.phone + '<br>' : '') +
-            (a.message || '') +
-          '</div>' +
-          '<div class="adm-request-foot">' +
-            '<span class="adm-request-date">' + formatDate(a.created_at) + '</span>' +
-            actionsHtml +
-          '</div>' +
+  function buildAppointmentCard(a) {
+    var stClass = statusClass(a.status);
+    var actionsHtml = '';
+    if (a.status === 'New') {
+      actionsHtml =
+        '<div class="adm-request-actions">' +
+          '<button class="adm-req-btn adm-req-accept appt-mark-contacted" data-id="' + a.id + '">Mark Contacted</button>' +
         '</div>';
-    });
-
-    if (appointments.length === 0) {
-      html = '<div style="color:var(--text-muted);font-size:0.88rem;padding:16px 0;">No appointments yet</div>';
+    } else if (a.status === 'Contacted') {
+      actionsHtml =
+        '<div class="adm-request-actions">' +
+          '<button class="adm-req-btn adm-req-accept appt-mark-done" data-id="' + a.id + '">Mark Done</button>' +
+        '</div>';
+    } else {
+      actionsHtml = '<span class="adm-status-badge ' + stClass + '" style="font-size:0.72rem;">' + a.status + '</span>';
     }
-    document.getElementById('appointmentsList').innerHTML = html;
 
-    document.querySelectorAll('.appt-done').forEach(function(btn) {
+    return (
+      '<div class="adm-request-card">' +
+        '<div class="adm-request-head">' +
+          '<span class="adm-status-badge ' + stClass + '" style="font-size:0.7rem;">' + a.status + '</span>' +
+          '<strong>' + escapeHtml(a.name || 'Unknown') + '</strong>' +
+        '</div>' +
+        '<div class="adm-request-desc">' +
+          (a.email ? escapeHtml(a.email) + '<br>' : '') +
+          (a.phone ? escapeHtml(a.phone) + '<br>' : '') +
+          escapeHtml(a.message || '') +
+        '</div>' +
+        '<div class="adm-request-foot">' +
+          '<span class="adm-request-date">' + formatDate(a.created_at) + '</span>' +
+          actionsHtml +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function attachAppointmentHandlers(scope) {
+    var root = scope || document;
+    root.querySelectorAll('.appt-mark-contacted').forEach(function(btn) {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
       btn.addEventListener('click', function() {
         var id = this.getAttribute('data-id');
         sb.from('appointments').update({ status: 'Contacted' }).eq('id', id).then(function(result) {
@@ -611,6 +731,145 @@
           loadDashboard();
         });
       });
+    });
+    root.querySelectorAll('.appt-mark-done').forEach(function(btn) {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', function() {
+        var id = this.getAttribute('data-id');
+        sb.from('appointments').update({ status: 'Done' }).eq('id', id).then(function(result) {
+          if (result.error) { showToast('Failed to update', 'error'); return; }
+          showToast('Marked as done', 'success');
+          loadDashboard();
+        });
+      });
+    });
+  }
+
+  function renderAppointmentsWidget() {
+    var widgetList = document.getElementById('appointmentsWidgetList');
+    if (!widgetList) return;
+    var actionable = appointments.filter(function(a) {
+      return a.status === 'New' || a.status === 'Contacted';
+    });
+    var displayList = (actionable.length ? actionable : appointments).slice(0, 4);
+    if (displayList.length === 0) {
+      widgetList.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:8px 0;">No appointments yet</div>';
+      return;
+    }
+    widgetList.innerHTML = displayList.map(buildAppointmentCard).join('');
+    attachAppointmentHandlers(widgetList);
+  }
+
+  function renderAppointmentsFullGrid() {
+    var grid = document.getElementById('appointmentsFullGrid');
+    if (!grid) return;
+
+    var counts = { all: appointments.length };
+    APPOINTMENT_STATUSES.forEach(function(s) { counts[s] = 0; });
+    appointments.forEach(function(a) {
+      if (counts[a.status] !== undefined) counts[a.status]++;
+    });
+
+    var nEl = document.getElementById('apptStatNew');
+    var cEl = document.getElementById('apptStatContacted');
+    var dEl = document.getElementById('apptStatDone');
+    if (nEl) nEl.textContent = counts['New'] || 0;
+    if (cEl) cEl.textContent = counts['Contacted'] || 0;
+    if (dEl) dEl.textContent = counts['Done'] || 0;
+
+    var totalLabel = document.getElementById('appointmentsCountLabel');
+    if (totalLabel) totalLabel.textContent = appointments.length + ' total appointment' + (appointments.length === 1 ? '' : 's');
+
+    var filtersWrap = document.getElementById('appointmentsFilters');
+    if (filtersWrap) {
+      var filterHtml = '<button class="adm-filter-tab' + (activeAppointmentFilter === 'all' ? ' active' : '') + '" data-appt-filter="all">All (' + counts.all + ')</button>';
+      APPOINTMENT_STATUSES.forEach(function(s) {
+        filterHtml += '<button class="adm-filter-tab' + (activeAppointmentFilter === s ? ' active' : '') + '" data-appt-filter="' + s + '">' + s + ' (' + (counts[s] || 0) + ')</button>';
+      });
+      filtersWrap.innerHTML = filterHtml;
+      filtersWrap.querySelectorAll('[data-appt-filter]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          activeAppointmentFilter = this.getAttribute('data-appt-filter');
+          renderAppointmentsFullGrid();
+        });
+      });
+    }
+
+    var term = (appointmentsSearchTerm || '').trim().toLowerCase();
+    var filtered = appointments.filter(function(a) {
+      if (activeAppointmentFilter !== 'all' && a.status !== activeAppointmentFilter) return false;
+      if (!term) return true;
+      var hay = (a.name || '') + ' ' + (a.email || '') + ' ' + (a.phone || '') + ' ' + (a.message || '');
+      return hay.toLowerCase().indexOf(term) !== -1;
+    });
+
+    if (filtered.length === 0) {
+      var emptyMsg = appointments.length === 0
+        ? 'No appointments yet.'
+        : 'No appointments match the current filter or search.';
+      grid.innerHTML = '<div style="color:var(--text-muted);font-size:0.9rem;padding:40px;grid-column:1/-1;text-align:center;">' + emptyMsg + '</div>';
+      return;
+    }
+
+    grid.innerHTML = filtered.map(buildAppointmentCard).join('');
+    attachAppointmentHandlers(grid);
+  }
+
+  function renderAppointments() {
+    renderAppointmentsWidget();
+    renderAppointmentsFullGrid();
+  }
+
+  var apptSearchInput = document.getElementById('appointmentsSearchInput');
+  if (apptSearchInput) {
+    apptSearchInput.addEventListener('input', function() {
+      appointmentsSearchTerm = this.value;
+      renderAppointmentsFullGrid();
+    });
+  }
+  var apptViewAll = document.getElementById('appointmentsWidgetViewAll');
+  if (apptViewAll) {
+    apptViewAll.addEventListener('click', function(e) {
+      e.preventDefault();
+      var navItem = document.querySelector('.adm-nav-item[data-section="onetime"]');
+      if (navItem) navItem.click();
+    });
+  }
+
+  // ── Right Panel Collapse Toggle ──
+  var RIGHT_COLLAPSE_KEY = 'nri_adm_right_collapsed';
+  var admRightPanel = document.getElementById('admRightPanel');
+  var admRightCollapseBtn = document.getElementById('admRightCollapseBtn');
+  var admRightReopenBtn = document.getElementById('admRightReopenBtn');
+
+  function applyRightCollapsed(collapsed, persist) {
+    if (!admRightPanel) return;
+    if (collapsed) {
+      admRightPanel.classList.add('collapsed');
+      if (admRightReopenBtn) admRightReopenBtn.style.display = 'flex';
+    } else {
+      admRightPanel.classList.remove('collapsed');
+      if (admRightReopenBtn) admRightReopenBtn.style.display = 'none';
+    }
+    if (persist) {
+      try { localStorage.setItem(RIGHT_COLLAPSE_KEY, collapsed ? '1' : '0'); } catch (_) {}
+    }
+  }
+  // Expose for section switcher (declared in the same closure)
+  window._admApplyRightCollapsed = applyRightCollapsed;
+
+  try {
+    applyRightCollapsed(localStorage.getItem(RIGHT_COLLAPSE_KEY) === '1', false);
+  } catch (_) {}
+  if (admRightCollapseBtn) {
+    admRightCollapseBtn.addEventListener('click', function() {
+      applyRightCollapsed(true, true);
+    });
+  }
+  if (admRightReopenBtn) {
+    admRightReopenBtn.addEventListener('click', function() {
+      applyRightCollapsed(false, true);
     });
   }
 
@@ -2653,16 +2912,18 @@
       var disputeSection = document.getElementById('sectionDisputes');
       var empSection = document.getElementById('sectionEmployees');
 
-      var fullWidthSections = ['documents','disputes','analytics','employees','employeesPending','opsboard','scorecards','leaderboard','escalations','recurring'];
+      var fullWidthSections = ['documents','disputes','analytics','employees','employeesPending','opsboard','scorecards','leaderboard','escalations','recurring','requests','onetime'];
       var opsSection = document.getElementById('sectionOpsboard');
       var scoreSection = document.getElementById('sectionScorecards');
       var leaderSection = document.getElementById('sectionLeaderboard');
       var escSection = document.getElementById('sectionEscalations');
       var recurringSection = document.getElementById('sectionRecurring');
+      var requestsSection = document.getElementById('sectionRequests');
+      var onetimeSection = document.getElementById('sectionOnetime');
 
       if (fullWidthSections.indexOf(section) !== -1) {
         defaultSections.forEach(function(el) { if (el) el.style.display = 'none'; });
-        if (rightPanel) rightPanel.style.display = 'none';
+        if (typeof applyRightCollapsed === 'function') applyRightCollapsed(true, false);
         if (docSection) docSection.style.display = section === 'documents' ? 'block' : 'none';
         if (disputeSection) disputeSection.style.display = section === 'disputes' ? 'block' : 'none';
         if (anaSection) anaSection.style.display = section === 'analytics' ? 'block' : 'none';
@@ -2672,6 +2933,8 @@
         if (leaderSection) leaderSection.style.display = section === 'leaderboard' ? 'block' : 'none';
         if (escSection) escSection.style.display = section === 'escalations' ? 'block' : 'none';
         if (recurringSection) recurringSection.style.display = section === 'recurring' ? 'block' : 'none';
+        if (requestsSection) requestsSection.style.display = section === 'requests' ? 'block' : 'none';
+        if (onetimeSection) onetimeSection.style.display = section === 'onetime' ? 'block' : 'none';
         if (section === 'documents') loadDocuments();
         if (section === 'disputes') renderDisputes();
         if (section === 'analytics') renderAnalytics();
@@ -2680,14 +2943,20 @@
         if (section === 'leaderboard') renderLeaderboard();
         if (section === 'escalations') renderEscalations();
         if (section === 'recurring') renderRecurringSchedules();
+        if (section === 'requests') renderRequestsFullGrid();
+        if (section === 'onetime') renderAppointmentsFullGrid();
         if (section === 'employees') { activeEmpFilter = 'all'; document.querySelectorAll('#empFilters [data-emp-filter]').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-emp-filter') === 'all'); }); renderEmployeesTable(); }
         if (section === 'employeesPending') { activeEmpFilter = 'pending'; document.querySelectorAll('#empFilters [data-emp-filter]').forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-emp-filter') === 'pending'); }); renderEmployeesTable(); }
-        
+
         var mainContainer = document.querySelector('.adm-main');
         if (mainContainer) mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         defaultSections.forEach(function(el) { if (el) el.style.display = ''; });
-        if (rightPanel) rightPanel.style.display = '';
+        if (typeof applyRightCollapsed === 'function') {
+          var userPref = false;
+          try { userPref = localStorage.getItem('nri_adm_right_collapsed') === '1'; } catch (_) {}
+          applyRightCollapsed(userPref, false);
+        }
         if (docSection) docSection.style.display = 'none';
         if (anaSection) anaSection.style.display = 'none';
         if (disputeSection) disputeSection.style.display = 'none';
@@ -2697,6 +2966,8 @@
         if (leaderSection) leaderSection.style.display = 'none';
         if (escSection) escSection.style.display = 'none';
         if (recurringSection) recurringSection.style.display = 'none';
+        if (requestsSection) requestsSection.style.display = 'none';
+        if (onetimeSection) onetimeSection.style.display = 'none';
       }
 
       switch (section) {
@@ -2735,12 +3006,10 @@
           if (completedTasks) completedTasks.scrollIntoView({ behavior: 'smooth', block: 'start' });
           break;
         case 'requests':
-          var reqEl = document.getElementById('sectionRequests');
-          if (reqEl) reqEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Already handled above (full-width section)
           break;
         case 'onetime':
-          var oneEl = document.getElementById('sectionOnetime');
-          if (oneEl) oneEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Already handled above (full-width section)
           break;
         case 'documents':
           // Already handled above

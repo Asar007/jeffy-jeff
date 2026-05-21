@@ -495,10 +495,108 @@
       </div>
     </div>
 
+    <!-- ── Call Appointments — Full-width Dashboard ─────────────────── -->
+    <div id="sectionOnetime" style="display:none; margin-top:32px;">
+      <div class="adm-section-head" style="margin-bottom:18px;gap:14px;">
+        <h2>Call Appointments</h2>
+        <span style="font-size:0.78rem;color:var(--text-muted);" id="appointmentsCountLabel"></span>
+        <div style="flex:1;"></div>
+        <div class="adm-search-wrap" style="width:280px;max-width:100%;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="appointmentsSearchInput" placeholder="Search appointments..." class="adm-search-input">
+        </div>
+      </div>
+
+      <div class="adm-stats" style="margin-bottom:24px;">
+        <div class="adm-stat-card">
+          <div class="adm-stat-bar red"></div>
+          <div class="adm-stat-label">New</div>
+          <div class="adm-stat-num" id="apptStatNew">—</div>
+          <div class="adm-stat-sub red">Awaiting call</div>
+        </div>
+        <div class="adm-stat-card">
+          <div class="adm-stat-bar orange"></div>
+          <div class="adm-stat-label">Contacted</div>
+          <div class="adm-stat-num" id="apptStatContacted">—</div>
+          <div class="adm-stat-sub orange">In progress</div>
+        </div>
+        <div class="adm-stat-card">
+          <div class="adm-stat-bar green"></div>
+          <div class="adm-stat-label">Done</div>
+          <div class="adm-stat-num" id="apptStatDone">—</div>
+          <div class="adm-stat-sub green">Closed</div>
+        </div>
+      </div>
+
+      <div class="adm-docs-filters" id="appointmentsFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;"></div>
+
+      <div class="adm-requests-grid" id="appointmentsFullGrid">
+        <div style="text-align:center;color:var(--text-muted);padding:40px;grid-column:1/-1;">Loading appointments…</div>
+      </div>
+    </div>
+
+    <!-- ── Custom Requests — Full-width Dashboard ───────────────────── -->
+    <div id="sectionRequests" style="display:none; margin-top:32px;">
+      <div class="adm-section-head" style="margin-bottom:18px;gap:14px;">
+        <h2>Custom One-time Requests</h2>
+        <span style="font-size:0.78rem;color:var(--text-muted);" id="requestsCountLabel"></span>
+        <div style="flex:1;"></div>
+        <div class="adm-search-wrap" style="width:280px;max-width:100%;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="requestsSearchInput" placeholder="Search requests..." class="adm-search-input">
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="adm-stats" style="margin-bottom:24px;">
+        <div class="adm-stat-card">
+          <div class="adm-stat-bar red"></div>
+          <div class="adm-stat-label">New</div>
+          <div class="adm-stat-num" id="reqStatNew">—</div>
+          <div class="adm-stat-sub red">Awaiting triage</div>
+        </div>
+        <div class="adm-stat-card">
+          <div class="adm-stat-bar orange"></div>
+          <div class="adm-stat-label">In Review</div>
+          <div class="adm-stat-num" id="reqStatReview">—</div>
+          <div class="adm-stat-sub orange">Drafting quote</div>
+        </div>
+        <div class="adm-stat-card">
+          <div class="adm-stat-bar blue"></div>
+          <div class="adm-stat-label">Quoted</div>
+          <div class="adm-stat-num" id="reqStatQuoted">—</div>
+          <div class="adm-stat-sub">Awaiting customer</div>
+        </div>
+        <div class="adm-stat-card">
+          <div class="adm-stat-bar green"></div>
+          <div class="adm-stat-label">Accepted</div>
+          <div class="adm-stat-num" id="reqStatAccepted">—</div>
+          <div class="adm-stat-sub green">Ready to deliver</div>
+        </div>
+        <div class="adm-stat-card">
+          <div class="adm-stat-bar"></div>
+          <div class="adm-stat-label">Declined</div>
+          <div class="adm-stat-num" id="reqStatDeclined">—</div>
+          <div class="adm-stat-sub">Closed out</div>
+        </div>
+      </div>
+
+      <div class="adm-docs-filters" id="requestsFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;"></div>
+
+      <!-- Grid -->
+      <div class="adm-requests-grid" id="requestsFullGrid">
+        <div style="text-align:center;color:var(--text-muted);padding:40px;grid-column:1/-1;">Loading requests…</div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ── RIGHT PANEL ─────────────────────────────────────────────── -->
-  <aside class="adm-right">
+  <aside class="adm-right" id="admRightPanel">
+
+    <button type="button" class="adm-right-collapse" id="admRightCollapseBtn" title="Collapse panel" aria-label="Collapse side panel">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
 
     <!-- Pending by Category -->
     <div id="sectionPending">
@@ -509,25 +607,29 @@
       <div class="adm-pending-list" id="pendingByCategory"></div>
     </div>
 
-    <!-- Custom Requests -->
-    <div style="margin-top:12px;" id="sectionRequests">
+    <!-- Custom Requests (sidebar quick-glance) -->
+    <div style="margin-top:12px;" id="requestsWidget">
       <div class="adm-section-head">
-        <h2>Custom One-time Requests</h2>
-        <a class="adm-link">View all &rarr;</a>
+        <h2>Custom Requests</h2>
+        <a class="adm-link" id="requestsWidgetViewAll" style="cursor:pointer;">View all &rarr;</a>
       </div>
-      <div class="adm-requests-list" id="requestsList"></div>
+      <div class="adm-requests-list" id="requestsWidgetList"></div>
     </div>
 
-    <!-- Call Appointments -->
-    <div style="margin-top:24px;" id="sectionOnetime">
+    <!-- Call Appointments (sidebar quick-glance) -->
+    <div style="margin-top:24px;" id="appointmentsWidget">
       <div class="adm-section-head">
         <h2>Call Appointments</h2>
-        <a class="adm-link">View all &rarr;</a>
+        <a class="adm-link" id="appointmentsWidgetViewAll" style="cursor:pointer;">View all &rarr;</a>
       </div>
-      <div class="adm-requests-list" id="appointmentsList"></div>
+      <div class="adm-requests-list" id="appointmentsWidgetList"></div>
     </div>
 
   </aside>
+
+  <button type="button" class="adm-right-reopen" id="admRightReopenBtn" title="Show side panel" aria-label="Show side panel">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
 </div>
 
 <!-- ── Dispute Review Modal ─────────────────────────────────────── -->
