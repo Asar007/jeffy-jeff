@@ -124,6 +124,7 @@
   <!-- SUPABASE -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
+  <script src="nri-dialog.js?v=1"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', async function() {
@@ -178,7 +179,7 @@
         </div>
 
         <div class="dashboard-actions">
-          <button class="btn-primary" onclick="alert('Manage Subscriptions feature coming soon!')">Manage Services</button>
+          <button class="btn-primary" onclick="nriAlert({ title: 'Coming soon', message: 'Subscription management will be available in the next update.' })">Manage Services</button>
           <button class="btn-outline" id="logoutBtn" style="color: #dc3545; border-color: rgba(220, 53, 69, 0.3);">Sign Out</button>
         </div>
       `;

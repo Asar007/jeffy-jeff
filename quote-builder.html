@@ -417,6 +417,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="nri-dialog.js?v=1"></script>
 
 <script>
 (function(){
@@ -509,7 +510,7 @@ window.submitCSR = function(e){
   var desc = document.getElementById('csrDescription').value.trim();
 
   if(!name || !email || !city || !desc){
-    alert('Please fill in all required fields.');
+    nriAlert({ title: 'Missing details', message: 'Please fill in your name, email, city, and a short description so we can build your quote.', variant: 'warning' });
     return;
   }
 

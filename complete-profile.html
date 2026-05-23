@@ -71,6 +71,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
+<script src="nri-dialog.js?v=1"></script>
 <script>
 (function() {
   'use strict';
@@ -127,7 +128,7 @@
     if (error) {
       btn.disabled = false;
       btn.textContent = 'Complete Setup';
-      alert('Error updating profile: ' + error.message);
+      nriAlert({ title: 'Could not update profile', message: error.message, variant: 'danger' });
       return;
     }
 

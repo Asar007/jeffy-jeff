@@ -309,6 +309,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script src="upload-helpers.js"></script>
+<script src="nri-dialog.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="invoice-generator.js"></script>
 
@@ -2691,11 +2692,12 @@
     });
 
     document.querySelectorAll('.dash-recurring-request-btn[data-recurring-id]').forEach(function(btn) {
-      btn.addEventListener('click', function() {
+      btn.addEventListener('click', async function() {
         if (this.disabled) return;
         var id = this.getAttribute('data-recurring-id');
         if (!id) return;
-        if (!confirm('Request the next visit now? Your assigned manager will be notified and the next visit will be scheduled.')) return;
+        var ok = await nriConfirm({ title: 'Request next visit?', message: 'Your assigned manager will be notified and the visit will be scheduled shortly.', confirmLabel: 'Request visit' });
+        if (!ok) return;
         var b = this;
         b.disabled = true;
         b.textContent = 'Requesting…';
@@ -2704,14 +2706,14 @@
           p_trigger_type: 'client_manual'
         }).then(function(r) {
           if (r.error) {
-            alert('Could not request: ' + r.error.message);
+            nriAlert({ title: 'Could not request visit', message: r.error.message, variant: 'danger' });
             b.disabled = false; b.textContent = 'Request next visit';
             return;
           }
           if (r.data) {
-            alert('Visit requested. A new task has been created and your manager will reach out.');
+            nriAlert({ title: 'Visit requested', message: 'A new task has been created and your manager will reach out shortly.', variant: 'success' });
           } else {
-            alert('A visit is already in progress for this service. Please wait for it to complete.');
+            nriAlert({ title: 'Already in progress', message: 'A visit is already underway for this service. Please wait for it to complete.', variant: 'warning' });
           }
           b.disabled = false; b.textContent = 'Request next visit';
           loadRealTimeStatus();
