@@ -139,8 +139,10 @@
       renderStats();
       renderOperationsBoard();
       populateOpsFilters();
-      renderTaskTable();
+      renderTaskFilterChips();
+      renderTaskTable(activeTaskFilter);
       renderClientsByService();
+      renderServiceSidebarFilters();
       renderPendingByCategory();
       renderRequests();
       renderAppointments();
@@ -152,6 +154,11 @@
       renderEscalations();
       renderProofQueue();
       renderDocumentRequestClientOptions();
+      // Apply URL hash on first successful load (router was wired earlier)
+      if (!window._adminInitialRouteApplied && typeof window._adminRouteFromHash === 'function') {
+        window._adminInitialRouteApplied = true;
+        window._adminRouteFromHash(false);
+      }
     });
   }
 
@@ -174,7 +181,7 @@
 
   // ── Badges ──
   function renderBadges() {
-    document.getElementById('badgeClients').textContent = clients.length;
+    var bc = document.getElementById('badgeClients'); if (bc) bc.textContent = clients.length;
     var pendingTasks = tasks.filter(function(t) { return t.status !== 'Completed'; }).length;
     document.getElementById('badgeTasks').textContent = pendingTasks;
     var openReqs = requests.filter(function(r) { return r.status === 'New' || r.status === 'In Review'; }).length;
@@ -221,19 +228,190 @@
   }
 
   var activeTaskFilter = 'all';
+  var activeTaskServiceFilter = 'All';
+
+  var TASK_FILTER_DEFS = [
+    { key: 'all',         label: 'All',         match: function(t) { return true; } },
+    { key: 'pending',     label: 'Pending',     match: function(t) { return t.status === 'Pending'; } },
+    { key: 'in_progress', label: 'In Progress', match: function(t) { return t.status === 'In Progress'; } },
+    { key: 'in_review',   label: 'In Review',   match: function(t) { return t.status === 'In Review'; } },
+    { key: 'completed',   label: 'Completed',   match: function(t) { return t.status === 'Completed'; } }
+  ];
+
+  function getTaskServiceCategories() {
+    var seen = {};
+    var cats = ['All'];
+    tasks.forEach(function(t) {
+      var s = (t.service || '').trim();
+      if (!s || seen[s]) return;
+      seen[s] = true;
+      cats.push(s);
+    });
+    return cats;
+  }
+
+  function statusFilterFn(filter) {
+    var def = TASK_FILTER_DEFS.find(function(d) { return d.key === filter; }) || TASK_FILTER_DEFS[0];
+    return def.match;
+  }
+  function serviceFilterFn(svc) {
+    if (!svc || svc === 'All') return function() { return true; };
+    return function(t) { return (t.service || '') === svc; };
+  }
+  function applyTaskFilters() {
+    var sm = statusFilterFn(activeTaskFilter);
+    var svm = serviceFilterFn(activeTaskServiceFilter);
+    return tasks.filter(function(t) { return sm(t) && svm(t); });
+  }
+
+  function syncTaskFilterChips() {
+    // Top filter chip row above the Client Work Status Tracker table — status row
+    var bar = document.getElementById('taskFilterTabs');
+    if (bar) {
+      Array.prototype.forEach.call(bar.querySelectorAll('[data-task-filter]'), function(btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-task-filter') === activeTaskFilter);
+        var def = TASK_FILTER_DEFS.find(function(d) { return d.key === btn.getAttribute('data-task-filter'); });
+        var countEl = btn.querySelector('.adm-filter-count');
+        // Count reflects status filter + current service filter, so it's accurate while drilling down
+        if (def && countEl) {
+          var svm = serviceFilterFn(activeTaskServiceFilter);
+          countEl.textContent = tasks.filter(function(t) { return def.match(t) && svm(t); }).length;
+        }
+      });
+    }
+    // Service row
+    var svcBar = document.getElementById('taskServiceFilterTabs');
+    if (svcBar) {
+      Array.prototype.forEach.call(svcBar.querySelectorAll('[data-task-service-filter]'), function(btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-task-service-filter') === activeTaskServiceFilter);
+        var svc = btn.getAttribute('data-task-service-filter');
+        var countEl = btn.querySelector('.adm-filter-count');
+        if (countEl) {
+          var sm = statusFilterFn(activeTaskFilter);
+          var svm = serviceFilterFn(svc);
+          countEl.textContent = tasks.filter(function(t) { return sm(t) && svm(t); }).length;
+        }
+      });
+    }
+    // Sidebar pipeline chips (mirror state)
+    Array.prototype.forEach.call(document.querySelectorAll('.adm-nav-item[data-task-filter]'), function(item) {
+      item.classList.toggle('active', item.getAttribute('data-task-filter') === activeTaskFilter);
+    });
+    // Refresh service dropdown counts so they reflect the new status filter
+    if (typeof renderTaskServiceDropdown === 'function') renderTaskServiceDropdown();
+  }
+
+  function renderTaskFilterChips() {
+    var bar = document.getElementById('taskFilterTabs');
+    if (bar) {
+      var html = '';
+      TASK_FILTER_DEFS.forEach(function(def) {
+        var svm = serviceFilterFn(activeTaskServiceFilter);
+        var count = tasks.filter(function(t) { return def.match(t) && svm(t); }).length;
+        var active = def.key === activeTaskFilter ? ' active' : '';
+        html += '<button class="adm-filter-tab' + active + '" data-task-filter="' + def.key + '" type="button">' +
+                  escapeHtml(def.label) + ' <span class="adm-filter-count">' + count + '</span>' +
+                '</button>';
+      });
+      bar.innerHTML = html;
+      Array.prototype.forEach.call(bar.querySelectorAll('[data-task-filter]'), function(btn) {
+        btn.addEventListener('click', function() {
+          renderTaskTable(this.getAttribute('data-task-filter'));
+        });
+      });
+    }
+    // Service filter — custom themed dropdown
+    renderTaskServiceDropdown();
+  }
+
+  function renderTaskServiceDropdown() {
+    var dd = document.getElementById('taskServiceDropdown');
+    if (!dd) return;
+    var menu = dd.querySelector('.nri-dropdown-menu');
+    var labelEl = dd.querySelector('.nri-dropdown-label');
+    var countEl = dd.querySelector('.nri-dropdown-count');
+    if (!menu) return;
+
+    var cats = getTaskServiceCategories();
+    var sm = statusFilterFn(activeTaskFilter);
+
+    // Build menu options with live counts — hide zero-count entries
+    // (always keep "All" visible, and keep the currently-selected option
+    // even if it just dropped to zero so the user can see what's active)
+    var html = '';
+    cats.forEach(function(svc) {
+      var count = tasks.filter(function(t) { return sm(t) && serviceFilterFn(svc)(t); }).length;
+      if (count === 0 && svc !== 'All' && svc !== activeTaskServiceFilter) return;
+      var label = svc === 'All' ? 'All services' : svc;
+      var selected = svc === activeTaskServiceFilter ? ' selected' : '';
+      html += '<div class="nri-dropdown-option' + selected + '" role="option" data-value="' + escapeHtml(svc) + '">' +
+                '<span>' + escapeHtml(label) + '</span>' +
+                '<span class="nri-dropdown-option-count">' + count + '</span>' +
+              '</div>';
+    });
+    menu.innerHTML = html;
+
+    // Update trigger display (selected label + count for the current selection)
+    var currentLabel = activeTaskServiceFilter === 'All' ? 'All services' : activeTaskServiceFilter;
+    var currentCount = tasks.filter(function(t) { return sm(t) && serviceFilterFn(activeTaskServiceFilter)(t); }).length;
+    if (labelEl) labelEl.textContent = currentLabel;
+    if (countEl) countEl.textContent = currentCount;
+
+    // Wire option clicks
+    Array.prototype.forEach.call(menu.querySelectorAll('.nri-dropdown-option'), function(opt) {
+      opt.addEventListener('click', function() {
+        activeTaskServiceFilter = this.getAttribute('data-value');
+        closeTaskServiceDropdown();
+        renderTaskTable(activeTaskFilter);
+        renderTaskFilterChips();
+      });
+    });
+
+    // First-time setup: trigger + outside-click + ESC
+    if (!dd.dataset.bound) {
+      dd.dataset.bound = '1';
+      var trigger = dd.querySelector('.nri-dropdown-trigger');
+      trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = dd.classList.contains('open');
+        if (isOpen) closeTaskServiceDropdown();
+        else openTaskServiceDropdown();
+      });
+      document.addEventListener('click', function(e) {
+        if (!dd.contains(e.target)) closeTaskServiceDropdown();
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && dd.classList.contains('open')) closeTaskServiceDropdown();
+      });
+    }
+  }
+  function openTaskServiceDropdown() {
+    var dd = document.getElementById('taskServiceDropdown');
+    if (!dd) return;
+    dd.classList.add('open');
+    var trig = dd.querySelector('.nri-dropdown-trigger');
+    if (trig) trig.setAttribute('aria-expanded', 'true');
+  }
+  function closeTaskServiceDropdown() {
+    var dd = document.getElementById('taskServiceDropdown');
+    if (!dd) return;
+    dd.classList.remove('open');
+    var trig = dd.querySelector('.nri-dropdown-trigger');
+    if (trig) trig.setAttribute('aria-expanded', 'false');
+  }
 
   function renderTaskTable(filter) {
     filter = filter || 'all';
     activeTaskFilter = filter;
     var tbody = document.getElementById('taskTableBody');
-    var filtered = tasks;
-    if (filter === 'pending') {
-      filtered = tasks.filter(function(t) { return t.status !== 'Completed'; });
-    } else if (filter === 'completed') {
-      filtered = tasks.filter(function(t) { return t.status === 'Completed'; });
-    }
+    var def = TASK_FILTER_DEFS.find(function(d) { return d.key === filter; }) || TASK_FILTER_DEFS[0];
+    var filtered = applyTaskFilters();
+    syncTaskFilterChips();
     if (filtered.length === 0) {
-      var msg = filter === 'all' ? 'No tasks yet' : 'No ' + filter + ' tasks';
+      var parts = [];
+      if (filter !== 'all') parts.push(def.label.toLowerCase());
+      if (activeTaskServiceFilter && activeTaskServiceFilter !== 'All') parts.push(activeTaskServiceFilter);
+      var msg = parts.length ? 'No tasks for ' + parts.join(' · ') : 'No tasks yet';
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px;">' + msg + '</td></tr>';
       return;
     }
@@ -292,19 +470,97 @@
     return cats;
   }
 
+  var activeServiceFilter = 'All';
+
+  function clientsInService(cat) {
+    if (cat === 'All') return clients.length;
+    return clients.filter(function(c) { return c.services && c.services.indexOf(cat) !== -1; }).length;
+  }
+
+  function setByServiceCollapsed(collapsed, persist) {
+    var box = document.getElementById('navByServiceList');
+    var toggle = document.getElementById('navByServiceToggle');
+    if (!box || !toggle) return;
+    box.classList.toggle('adm-nav-collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    if (persist !== false) {
+      try { localStorage.setItem('nri_adm_byservice_collapsed', collapsed ? '1' : '0'); } catch (_) {}
+    }
+  }
+  function initByServiceDropdown() {
+    var toggle = document.getElementById('navByServiceToggle');
+    if (!toggle || toggle.dataset.bound) return;
+    toggle.dataset.bound = '1';
+    var startCollapsed = true;
+    try { startCollapsed = localStorage.getItem('nri_adm_byservice_collapsed') !== '0'; } catch (_) {}
+    setByServiceCollapsed(startCollapsed, false);
+    var chevron = toggle.querySelector('.adm-nav-chevron');
+    if (chevron) {
+      chevron.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var box = document.getElementById('navByServiceList');
+        var isCollapsed = box && box.classList.contains('adm-nav-collapsed');
+        setByServiceCollapsed(!isCollapsed, true);
+      });
+    }
+  }
+
+  function renderServiceSidebarFilters() {
+    var box = document.getElementById('navByServiceList');
+    if (!box) return;
+    initByServiceDropdown();
+    var cats = getServiceCategories();
+    var html = '';
+    cats.forEach(function(cat) {
+      var count = clientsInService(cat);
+      var active = cat === activeServiceFilter ? ' active' : '';
+      html += '<a class="adm-nav-item adm-nav-sub' + active + '" data-service-filter="' + escapeHtml(cat) + '">' +
+                escapeHtml(cat) +
+                '<span class="adm-nav-badge">' + count + '</span>' +
+              '</a>';
+    });
+    box.innerHTML = html;
+    Array.prototype.forEach.call(box.querySelectorAll('[data-service-filter]'), function(item) {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var filter = this.getAttribute('data-service-filter');
+        if (typeof window.switchSection === 'function') {
+          window.switchSection('clients', { pushHash: true });
+        }
+        renderClientsByService(filter);
+      });
+    });
+  }
+
+  function syncServiceFilterChips() {
+    Array.prototype.forEach.call(document.querySelectorAll('#filterTabs [data-filter]'), function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-filter') === activeServiceFilter);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.adm-nav-item[data-service-filter]'), function(item) {
+      item.classList.toggle('active', item.getAttribute('data-service-filter') === activeServiceFilter);
+    });
+  }
+
   function renderClientsByService(filter) {
     filter = filter || 'All';
+    activeServiceFilter = filter;
     var SERVICE_CATEGORIES = getServiceCategories();
 
     // Tabs
     var tabsHtml = '';
     SERVICE_CATEGORIES.forEach(function(cat) {
-      tabsHtml += '<button class="adm-filter-tab' + (cat === filter ? ' active' : '') + '" data-filter="' + cat + '">' + cat + '</button>';
+      var count = clientsInService(cat);
+      tabsHtml += '<button class="adm-filter-tab' + (cat === filter ? ' active' : '') + '" data-filter="' + cat + '" type="button">' +
+                    escapeHtml(cat) + ' <span class="adm-filter-count">' + count + '</span>' +
+                  '</button>';
     });
     document.getElementById('filterTabs').innerHTML = tabsHtml;
+    syncServiceFilterChips();
 
-    // Attach tab clicks
-    document.querySelectorAll('.adm-filter-tab').forEach(function(btn) {
+    // Attach tab clicks — scoped to #filterTabs to avoid colliding with task filter chips
+    document.querySelectorAll('#filterTabs .adm-filter-tab').forEach(function(btn) {
       btn.addEventListener('click', function() {
         renderClientsByService(this.getAttribute('data-filter'));
       });
@@ -1391,8 +1647,10 @@
     doUpdate(updates);
   });
 
-  document.getElementById('teDelete').addEventListener('click', function() {
-    if (!currentTaskId || !confirm('Delete this task?')) return;
+  document.getElementById('teDelete').addEventListener('click', async function() {
+    if (!currentTaskId) return;
+    var ok = await nriConfirm({ title: 'Delete task?', message: 'This task and its update history will be removed permanently.', confirmLabel: 'Delete', variant: 'danger' });
+    if (!ok) return;
     sb.from('tasks').delete().eq('id', currentTaskId).then(function(r) {
       if (r.error) { showToast('Failed to delete', 'error'); return; }
       showToast('Task deleted', 'info');
@@ -1458,8 +1716,10 @@
   document.getElementById('cdClose').addEventListener('click', closeClientDetail);
   cdModal.addEventListener('click', function(e) { if (e.target === cdModal) closeClientDetail(); });
 
-  document.getElementById('cdDelete').addEventListener('click', function() {
-    if (!currentClientId || !confirm('Delete this client and all their tasks?')) return;
+  document.getElementById('cdDelete').addEventListener('click', async function() {
+    if (!currentClientId) return;
+    var ok = await nriConfirm({ title: 'Delete client?', message: 'This will permanently remove the client and every task linked to them.', confirmLabel: 'Delete client', variant: 'danger' });
+    if (!ok) return;
     sb.from('tasks').delete().eq('client_id', currentClientId).then(function() {
       sb.from('clients').delete().eq('id', currentClientId).then(function(r) {
         if (r.error) { showToast('Failed to delete', 'error'); return; }
@@ -1613,8 +1873,9 @@
     if (!reason) { showToast('Please enter a reason first', 'error'); return; }
     updateEmployeeStatus({ status: 'rejected', rejection_reason: reason }, 'Application rejected');
   });
-  document.getElementById('edSuspend').addEventListener('click', function() {
-    if (!confirm('Suspend this employee? They will not be able to access the portal until reinstated.')) return;
+  document.getElementById('edSuspend').addEventListener('click', async function() {
+    var ok = await nriConfirm({ title: 'Suspend employee?', message: 'They will not be able to access the portal until reinstated.', confirmLabel: 'Suspend', variant: 'warning' });
+    if (!ok) return;
     updateEmployeeStatus({ status: 'suspended' }, 'Employee suspended');
   });
 
@@ -1729,7 +1990,7 @@
   // Calls public.fn_grant_admin / fn_revoke_admin (admin-only RPCs).
   // The target user must already exist in auth.users (signed up at
   // least once). They must sign out + back in for their JWT to refresh.
-  function adminAccessAction(rpcName, verb, pastTense) {
+  async function adminAccessAction(rpcName, verb, pastTense) {
     var input = document.getElementById('adminEmailInput');
     var email = (input.value || '').trim().toLowerCase();
     if (!email || email.indexOf('@') === -1) {
@@ -1737,7 +1998,15 @@
       input.focus();
       return;
     }
-    if (!confirm(verb + ' ' + email + '?')) return;
+    var isRevoke = verb.toLowerCase().indexOf('revoke') !== -1;
+    var ok = await nriConfirm({
+      title: verb + ' admin access?',
+      message: '<strong>' + email + '</strong> will be ' + (isRevoke ? 'demoted to a regular user' : 'granted admin privileges') + '. They must sign out and back in for the change to take effect.',
+      confirmLabel: verb,
+      variant: isRevoke ? 'warning' : 'info',
+      html: true
+    });
+    if (!ok) return;
     sb.rpc(rpcName, { p_email: email }).then(function(res) {
       if (res.error) {
         showToast(verb + ' failed: ' + res.error.message, 'error');
@@ -2892,20 +3161,97 @@
     else if (e.key === 'ArrowRight') { galleryStep(1); }
   });
 
-  // ── Sidebar navigation — scroll to sections ──
-  document.querySelectorAll('.adm-nav-item[data-section]').forEach(function(item) {
-    item.addEventListener('click', function() {
-      document.querySelectorAll('.adm-nav-item').forEach(function(i) { i.classList.remove('active'); });
-      this.classList.add('active');
-      var section = this.getAttribute('data-section');
+  // ── Section navigation — exposed for hash routing + sidebar clicks ──
+  function setActiveNavItem(section, taskFilter) {
+    document.querySelectorAll('.adm-nav-item').forEach(function(i) { i.classList.remove('active'); });
+    var sel;
+    if (taskFilter) {
+      sel = '.adm-nav-item[data-section="' + section + '"][data-task-filter="' + taskFilter + '"]';
+    } else {
+      sel = '.adm-nav-item[data-section="' + section + '"]:not([data-task-filter])';
+    }
+    var item = document.querySelector(sel) || document.querySelector('.adm-nav-item[data-section="' + section + '"]');
+    if (item) item.classList.add('active');
+  }
 
-      // Elements that form the default dashboard view
+  var SECTION_HASH_MAP = {
+    dashboard: 'dashboard', opsboard: 'opsboard', analytics: 'analytics',
+    clients: 'clients', byservice: 'byservice',
+    tasks: 'tasks', escalations: 'escalations', recurring: 'recurring',
+    requests: 'requests', onetime: 'appointments', disputes: 'disputes',
+    scorecards: 'scorecards', leaderboard: 'leaderboard',
+    employees: 'team', employeesPending: 'team-pending',
+    documents: 'documents'
+  };
+  var HASH_TO_SECTION = (function() {
+    var out = {};
+    Object.keys(SECTION_HASH_MAP).forEach(function(k) { out[SECTION_HASH_MAP[k]] = k; });
+    return out;
+  })();
+
+  function pushSectionHash(section, taskFilter) {
+    var hash = SECTION_HASH_MAP[section] || section;
+    if (taskFilter && taskFilter !== 'all' && section === 'tasks') hash += '?filter=' + encodeURIComponent(taskFilter);
+    if (('#' + hash) === location.hash) return;
+    history.pushState(null, '', '#' + hash);
+  }
+
+  var PAGE_TITLES = {
+    dashboard:        { title: null,                              subtitle: null },
+    tasks:            { title: 'Client Work Status Tracker',      subtitle: 'Every task across every client' },
+    clients:          { title: 'Clients by Service',              subtitle: 'Filter your portfolio by service category' },
+    byservice:        { title: 'Clients by Service',              subtitle: 'Filter your portfolio by service category' },
+    documents:        { title: 'Files & Requests',                subtitle: 'Client documents and outbound requests' },
+    employees:        { title: 'Field Team',                      subtitle: 'Manage your operations staff' },
+    employeesPending: { title: 'Pending Approvals',               subtitle: 'New employee applications awaiting review' },
+    scorecards:       { title: 'Employee Scorecards',             subtitle: 'Performance at a glance' },
+    leaderboard:      { title: 'Employee Leaderboard',            subtitle: 'Top performers this period' },
+    disputes:         { title: 'Dispute Center',                  subtitle: 'Open issues and resolutions' },
+    requests:         { title: 'Custom Requests',                 subtitle: 'One-time service requests from clients' },
+    onetime:          { title: 'Call Appointments',               subtitle: 'Scheduled consultations' },
+    opsboard:         { title: 'Operations Board',                subtitle: 'Pipeline view across active tasks' },
+    analytics:        { title: 'Analytics Overview',              subtitle: 'Revenue, pipeline, and team performance' },
+    escalations:      { title: 'Escalation Queue',                subtitle: 'Tasks that need attention now' },
+    recurring:        { title: 'Recurring Schedules',             subtitle: 'Auto-firing service templates' }
+  };
+
+  function setPageHeader(section) {
+    var greetEl = document.getElementById('admGreeting');
+    var dateEl = document.getElementById('admDate');
+    if (!greetEl) return;
+    var def = PAGE_TITLES[section];
+    if (!def || !def.title) {
+      // Dashboard / default — restore time-of-day greeting
+      var hour = new Date().getHours();
+      var g = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+      greetEl.textContent = g + ' 👋 Here\'s your overview';
+      if (dateEl && dateEl.dataset.original) dateEl.textContent = dateEl.dataset.original;
+    } else {
+      if (dateEl && !dateEl.dataset.original) dateEl.dataset.original = dateEl.textContent;
+      greetEl.textContent = def.title;
+      if (dateEl && def.subtitle) dateEl.textContent = def.subtitle;
+    }
+  }
+
+  window.switchSection = function(section, opts) {
+    opts = opts || {};
+    var taskFilter = opts.taskFilter || null;
+    setActiveNavItem(section, taskFilter);
+    setPageHeader(section);
+    runSectionSwitch(section, taskFilter);
+    if (opts.pushHash !== false) pushSectionHash(section, taskFilter);
+  };
+
+  function runSectionSwitch(section, taskFilter) {
+
+      // Elements that always show on every non-full-width page
       var defaultSections = [
         document.querySelector('.adm-search-wrap'),
-        document.querySelector('.adm-stats'),
-        document.getElementById('sectionTasks'),
-        document.getElementById('sectionClients')
+        document.querySelector('.adm-stats')
       ];
+      // Decoupled per-section blocks — visibility controlled below per route
+      var tasksSection = document.getElementById('sectionTasks');
+      var clientsSection = document.getElementById('sectionClients');
       var rightPanel = document.querySelector('.adm-right');
       var docSection = document.getElementById('sectionDocuments');
       var anaSection = document.getElementById('sectionAnalytics');
@@ -2923,6 +3269,8 @@
 
       if (fullWidthSections.indexOf(section) !== -1) {
         defaultSections.forEach(function(el) { if (el) el.style.display = 'none'; });
+        if (tasksSection) tasksSection.style.display = 'none';
+        if (clientsSection) clientsSection.style.display = 'none';
         if (typeof applyRightCollapsed === 'function') applyRightCollapsed(true, false);
         if (docSection) docSection.style.display = section === 'documents' ? 'block' : 'none';
         if (disputeSection) disputeSection.style.display = section === 'disputes' ? 'block' : 'none';
@@ -2968,43 +3316,38 @@
         if (recurringSection) recurringSection.style.display = 'none';
         if (requestsSection) requestsSection.style.display = 'none';
         if (onetimeSection) onetimeSection.style.display = 'none';
+
+        // Decoupled tasks vs. clients pages
+        //   - dashboard  → both visible (combined overview)
+        //   - tasks      → only Client Work Status Tracker
+        //   - clients/byservice → only Clients by Service
+        var showTasks   = (section === 'dashboard' || section === 'tasks');
+        var showClients = (section === 'dashboard' || section === 'clients' || section === 'byservice');
+        if (tasksSection)   tasksSection.style.display   = showTasks   ? '' : 'none';
+        if (clientsSection) clientsSection.style.display = showClients ? '' : 'none';
       }
 
       switch (section) {
         case 'dashboard':
           var mainContainer = document.querySelector('.adm-main');
           if (mainContainer) mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
-          renderTaskTable('all');
+          renderTaskTable(taskFilter || activeTaskFilter || 'all');
           break;
         case 'analytics':
           // Already handled above
           break;
         case 'clients':
-        case 'byservice':
-          var el = document.getElementById('sectionClients');
+        case 'byservice': {
           var mainContainer = document.querySelector('.adm-main');
-          if (el && mainContainer) {
-            mainContainer.scrollTo({ top: el.offsetTop - 30, behavior: 'smooth' });
-          }
+          if (mainContainer) mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
           break;
-        case 'tasks':
-          renderTaskTable('all');
-          var tasksEl = document.getElementById('sectionTasks');
+        }
+        case 'tasks': {
+          renderTaskTable(taskFilter || 'all');
           var mainContainer = document.querySelector('.adm-main');
-          if (tasksEl && mainContainer) {
-            mainContainer.scrollTo({ top: tasksEl.offsetTop - 30, behavior: 'smooth' });
-          }
+          if (mainContainer) mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
           break;
-        case 'pending':
-          renderTaskTable('pending');
-          var pendingTasks = document.getElementById('sectionTasks');
-          if (pendingTasks) pendingTasks.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          break;
-        case 'completed':
-          renderTaskTable('completed');
-          var completedTasks = document.getElementById('sectionTasks');
-          if (completedTasks) completedTasks.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          break;
+        }
         case 'requests':
           // Already handled above (full-width section)
           break;
@@ -3021,8 +3364,40 @@
           var target = document.getElementById('section' + section.charAt(0).toUpperCase() + section.slice(1));
           if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+  }
+
+  // Sidebar click → switch + push hash
+  document.querySelectorAll('.adm-nav-item[data-section]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      var section = this.getAttribute('data-section');
+      var taskFilter = this.getAttribute('data-task-filter');
+      window.switchSection(section, { taskFilter: taskFilter, pushHash: true });
     });
   });
+
+  // Hash routing — deep-linkable sections, back/forward, bookmarks
+  function routeFromHash(pushHash) {
+    var raw = (location.hash || '').replace(/^#/, '');
+    if (!raw) { setActiveNavItem('dashboard', null); return; }
+    var parts = raw.split('?');
+    var hashKey = parts[0];
+    var qs = parts[1] || '';
+    var params = {};
+    qs.split('&').forEach(function(p) {
+      if (!p) return;
+      var kv = p.split('=');
+      params[kv[0]] = decodeURIComponent(kv[1] || '');
+    });
+    var section = HASH_TO_SECTION[hashKey] || hashKey;
+    var taskFilter = params.filter || null;
+    if (!section) return;
+    window.switchSection(section, { taskFilter: taskFilter, pushHash: !!pushHash });
+  }
+  window.addEventListener('hashchange', function() { routeFromHash(false); });
+  // Initial route — run after first data load so render functions have data.
+  // loadDashboard fires .then(routeFromHash) below.
+  window._adminRouteFromHash = routeFromHash;
 
   // ══════════════════════════════════════════
   // OPERATIONS BOARD
@@ -3413,10 +3788,11 @@
     });
 
     body.querySelectorAll('.btn-reject-doc').forEach(function(btn) {
-      btn.addEventListener('click', function() {
+      btn.addEventListener('click', async function() {
         var reqId = this.getAttribute('data-req-id');
-        var reason = prompt('Reason for rejection? (Optional)');
-        rejectDocumentRequest(reqId, reason);
+        var reason = await nriPrompt({ title: 'Reason for rejection', message: 'Optional — shared with the client so they know what to fix.', placeholder: 'e.g. Document expired, please share latest version', multiline: true, confirmLabel: 'Continue' });
+        if (reason === null) return;
+        rejectDocumentRequest(reqId, reason || null);
       });
     });
   }
@@ -3453,8 +3829,9 @@
       });
   }
 
-  function acceptDocumentRequest(reqId) {
-    if (!confirm('Accept this document? It will be marked as verified.')) return;
+  async function acceptDocumentRequest(reqId) {
+    var ok = await nriConfirm({ title: 'Accept this document?', message: 'It will be marked as verified and the client will see it confirmed in their dashboard.', confirmLabel: 'Accept', variant: 'success' });
+    if (!ok) return;
     sb.from('document_requests')
       .update({ status: 'accepted', accepted_at: new Date().toISOString() })
       .eq('id', reqId)
@@ -3465,8 +3842,9 @@
       });
   }
 
-  function rejectDocumentRequest(reqId, reason) {
-    if (!confirm('Reject this document? The client will be able to upload again.')) return;
+  async function rejectDocumentRequest(reqId, reason) {
+    var ok = await nriConfirm({ title: 'Reject this document?', message: 'The client will be notified and can upload a replacement.', confirmLabel: 'Reject', variant: 'danger' });
+    if (!ok) return;
     sb.from('document_requests')
       .update({ 
         status: 'rejected', 
@@ -3575,11 +3953,12 @@
     });
   }
 
-  function runRecurringNow(scheduleId) {
+  async function runRecurringNow(scheduleId) {
     if (!scheduleId) return;
     var sched = recurringSchedules.find(function(r) { return r.id === scheduleId; });
     var label = sched ? (sched.service || 'this schedule') : 'this schedule';
-    if (!confirm('Fire ' + label + ' now? A new task will be created if no active task exists for this client + pipeline.')) return;
+    var ok = await nriConfirm({ title: 'Fire schedule now?', message: 'A new task for <strong>' + label + '</strong> will be created if no active task exists for this client + pipeline.', confirmLabel: 'Fire now', html: true });
+    if (!ok) return;
     sb.rpc('fn_fire_recurring_schedule_manual', {
       p_schedule_id: scheduleId,
       p_trigger_type: 'admin_manual'
@@ -3687,10 +4066,11 @@
   });
 
   var rsDelete = document.getElementById('rsDelete');
-  if (rsDelete) rsDelete.addEventListener('click', function() {
+  if (rsDelete) rsDelete.addEventListener('click', async function() {
     var id = document.getElementById('rsScheduleId').value;
     if (!id) return;
-    if (!confirm('Delete this recurring schedule? Future tasks will not auto-fire. Existing tasks remain.')) return;
+    var ok = await nriConfirm({ title: 'Delete recurring schedule?', message: 'Future tasks will no longer auto-fire. Existing tasks already created will remain.', confirmLabel: 'Delete schedule', variant: 'danger' });
+    if (!ok) return;
     sb.from('recurring_schedules').delete().eq('id', id).then(function(r) {
       if (r.error) { showToast('Failed: ' + r.error.message, 'error'); return; }
       showToast('Schedule deleted', 'info');

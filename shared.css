@@ -3203,6 +3203,205 @@ footer {
 .adm-nav-badge.orange { background: #e8a83a; }
 .adm-nav-badge.red { background: #dc3545; }
 
+/* ── Sidebar Sub-Items (By Service group) ────────────────────────── */
+.adm-nav-collapsible {
+  justify-content: flex-start;
+}
+.adm-nav-collapsible > .adm-nav-badge {
+  margin-left: auto;
+}
+.adm-nav-chevron {
+  flex-shrink: 0;
+  margin-left: 6px;
+  opacity: 0.55;
+  padding: 6px;
+  box-sizing: content-box;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.18s, background 0.15s;
+}
+.adm-nav-collapsible:not(:has(.adm-nav-badge)) .adm-nav-chevron {
+  margin-left: auto;
+}
+.adm-nav-chevron:hover {
+  opacity: 1;
+  background: rgba(74,106,46,0.12);
+}
+.adm-nav-collapsible[aria-expanded="true"] .adm-nav-chevron {
+  transform: rotate(180deg);
+  opacity: 0.9;
+}
+.adm-nav-collapsible[aria-expanded="true"] .adm-nav-chevron:hover {
+  transform: rotate(180deg);
+}
+
+.adm-nav-sublist {
+  display: flex; flex-direction: column; gap: 1px;
+  margin: 2px 0 2px 8px; padding-left: 10px;
+  border-left: 1.5px solid rgba(74,106,46,0.12);
+  max-height: 600px;
+  overflow: hidden;
+  transition: max-height 0.28s cubic-bezier(0.4,0,0.2,1), opacity 0.18s, margin 0.22s, padding 0.22s;
+}
+.adm-nav-sublist.adm-nav-collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+  border-left-color: transparent;
+}
+.adm-nav-item.adm-nav-sub {
+  font-size: 0.83rem; padding: 6px 10px;
+  color: var(--text-muted); font-weight: 500;
+}
+.adm-nav-item.adm-nav-sub:hover { color: var(--text-mid); }
+.adm-nav-item.adm-nav-sub.active { color: var(--green-pop); font-weight: 600; background: rgba(74,106,46,0.05); }
+.adm-nav-item.adm-nav-sub.active::before { left: -12px; }
+.adm-nav-item.adm-nav-sub .adm-nav-badge {
+  font-size: 0.62rem; padding: 1px 6px; min-width: 18px;
+  background: rgba(74,106,46,0.14); color: var(--green-pop);
+}
+.adm-nav-item.adm-nav-sub.active .adm-nav-badge {
+  background: var(--green-pop); color: #fff;
+}
+
+/* Filter row — status chips on the left, service select on the right */
+.adm-filter-row {
+  display: flex; align-items: center; gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.adm-filter-row .adm-filter-tabs {
+  flex: 1; margin-bottom: 0;
+}
+.adm-filter-select-wrap {
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.adm-filter-select-wrap label {
+  font-size: 0.74rem; font-weight: 600;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.adm-filter-select-label {
+  font-size: 0.74rem; font-weight: 600;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Themed custom dropdown ────────────────────────────────────── */
+.nri-dropdown { position: relative; display: inline-block; min-width: 200px; }
+.nri-dropdown-trigger {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%;
+  padding: 7px 12px 7px 14px;
+  border: 1.5px solid #d4d2c8;
+  border-radius: var(--radius-pill);
+  background: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 500;
+  color: var(--text-mid); cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  text-align: left;
+}
+.nri-dropdown-trigger:hover { border-color: var(--green-pop); }
+.nri-dropdown-trigger:focus {
+  outline: none; border-color: var(--green-pop);
+  box-shadow: 0 0 0 3px rgba(74,106,46,0.12);
+}
+.nri-dropdown.open .nri-dropdown-trigger {
+  border-color: var(--green-pop);
+  box-shadow: 0 0 0 3px rgba(74,106,46,0.12);
+}
+.nri-dropdown-label {
+  flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  color: var(--text-dark);
+}
+.nri-dropdown-count {
+  background: rgba(74,106,46,0.12); color: var(--green-pop);
+  font-size: 0.68rem; font-weight: 700;
+  padding: 1px 8px; border-radius: var(--radius-pill);
+  min-width: 22px; text-align: center;
+  flex-shrink: 0;
+}
+.nri-dropdown-arrow {
+  flex-shrink: 0; opacity: 0.55;
+  transition: transform 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+.nri-dropdown.open .nri-dropdown-arrow { transform: rotate(180deg); opacity: 0.9; }
+
+.nri-dropdown-menu {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  min-width: 100%; max-width: 320px;
+  background: var(--white);
+  border: 1px solid rgba(74,106,46,0.18);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.04);
+  padding: 6px;
+  display: none;
+  max-height: 320px; overflow-y: auto;
+  z-index: 200;
+  opacity: 0; transform: translateY(-4px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.nri-dropdown.open .nri-dropdown-menu {
+  display: block; opacity: 1; transform: translateY(0);
+}
+.nri-dropdown-option {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 500;
+  color: var(--text-mid); cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.nri-dropdown-option:hover {
+  background: rgba(74,106,46,0.08);
+  color: var(--text-dark);
+}
+.nri-dropdown-option.selected {
+  background: var(--green-pop);
+  color: #fff; font-weight: 600;
+}
+.nri-dropdown-option-count {
+  background: rgba(74,106,46,0.12); color: var(--green-pop);
+  font-size: 0.66rem; font-weight: 700;
+  padding: 1px 7px; border-radius: var(--radius-pill);
+  min-width: 20px; text-align: center;
+  transition: background 0.12s, color 0.12s;
+}
+.nri-dropdown-option.selected .nri-dropdown-option-count {
+  background: rgba(255,255,255,0.22); color: #fff;
+}
+.nri-dropdown-option:hover:not(.selected) .nri-dropdown-option-count {
+  background: rgba(74,106,46,0.18);
+}
+
+/* Custom scrollbar inside the menu — themed instead of OS default */
+.nri-dropdown-menu::-webkit-scrollbar { width: 6px; }
+.nri-dropdown-menu::-webkit-scrollbar-track { background: transparent; }
+.nri-dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(74,106,46,0.25); border-radius: 4px;
+}
+.nri-dropdown-menu::-webkit-scrollbar-thumb:hover { background: rgba(74,106,46,0.4); }
+
+/* Filter chip count pill (used in top-bar filter tabs) */
+.adm-filter-count {
+  display: inline-block; margin-left: 4px;
+  background: rgba(74,106,46,0.12); color: var(--green-pop);
+  font-size: 0.68rem; font-weight: 700; padding: 1px 7px;
+  border-radius: var(--radius-pill); min-width: 18px; text-align: center;
+  transition: background 0.18s, color 0.18s;
+}
+.adm-filter-tab.active .adm-filter-count {
+  background: rgba(255,255,255,0.25); color: #fff;
+}
+
 /* ── Main Layout ─────────────────────────────────────────────────── */
 .adm-body { margin-left: 260px; flex: 1; display: flex; height: 100vh; overflow: hidden; position: relative; }
 .adm-main { flex: 1; padding: 28px 32px; max-width: 100%; overflow-y: auto; height: 100vh; scroll-behavior: smooth; }
@@ -5464,4 +5663,140 @@ body.emp-page {
 @media (max-width: 768px) {
   .breadcrumb-container { padding: 10px 20px 0; }
   .breadcrumbs { font-size: 0.8rem; }
+}
+
+/* ══════════════════════════════════════════
+   NRI Dialog — themed confirm / alert
+   Replaces browser confirm() / alert()
+   ══════════════════════════════════════════ */
+.nri-dialog-overlay {
+  position: fixed; inset: 0;
+  background: rgba(20, 22, 12, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 20000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  padding: 20px;
+}
+.nri-dialog-overlay.show { display: flex; opacity: 1; }
+.nri-dialog {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 440px;
+  padding: 28px 28px 22px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.28), 0 0 0 1px rgba(74,106,46,0.06);
+  transform: translateY(20px) scale(0.96);
+  opacity: 0;
+  transition: transform 0.32s cubic-bezier(0.16,1,0.3,1), opacity 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+.nri-dialog-overlay.show .nri-dialog { transform: translateY(0) scale(1); opacity: 1; }
+.nri-dialog::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--green-pop), var(--accent-soft));
+}
+.nri-dialog.danger::before { background: linear-gradient(90deg, #c8362f, #d97a4e); }
+.nri-dialog.warning::before { background: linear-gradient(90deg, #d97a06, #f2b341); }
+.nri-dialog.success::before { background: linear-gradient(90deg, #2f8a47, var(--green-pop)); }
+
+.nri-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.nri-dialog-icon {
+  flex-shrink: 0;
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(74,106,46,0.12);
+  color: var(--green-pop);
+}
+.nri-dialog.danger .nri-dialog-icon { background: rgba(200,54,47,0.12); color: #c8362f; }
+.nri-dialog.warning .nri-dialog-icon { background: rgba(217,122,6,0.14); color: #d97a06; }
+.nri-dialog.success .nri-dialog-icon { background: rgba(47,138,71,0.14); color: #2f8a47; }
+.nri-dialog-icon svg { width: 22px; height: 22px; }
+.nri-dialog-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 4px 0 0;
+  line-height: 1.25;
+}
+.nri-dialog-body {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--text-mid);
+  margin: 0 0 22px;
+}
+.nri-dialog-body strong { color: var(--text-dark); font-weight: 600; }
+.nri-dialog-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.nri-dialog-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  min-width: 96px;
+}
+.nri-dialog-btn-cancel {
+  background: transparent;
+  border-color: #d4d2c8;
+  color: var(--text-mid);
+}
+.nri-dialog-btn-cancel:hover { background: var(--bg-cream); border-color: #b8b5a6; }
+.nri-dialog-btn-confirm {
+  background: var(--green-pop);
+  color: #fff;
+}
+.nri-dialog-btn-confirm:hover { background: var(--green-btn); }
+.nri-dialog.danger .nri-dialog-btn-confirm { background: #c8362f; }
+.nri-dialog.danger .nri-dialog-btn-confirm:hover { background: #a82822; }
+.nri-dialog.warning .nri-dialog-btn-confirm { background: #d97a06; }
+.nri-dialog.warning .nri-dialog-btn-confirm:hover { background: #b56504; }
+.nri-dialog-btn:focus-visible {
+  outline: 2px solid var(--green-pop);
+  outline-offset: 2px;
+}
+
+/* Optional input row (for prompt-style dialogs) */
+.nri-dialog-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #d4d2c8;
+  border-radius: var(--radius-md);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  background: var(--bg-cream);
+  color: var(--text-dark);
+  margin: -6px 0 16px;
+  resize: vertical;
+}
+.nri-dialog-input:focus { outline: none; border-color: var(--green-pop); }
+
+@media (max-width: 480px) {
+  .nri-dialog { padding: 22px 20px 18px; }
+  .nri-dialog-actions { flex-direction: column-reverse; }
+  .nri-dialog-btn { width: 100%; min-width: 0; }
 }

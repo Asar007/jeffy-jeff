@@ -38,18 +38,17 @@
 
   <div class="adm-nav-group">
     <div class="adm-nav-label">Clients</div>
-    <a class="adm-nav-item" data-section="clients">All Clients <span class="adm-nav-badge" id="badgeClients">—</span></a>
-    <a class="adm-nav-item" data-section="byservice">By Service</a>
-    <a class="adm-nav-item" id="navAddClient">Add Client</a>
-  </div>
-
-  <div class="adm-nav-group">
-    <div class="adm-nav-label">Pipeline</div>
-    <a class="adm-nav-item" data-section="tasks">All Tasks <span class="adm-nav-badge orange" id="badgeTasks">—</span></a>
-    <a class="adm-nav-item" data-section="pending">Pending</a>
-    <a class="adm-nav-item" data-section="completed">Completed</a>
+    <a class="adm-nav-item" data-section="tasks" data-task-filter="all">Tasks <span class="adm-nav-badge orange" id="badgeTasks">—</span></a>
+    <a class="adm-nav-item adm-nav-collapsible" data-section="clients" id="navByServiceToggle" aria-expanded="false">
+      <span>All Clients</span>
+      <svg class="adm-nav-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </a>
+    <div class="adm-nav-sublist adm-nav-collapsed" id="navByServiceList">
+      <a class="adm-nav-item adm-nav-sub" style="opacity:0.6;">Loading…</a>
+    </div>
     <a class="adm-nav-item" data-section="escalations">Escalations <span class="adm-nav-badge red" id="badgeEscalations">0</span></a>
     <a class="adm-nav-item" data-section="recurring">Recurring <span class="adm-nav-badge" id="badgeRecurring">—</span></a>
+    <a class="adm-nav-item" id="navAddClient">Add Client</a>
   </div>
 
   <div class="adm-nav-group">
@@ -180,7 +179,20 @@
     <div id="sectionTasks">
       <div class="adm-section-head">
         <h2>Client Work Status Tracker</h2>
-        <a class="adm-link" id="linkViewAllTasks">View all &rarr;</a>
+      </div>
+      <div class="adm-filter-row">
+        <div class="adm-filter-tabs" id="taskFilterTabs"></div>
+        <div class="adm-filter-select-wrap">
+          <span class="adm-filter-select-label">Service</span>
+          <div class="nri-dropdown" id="taskServiceDropdown" data-value="All">
+            <button type="button" class="nri-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span class="nri-dropdown-label">All services</span>
+              <span class="nri-dropdown-count">0</span>
+              <svg class="nri-dropdown-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="nri-dropdown-menu" role="listbox"></div>
+          </div>
+        </div>
       </div>
       <div class="adm-table-wrap">
         <table class="adm-table">
@@ -205,7 +217,6 @@
     <div class="adm-clients-section" id="sectionClients">
       <div class="adm-section-head">
         <h2>Clients by Service</h2>
-        <a class="adm-link">All clients &rarr;</a>
       </div>
       <div class="adm-filter-tabs" id="filterTabs"></div>
       <div class="adm-client-list" id="clientList"></div>
@@ -1056,7 +1067,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script src="upload-helpers.js"></script>
+<script src="nri-dialog.js?v=1"></script>
 
-<script src="admin.js?v=1"></script>
+<script src="admin.js?v=2"></script>
 </body>
 </html>

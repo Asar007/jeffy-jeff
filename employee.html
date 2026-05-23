@@ -25,6 +25,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script src="upload-helpers.js"></script>
+<script src="nri-dialog.js?v=1"></script>
 
 <script>
 (function() {
@@ -650,8 +651,9 @@
     });
   }
 
-  function markDone(task, card) {
-    if (!confirm('Mark this task as done? A completion update will be posted to the client.')) return;
+  async function markDone(task, card) {
+    var ok = await nriConfirm({ title: 'Mark task as done?', message: 'A completion update will be posted to the client and the task will close out.', confirmLabel: 'Mark done', variant: 'success' });
+    if (!ok) return;
     sb.from('tasks').update({ status: 'Completed', progress: 100 }).eq('id', task.id).then(function(r) {
       if (r.error) { showToast('Could not mark done: ' + r.error.message, 'error'); return; }
       return sb.from('task_updates').insert({
