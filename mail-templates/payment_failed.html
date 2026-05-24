@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Unsuccessful - NRI Bridge India</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f2efe5; font-family: 'DM Sans', Arial, sans-serif; color: #1a1e0e; }
+        .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05); }
+        .header { background-color: #e85d3a; padding: 40px 20px; text-align: center; }
+        .header h1 { color: #f2efe5; font-family: 'Playfair Display', Georgia, serif; font-size: 28px; margin: 0; letter-spacing: -0.5px; text-transform: uppercase; }
+        .content { padding: 40px; line-height: 1.6; }
+        .content h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; color: #e85d3a; margin-top: 0; }
+        .error-box { background-color: rgba(232,93,58,0.05); border-left: 4px solid #e85d3a; padding: 16px 20px; margin: 24px 0; font-size: 14px; color: #3d4228; }
+        .payment-details { background-color: #f9f8f4; border-radius: 12px; padding: 24px; margin: 24px 0; border: 1px solid rgba(232,93,58,0.1); }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.03); padding-bottom: 12px; }
+        .detail-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .detail-label { color: #3d4228; font-weight: 500; }
+        .detail-value { color: #1a1e0e; font-weight: 700; text-align: right; }
+        .button { display: inline-block; padding: 14px 32px; background-color: #e85d3a; color: #f2efe5 !important; text-decoration: none; border-radius: 100px; font-weight: 600; margin: 20px 0; }
+        .footer { background-color: #3d3f2e; color: #9a9d7e; padding: 30px 40px; font-size: 13px; text-align: left; }
+        .footer strong { color: #f2efe5; font-size: 15px; }
+        @media only screen and (max-width: 600px) {
+            .container { margin: 0; border-radius: 0; }
+            .content { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>NRI BRIDGE INDIA</h1>
+        </div>
+        <div class="content">
+            <h2>Payment Unsuccessful</h2>
+            <p>Hi {{{FIRST_NAME}}},</p>
+            <p>We were unable to process your recent payment for NRI Bridge India services. This could be due to expired card details or insufficient funds.</p>
+            
+            <div class="error-box">
+                <strong>Action Required:</strong> Please update your payment information to avoid service interruption.
+            </div>
+            
+            <div class="payment-details">
+                <div class="detail-row">
+                    <span class="detail-label">Service/Plan</span>
+                    <span class="detail-value">{{{PLAN_NAME}}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Amount</span>
+                    <span class="detail-value">₹{{{AMOUNT}}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date</span>
+                    <span class="detail-value">{{{DATE}}}</span>
+                </div>
+            </div>
+            
+            <p>You can securely update your payment method through your dashboard.</p>
+            
+            <a href="{{{BILLING_URL}}}" class="button">Update Payment Method</a>
+            
+            <p>If you've already resolved this, please ignore this email.</p>
+            
+            <p>Best regards,<br>
+            <strong>Jeff</strong><br>
+            NRI Bridge India Team</p>
+        </div>
+        <div class="footer">
+            <p><strong>NRI Bridge India</strong><br>
+            Your Trusted Property Partner in India</p>
+            <p>&copy; 2026 NRI Bridge India. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -32,6 +32,7 @@
             font-size: 28px;
             margin: 0;
             letter-spacing: -0.5px;
+            text-transform: uppercase;
         }
         .content {
             padding: 40px;
@@ -57,11 +58,12 @@
             background-color: #3d3f2e;
             color: #9a9d7e;
             padding: 30px 40px;
-            font-size: 14px;
+            font-size: 13px;
             text-align: left;
         }
         .footer strong {
             color: #f2efe5;
+            font-size: 15px;
         }
         .divider {
             height: 1px;
@@ -77,11 +79,11 @@
         </div>
         <div class="content">
             <h2>Welcome to the family!</h2>
-            <p>Hi {{name}},</p>
+            <p>Hi {{{FIRST_NAME}}},</p>
             <p>Thank you for choosing NRI Bridge India. We're thrilled to have you with us. Managing your Indian properties from afar just got a whole lot easier.</p>
             <p>Our mission is to provide you with complete peace of mind, knowing that your assets are in professional hands. Whether it's tenant management, property maintenance, or legal compliance, we've got you covered.</p>
             
-            <a href="{{login_url}}" class="button">Access Your Dashboard</a>
+            <a href="{{{LOGIN_URL}}}" class="button">Access Your Dashboard</a>
             
             <p>If you have any questions or need immediate assistance, feel free to reach out to us at any time.</p>
             
