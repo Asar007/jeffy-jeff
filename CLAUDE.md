@@ -17,8 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | File | Purpose |
 |------|---------|
-| `propnri-saas-site.html` | Main landing page |
-| `index.html` | Redirect router (auth callbacks → `auth-callback.html`, else → landing) |
+| `index.html` | Main landing page (served at `/`) |
 | `supabase-client.js` | Supabase init, auth state listener, role detection (`getUserRole()`), dual-write to `clients` table |
 | `nav.js` | Shared nav injected into all pages; handles logged-in/out state, role-aware menu items |
 | `footer.js` | Shared footer injected into all pages |

@@ -14,7 +14,7 @@
 ## Directory Structure
 
 - `/`: Root directory containing all HTML pages, CSS, and backend scripts.
-- [`propnri-saas-site.html`](propnri-saas-site.html): The main landing page.
+- [`index.html`](index.html): The main landing page (served at `/`).
 - [`shared.css`](shared.css): Centralized design system and styling for all pages.
 - [`google_apps_script.js`](google_apps_script.js): Backend logic for form submissions and data handling.
 - `NRI_Bridge_India_SRS.pdf`: Software Requirements Specification.

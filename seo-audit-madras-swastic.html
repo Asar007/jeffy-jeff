@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SEO Audit — Madras Swastic Engineers (rocket-ship-plum.vercel.app)</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: #1f2933;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    margin: 0;
+  }
+  h1 {
+    font-size: 22pt;
+    color: #4a6a2e;
+    margin: 0 0 4pt;
+    letter-spacing: -0.3pt;
+  }
+  h2 {
+    font-size: 14pt;
+    color: #3d3f2e;
+    border-bottom: 2pt solid #4a6a2e;
+    padding-bottom: 4pt;
+    margin: 18pt 0 10pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11.5pt;
+    color: #1f2933;
+    margin: 12pt 0 4pt;
+    page-break-after: avoid;
+  }
+  .meta {
+    color: #5a6470;
+    font-size: 9.5pt;
+    margin-bottom: 14pt;
+  }
+  .score-card {
+    background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%);
+    color: #fff;
+    padding: 16pt 18pt;
+    border-radius: 6pt;
+    margin: 10pt 0 14pt;
+  }
+  .score-card .big {
+    font-size: 36pt;
+    font-weight: 700;
+    line-height: 1;
+    display: block;
+  }
+  .score-card .label {
+    font-size: 10pt;
+    opacity: 0.9;
+    margin-top: 4pt;
+  }
+  .score-card .verdict {
+    font-size: 11pt;
+    margin-top: 6pt;
+    font-style: italic;
+  }
+  .headline-callout {
+    background: #fff4e6;
+    border-left: 4pt solid #ef6c00;
+    padding: 10pt 14pt;
+    border-radius: 0 4pt 4pt 0;
+    margin: 12pt 0;
+    font-size: 10.5pt;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8pt 0 12pt;
+    font-size: 9.8pt;
+  }
+  th {
+    background: #f2efe5;
+    color: #3d3f2e;
+    text-align: left;
+    padding: 6pt 8pt;
+    font-weight: 600;
+    border-bottom: 1.5pt solid #4a6a2e;
+  }
+  td {
+    padding: 5pt 8pt;
+    border-bottom: 1px solid #e3e3dd;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafaf6; }
+  .priority {
+    display: inline-block;
+    padding: 1.5pt 7pt;
+    border-radius: 10pt;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.3pt;
+    color: #fff;
+    margin-right: 6pt;
+    vertical-align: middle;
+  }
+  .p-critical { background: #c62828; }
+  .p-high { background: #ef6c00; }
+  .p-medium { background: #f9a825; color: #3d3f2e; }
+  .p-low { background: #7cb342; }
+  .p-good { background: #2e7d32; }
+  .issue {
+    margin: 10pt 0;
+    padding: 10pt 12pt;
+    border-left: 3pt solid #ccc;
+    background: #fafaf6;
+    border-radius: 0 4pt 4pt 0;
+    page-break-inside: avoid;
+  }
+  .issue.critical { border-color: #c62828; background: #fdecec; }
+  .issue.high { border-color: #ef6c00; background: #fff4e6; }
+  .issue.medium { border-color: #f9a825; background: #fffaeb; }
+  .issue.low { border-color: #7cb342; background: #f4faec; }
+  .issue h4 {
+    margin: 0 0 4pt;
+    font-size: 10.5pt;
+    color: #1f2933;
+  }
+  .issue p { margin: 4pt 0; }
+  .fix {
+    font-size: 9.5pt;
+    color: #2e3a47;
+  }
+  .fix strong { color: #4a6a2e; }
+  ul, ol { margin: 6pt 0 6pt 18pt; padding: 0; }
+  li { margin-bottom: 3pt; }
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #ecebe2;
+    padding: 1pt 4pt;
+    border-radius: 3pt;
+    font-size: 9pt;
+  }
+  pre {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #2e3a47;
+    color: #e5e7eb;
+    padding: 8pt 10pt;
+    border-radius: 4pt;
+    font-size: 8.5pt;
+    line-height: 1.4;
+    overflow-x: auto;
+    margin: 6pt 0;
+    page-break-inside: avoid;
+  }
+  pre code { background: transparent; padding: 0; color: inherit; }
+  .section-cover {
+    page-break-after: always;
+    padding-top: 30pt;
+  }
+  .week {
+    background: #f2efe5;
+    padding: 10pt 14pt;
+    margin: 8pt 0;
+    border-radius: 4pt;
+    page-break-inside: avoid;
+  }
+  .week h3 { margin-top: 0; color: #4a6a2e; }
+  .good-list li { color: #2e7d32; }
+  .footer-strip {
+    margin-top: 24pt;
+    padding-top: 10pt;
+    border-top: 1pt solid #d4d2c5;
+    font-size: 8.5pt;
+    color: #5a6470;
+    text-align: center;
+  }
+  .keep-together { page-break-inside: avoid; }
+  .biz-info {
+    background: #f2efe5;
+    padding: 10pt 14pt;
+    border-radius: 4pt;
+    margin: 8pt 0 14pt;
+    font-size: 9.8pt;
+  }
+  .biz-info strong { color: #3d3f2e; }
+</style>
+</head>
+<body>
+
+<div class="section-cover">
+  <h1>SEO Audit Report</h1>
+  <div class="meta">
+    <strong>Site:</strong> https://rocket-ship-plum.vercel.app/ &nbsp;·&nbsp;
+    <strong>Date:</strong> 2026-05-19 &nbsp;·&nbsp;
+    <strong>Business type:</strong> B2B Heavy Industrial Fabrication &amp; Plant Erection
+  </div>
+
+  <div class="biz-info">
+    <strong>Business:</strong> Madras Swastic Engineers Pvt. Ltd.<br>
+    <strong>Founded:</strong> 1998 &nbsp;·&nbsp; <strong>Certification:</strong> ISO 9001:2015 &nbsp;·&nbsp; <strong>Award:</strong> Industry Excellence (2023)<br>
+    <strong>HQ:</strong> 21-C, 5th Cross St, Guindy Industrial Estate, Chennai 600032 &nbsp;·&nbsp;
+    <strong>2nd facility:</strong> Sriperumbudur (42,000 sq.ft. total)<br>
+    <strong>Contact:</strong> +91 98841 48474 &nbsp;·&nbsp; md@madrasswastic.com<br>
+    <strong>Marquee clients:</strong> ISRO, Schwing Stetter, Manali Petrochemicals, Heavy Vehicles Factory, TANCEM, JK Paper
+  </div>
+
+  <div class="score-card">
+    <span class="big">32 / 100</span>
+    <div class="label">SEO Health Score &nbsp;·&nbsp; weighted composite of 7 categories</div>
+    <div class="verdict">Verdict: Critical — site is broken in ways search engines cannot work around.</div>
+  </div>
+
+  <div class="headline-callout">
+    <strong>Headline:</strong> The business is solid. The website actively undermines it. Four of five navigation links 404, the canonical domain is a random Vercel slug, and there is zero structured data. This is not an SEO audit — it is a recovery plan.
+  </div>
+
+  <h2>Score Breakdown by Category</h2>
+  <table>
+    <thead><tr><th>Category</th><th>Weight</th><th>Score</th><th>Weighted</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Technical SEO</td><td>22%</td><td>20 / 100</td><td>4.4</td><td><span class="priority p-critical">Poor</span></td></tr>
+      <tr><td>Content Quality (E-E-A-T)</td><td>23%</td><td>50 / 100</td><td>11.5</td><td><span class="priority p-medium">Mixed</span></td></tr>
+      <tr><td>On-Page SEO</td><td>20%</td><td>25 / 100</td><td>5.0</td><td><span class="priority p-critical">Poor</span></td></tr>
+      <tr><td>Schema / Structured Data</td><td>10%</td><td>0 / 100</td><td>0.0</td><td><span class="priority p-critical">Absent</span></td></tr>
+      <tr><td>Performance (CWV)</td><td>10%</td><td>55 / 100</td><td>5.5</td><td><span class="priority p-medium">Mixed</span></td></tr>
+      <tr><td>AI Search Readiness (GEO)</td><td>10%</td><td>31 / 100</td><td>3.1</td><td><span class="priority p-critical">Poor</span></td></tr>
+      <tr><td>Images</td><td>5%</td><td>40 / 100</td><td>2.0</td><td><span class="priority p-high">Weak</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Cross-cutting sub-score</h3>
+  <p><strong>Local SEO: 18 / 100</strong> — real NAP exists in body copy but is absent from machine-readable signals (no schema, no GBP, no citations, no Maps embed). The contact page itself returns 404, so the local conversion path is broken end-to-end.</p>
+</div>
+
+<!-- ============== CRITICAL ============== -->
+<h2>Critical Issues — Fix This Week</h2>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 1</span>Four of five navigation links return 404</h4>
+  <p><code>/about</code>, <code>/projects</code>, <code>/customization</code>, and <code>/contact</code> all return HTTP 404. Every procurement persona abandons the site at the first click. The hero "Start a Conversation" CTA and all five footer social icons also route to <code>/contact</code> — every conversion path is dead.</p>
+  <p class="fix"><strong>Fix:</strong> Deploy the inner pages, or as a same-day stopgap, redirect those routes to homepage anchors (<code>/#about</code>, <code>/#projects</code>, etc.). Replace the contact CTA with a working <code>mailto:md@madrasswastic.com</code> link immediately.</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 2</span>Canonical domain is a random Vercel slug</h4>
+  <p><code>rocket-ship-plum.vercel.app</code> has zero brand signal, zero backlink equity, and could be reassigned if the Vercel project is renamed. AI engines (ChatGPT, Perplexity, Google AI Overviews) cluster authority around named brand domains — there is currently no path to being cited for "Madras Swastic Engineers."</p>
+  <p class="fix"><strong>Fix:</strong> Register <code>madrasswastic.com</code> (or <code>.in</code>) today. In Vercel → Project → Domains, attach the custom domain and mark it primary. Vercel auto-301s from the slug. Update every canonical, <code>og:url</code>, and schema <code>@id</code> to the new domain.</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 3</span>/robots.txt and /sitemap.xml both return 404</h4>
+  <p>AI crawlers (GPTBot, ClaudeBot, PerplexityBot) and Google have no discovery path and no policy signal. The absence of a sitemap also means no clear page inventory once inner pages exist.</p>
+  <p class="fix"><strong>Fix:</strong> Publish both at the root.</p>
+  <pre><code>User-agent: *
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://madrasswastic.com/sitemap.xml</code></pre>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 4</span>Zero structured data anywhere on the site</h4>
+  <p>No <code>Organization</code>, no <code>LocalBusiness</code>, no <code>BreadcrumbList</code>, no <code>Service</code>. For a 27-year ISO-certified contractor with ISRO as a named client, this is the highest-leverage missing signal — every other SEO improvement compounds off this baseline.</p>
+  <p class="fix"><strong>Fix:</strong> Deploy a <code>GeneralContractor</code> JSON-LD block on every page.</p>
+  <pre><code>{
+  "@context": "https://schema.org",
+  "@type": "GeneralContractor",
+  "@id": "https://madrasswastic.com/#org",
+  "name": "Madras Swastic Engineers Pvt. Ltd.",
+  "url": "https://madrasswastic.com/",
+  "foundingDate": "1998",
+  "telephone": "+919884148474",
+  "email": "md@madrasswastic.com",
+  "hasCredential": {
+    "@type": "EducationalOccupationalCredential",
+    "credentialCategory": "ISO 9001:2015"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "21-C, 5th Cross St, Guindy Industrial Estate",
+    "addressLocality": "Chennai",
+    "postalCode": "600032",
+    "addressRegion": "Tamil Nadu",
+    "addressCountry": "IN"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 13.00803,
+    "longitude": 80.21304
+  },
+  "areaServed": { "@type": "Country", "name": "India" },
+  "knowsAbout": ["structural fabrication","mechanical erection",
+                 "piping","skid assembly","plant erection"],
+  "sameAs": [
+    "https://www.linkedin.com/company/madras-swastic-engineers",
+    "https://www.indiamart.com/madrasswasticengineers"
+  ]
+}</code></pre>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 5</span>No RFQ / vendor pre-qualification path</h4>
+  <p>The only CTA leads to a 404. No quote form, no downloadable capability brochure, no ISO certificate PDF, no project portfolio. B2B procurement teams cannot self-qualify the vendor and will not email blindly.</p>
+  <p class="fix"><strong>Fix:</strong> Build <code>/rfq</code> with structured fields (Project type [Structural Fab / Plant Erection / Piping / Turnkey], Tonnage estimate, Location, Timeline, Message). Publish the ISO 9001:2015 certificate as a downloadable PDF. Add a <code>/capability-brief.pdf</code> with crane tonnage, weld capabilities, equipment list.</p>
+</div>
+
+<!-- ============== HIGH ============== -->
+<h2>High-Priority Issues</h2>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 6</span>H1 contains zero target keywords</h4>
+  <p>Current H1: <em>"Engineering Precision for Modern Infrastructure"</em> — brand copy, not a search signal. None of the four target queries appear.</p>
+  <p class="fix"><strong>Fix:</strong> H1 → <em>"Structural Fabrication &amp; Plant Erection Contractor, Chennai — Madras Swastic Engineers"</em>. Title tag → <em>"Structural Fabrication Contractor Chennai | ISO 9001 | Madras Swastic Engineers"</em>.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 7</span>No meta description, no canonical, no Open Graph tags</h4>
+  <p>Social shares produce generic previews. Duplicate-URL signals between the Vercel slug and any future custom domain are uncontrolled. Twitter/X cards do not render.</p>
+  <p class="fix"><strong>Fix:</strong> Add unique 150–160 char meta description + canonical + full OG/Twitter card metadata on every page.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 8</span>No dedicated service / capability pages</h4>
+  <p>Each capability (Structural Fabrication, Mechanical Erection, Piping &amp; Skid, Turnkey) maps to a distinct high-intent procurement query, but there is no dedicated page for any of them. Competing vendor sites run 2,500–4,000 words across capability and portfolio sections.</p>
+  <p class="fix"><strong>Fix:</strong> Build four service pages, 800–1,200 words each, with material grades (IS 2062, ASTM A36), plate thickness range, weld procedure specs (GTAW/SMAW), NDT capabilities, equipment list (crane tonnage, transport reach), and one named project reference per page.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 9</span>Marquee client claims are asserted, not evidenced</h4>
+  <p>ISRO, Schwing Stetter, and Manali Petrochemicals logos with no project case studies, no scope (tonnage, timeline, location), no client-attributed quote. Logos alone score poorly with both Google E-E-A-T evaluators and AI citation engines.</p>
+  <p class="fix"><strong>Fix:</strong> One 300-word case study per anchor client, formatted as: <em>"ISRO LPSC — 340 MT structural package, delivered 11 days ahead of schedule, August 2023."</em> Include client logo with descriptive <code>alt</code> text.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 10</span>ISO 9001:2015 stated as text but never linked</h4>
+  <p>No certificate number, no expiry date, no PDF download, no registrar verification link. Multinational procurement compliance teams (the kind that vet ISRO vendors) cannot proceed past this gap.</p>
+  <p class="fix"><strong>Fix:</strong> Publish the certificate PDF; add <code>hasCredential</code> with the registration number in schema; link from a homepage credibility bar.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 11</span>No named principal / director bio</h4>
+  <p>B2B industrial vendors need accountable humans. The email <code>md@madrasswastic.com</code> exists but no MD name, no engineering qualifications, no GST number, no CIN. Enterprise procurement teams running structured vendor qualification cannot complete this step.</p>
+  <p class="fix"><strong>Fix:</strong> About page with named MD, engineering credentials (AMIE / B.E. Mech / M.Tech), GST number, CIN (from MCA), and ISO certificate registration number.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 12</span>No llms.txt</h4>
+  <p>Biggest missed AI-search signal. AI engines have no structured entry point to learn what the site is.</p>
+  <p class="fix"><strong>Fix:</strong> Publish <code>/llms.txt</code>:</p>
+  <pre><code># Madras Swastic Engineers
+&gt; ISO 9001:2015 certified industrial fabrication and plant erection
+&gt; contractor based in Chennai, India. Founded 1998. Clients include
+&gt; ISRO, Schwing Stetter, Manali Petrochemicals. 42,000 sq.ft. facility
+&gt; in Guindy Industrial Estate.
+
+## Services
+- /services/structural-fabrication
+- /services/plant-erection
+- /services/piping-skid-assembly
+- /services/turnkey-projects
+
+## About
+- /about</code></pre>
+</div>
+
+<!-- ============== MEDIUM ============== -->
+<h2>Medium-Priority Issues</h2>
+
+<table>
+  <thead><tr><th>Issue</th><th>Evidence</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Client logos likely lack descriptive alt text</td>
+      <td>Logo images use hashed filenames; client name probably not in <code>alt</code> attribute or adjacent <code>figcaption</code>.</td>
+      <td>Set <code>alt="ISRO — Indian Space Research Organisation"</code> etc.; add one-line figcaption with project context.</td>
+    </tr>
+    <tr>
+      <td>Stats asserted without methodology</td>
+      <td>"96.4% on-time", "18% cost-saving", "99% safety score" — no source footnote.</td>
+      <td>Add a parenthetical source: <em>"across 47 projects 2020–2024, client-acknowledged delivery dates"</em>.</td>
+    </tr>
+    <tr>
+      <td>Sriperumbudur facility mentioned but never addressed</td>
+      <td>"2 manufacturing facilities, 42,000 sq.ft. total" — Sriperumbudur location has no published address, no dedicated page.</td>
+      <td>Publish the full address; add a second <code>LocalBusiness</code> schema node with <code>branchOf</code> pointing to parent. Sriperumbudur is an auto/manufacturing hub — own those local queries.</td>
+    </tr>
+    <tr>
+      <td>No IndiaMART / TradeIndia / JustDial / NSIC presence</td>
+      <td>None linked via <code>sameAs</code>. These directories rank above most SME sites for "steel fabricator Chennai" queries.</td>
+      <td>Create + claim profiles on IndiaMART, TradeIndia, JustDial, NSIC, MSME Udyam. Link all via <code>sameAs</code> in <code>Organization</code> schema.</td>
+    </tr>
+    <tr>
+      <td>Privacy / Terms / Sitemap footer links are <code>#</code></td>
+      <td>Cosmetic but signals incomplete site to crawlers.</td>
+      <td>Stub <code>/privacy</code>, <code>/terms</code>; publish real <code>sitemap.xml</code>.</td>
+    </tr>
+    <tr>
+      <td>No project freshness signals</td>
+      <td>No dated activity feed, no recent-completion callouts on the homepage.</td>
+      <td>Quarterly "Recent Projects" list with client + completion month.</td>
+    </tr>
+    <tr>
+      <td>Vercel preview deployments likely indexable</td>
+      <td>Every Vercel push generates a preview URL; without <code>X-Robots-Tag: noindex</code>, duplicates accumulate.</td>
+      <td>In <code>vercel.json</code>, add <code>X-Robots-Tag: noindex</code> header conditional on the <code>x-vercel-deployment-type: preview</code> request header.</td>
+    </tr>
+    <tr>
+      <td>No Google Maps embed</td>
+      <td>Contact area (when it exists) should reinforce the verified GBP Place ID.</td>
+      <td>Embed Maps iframe once GBP is claimed.</td>
+    </tr>
+    <tr>
+      <td>KPI stats live in card layouts, not extractable prose</td>
+      <td>Isolated numbers in grid cards are not citable by Perplexity / ChatGPT.</td>
+      <td>Add one 90-word "About" paragraph mentioning name + location + cert + clients + stats together — directly citable as a single passage.</td>
+    </tr>
+    <tr>
+      <td>Asset filenames hashed but unknown if responsive <code>srcset</code> used</td>
+      <td>Build pipeline produces <code>logo-CX-UPfBl.png</code>-style filenames — good for caching, unknown for responsive delivery.</td>
+      <td>Verify <code>srcset</code>/<code>picture</code> usage on hero + project images; convert key images to WebP/AVIF.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============== LOW ============== -->
+<h2>Low-Priority Issues</h2>
+<ul>
+  <li>IndexNow not implemented — push content updates to Bing and Yandex on each deploy.</li>
+  <li>No author/publisher attribution or "Last updated" line on any page.</li>
+  <li>Footer social icons should point to real LinkedIn / IndiaMART profiles once they exist.</li>
+  <li>Security headers (<code>Content-Security-Policy</code>, <code>Permissions-Policy</code>, <code>Referrer-Policy</code>) are not Vercel defaults — configure in <code>vercel.json</code>.</li>
+</ul>
+
+<!-- ============== 30-DAY PLAN ============== -->
+<h2>30-Day Recovery Plan</h2>
+
+<div class="week">
+  <h3>Week 1 — Stop the bleeding</h3>
+  <ol>
+    <li>Register a custom domain; configure in Vercel; mark primary; verify the auto-301 from the Vercel slug.</li>
+    <li>Deploy <code>/about</code>, <code>/projects</code>, <code>/customization</code>, <code>/contact</code> — or stopgap-redirect to homepage anchors until the pages exist.</li>
+    <li>Replace every broken CTA with a working <code>mailto:</code> while the contact form is built.</li>
+    <li>Publish <code>/robots.txt</code> and <code>/sitemap.xml</code>.</li>
+  </ol>
+</div>
+
+<div class="week">
+  <h3>Week 2 — Make the site machine-readable</h3>
+  <ol start="5">
+    <li>Deploy <code>GeneralContractor</code> JSON-LD with full NAP, geo, foundingDate, ISO credential, sameAs on every page.</li>
+    <li>Add canonical, meta description, OG, and Twitter card to every page.</li>
+    <li>Rewrite H1 + title tag with target keywords ("Structural Fabrication Contractor Chennai").</li>
+    <li>Publish <code>/llms.txt</code>.</li>
+  </ol>
+</div>
+
+<div class="week">
+  <h3>Week 3 — Vendor-grade content</h3>
+  <ol start="9">
+    <li>Build four service pages (Fabrication, Erection, Piping &amp; Skid, Turnkey) — 800+ words each with material grades, codes, equipment, tolerances.</li>
+    <li>Build <code>/projects</code> with 3+ named case studies (ISRO, Schwing Stetter, Manali Petrochemicals) — scope, tonnage, timeline, outcome.</li>
+    <li>Publish the ISO 9001:2015 certificate PDF; link from a homepage credibility bar.</li>
+    <li>Build <code>/rfq</code> form (project type, tonnage, location, timeline, message).</li>
+    <li>Publish the Sriperumbudur facility address; add <code>branchOf</code> schema.</li>
+  </ol>
+</div>
+
+<div class="week">
+  <h3>Week 4 — Local + GEO foundations</h3>
+  <ol start="14">
+    <li>Claim Google Business Profile with primary category "Steel Fabricator". Upload facility + project photos.</li>
+    <li>Create IndiaMART + TradeIndia profiles with exact-match NAP. Link via <code>sameAs</code>.</li>
+    <li>Register with NSIC / MSME Udyam; add the verifiable badge to the homepage.</li>
+    <li>Add named MD bio + GST + CIN + ISO registration number on About page.</li>
+    <li>Add the 90-word citable "About" prose paragraph for AI extraction.</li>
+  </ol>
+</div>
+
+<!-- ============== STRENGTHS ============== -->
+<h2>What's Already Good</h2>
+<ul class="good-list">
+  <li>Real, verifiable NAP visible on homepage (street address, phone, email) — internally consistent across body and footer.</li>
+  <li>ISO 9001:2015 + 27-year operating history + zero-LTI safety record = genuine, differentiated trust anchors.</li>
+  <li>Marquee client roster is real and rare (ISRO is a defensible differentiator that no competitor can claim).</li>
+  <li>Industry Excellence Award (2023) provides a current freshness signal.</li>
+  <li>Server-side rendering is confirmed — JavaScript-gated content is not a concern.</li>
+  <li>Specific stats present (96.4%, 99%, 42,000 sq.ft., 90+ engineers) — the raw material for AI citation is already in place; it just needs better packaging.</li>
+</ul>
+
+<!-- ============== LIMITATIONS ============== -->
+<h2>Audit Limitations</h2>
+<ul>
+  <li>Live PageSpeed / CrUX field data was not measured (no Google API credentials configured). The performance score is an estimate based on Vercel infrastructure defaults; validate with PageSpeed Insights once a custom domain is live.</li>
+  <li>Actual Google Business Profile existence, IndiaMART / TradeIndia presence, and live local pack rankings could not be confirmed without DataForSEO or manual platform search.</li>
+  <li>Inner-page analysis is worst-case because every inner page returns 404. The four service pages, projects page, and contact page must be re-audited once they exist.</li>
+  <li>No competitor benchmarking — gap scores are relative to known SERP norms for B2B industrial procurement queries, not a named competitor set.</li>
+</ul>
+
+<div class="footer-strip">
+  Built by agricidaniel — Join the AI Marketing Hub community<br>
+  Free → https://www.skool.com/ai-marketing-hub &nbsp;·&nbsp; Pro → https://www.skool.com/ai-marketing-hub-pro
+</div>
+
+</body>
+</html>

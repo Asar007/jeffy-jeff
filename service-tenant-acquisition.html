@@ -77,7 +77,7 @@
 
 <!-- NAV -->
 <nav></nav>
-<div class="breadcrumb-container"><ul class="breadcrumbs"><li><a href="propnri-saas-site.html">Home</a></li><li><a href="home-management.html">Home Management</a></li><li>Tenant Acquisition</li></ul></div>
+<div class="breadcrumb-container"><ul class="breadcrumbs"><li><a href="/">Home</a></li><li><a href="/home-management">Home Management</a></li><li>Tenant Acquisition</li></ul></div>
 <script src="nav.js"></script>
 
 <!-- SERVICE HERO -->
@@ -212,7 +212,7 @@
   <p>Let us find the perfect tenant while you focus on your life abroad. Professional, vetted, and hassle-free.</p>
   <div class="cta-btns">
     <a href="#" class="btn-hero" onclick="handlePlanClick(event,'platinum')">Get Started Today</a>
-    <a href="propnri-saas-site.html#pricing" class="btn-ghost">View All Plans &rarr;</a>
+    <a href="/#pricing" class="btn-ghost">View All Plans &rarr;</a>
   </div>
 </section>
 
@@ -240,9 +240,9 @@
     e.preventDefault();
     var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
     if (session) {
-      window.location.href = 'onboarding.html?plan=' + plan;
+      window.location.href = '/onboarding?plan=' + plan;
     } else {
-      window.location.href = 'signup.html?plan=' + plan;
+      window.location.href = '/signup?plan=' + plan;
     }
   }
 

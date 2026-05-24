@@ -108,7 +108,7 @@
       Continue with Google
     </button>
 
-    <div class="auth-footer">Already have an account? <a href="login.html">Sign in</a></div>
+    <div class="auth-footer">Already have an account? <a href="/login">Sign in</a></div>
 
   </div>
 </main>
@@ -193,7 +193,7 @@
       email: email.value.trim(),
       password: passwordInput.value,
       options: {
-        emailRedirectTo: window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'auth-callback.html',
+        emailRedirectTo: window.location.origin + '/auth-callback',
         data: {
           full_name: name.value.trim(),
           phone: formattedPhone,
@@ -227,7 +227,7 @@
           subject: 'Welcome to NRI Bridge India!',
           payload: {
             FIRST_NAME: name.value.trim().split(' ')[0],
-            LOGIN_URL: window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'login.html'
+            LOGIN_URL: window.location.origin + '/login'
           }
         })
       });
@@ -238,7 +238,7 @@
     // Preserve plan param if present
     var urlParams = new URLSearchParams(window.location.search);
     var planParam = urlParams.get('plan');
-    var loginUrl = 'login.html' + (planParam ? '?plan=' + planParam : '');
+    var loginUrl = '/login' + (planParam ? '?plan=' + planParam : '');
 
     var card = document.getElementById('signupCard');
     card.innerHTML =
@@ -256,7 +256,7 @@
   document.getElementById('googleBtn').addEventListener('click', async function() {
     let basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
     if (!basePath.endsWith('/')) basePath += '/';
-    const redirectPath = window.location.origin + basePath + 'propnri-saas-site.html';
+    const redirectPath = window.location.origin + '/';
     
     const { error } = await supabaseClient.auth.signInWithOAuth({ 
       provider: 'google',

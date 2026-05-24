@@ -149,17 +149,17 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo"><a href="propnri-saas-site.html"><img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:80px;width:auto;display:block;"></a></div>
+  <div class="nav-logo"><a href="/"><img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" style="height:80px;width:auto;display:block;"></a></div>
   <ul class="nav-links">
-    <li><a href="propnri-saas-site.html">Home</a></li>
-    <li><a href="home-management.html">Services</a></li>
-    <li><a href="propnri-saas-site.html#pricing">Pricing</a></li>
-    <li><a href="propnri-saas-site.html#how">How It Works</a></li>
-    <li><a href="contact.html">Contact</a></li>
+    <li><a href="/">Home</a></li>
+    <li><a href="/home-management">Services</a></li>
+    <li><a href="/#pricing">Pricing</a></li>
+    <li><a href="/#how">How It Works</a></li>
+    <li><a href="/contact">Contact</a></li>
   </ul>
   <div class="nav-actions" id="navActions">
-    <a href="login.html" class="btn-outline">Log in</a>
-    <a href="signup.html" class="btn-primary">Get Started</a>
+    <a href="/login" class="btn-outline">Log in</a>
+    <a href="/signup" class="btn-primary">Get Started</a>
   </div>
 </nav>
 
@@ -291,7 +291,7 @@
   // Check session
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
   if (!session) {
-    window.location.href = 'login.html';
+    window.location.href = '/login';
     return;
   }
 
@@ -299,12 +299,12 @@
   var navActions = document.getElementById('navActions');
   navActions.innerHTML =
     '<span style="color:var(--text-light);font-size:0.85rem;opacity:0.8;">Hi, ' + session.name.split(' ')[0] + '</span>' +
-    '<button class="btn-outline" onclick="localStorage.removeItem(\'nri_session\');location.href=\'login.html\';">Log out</button>';
+    '<button class="btn-outline" onclick="localStorage.removeItem(\'nri_session\');location.href=\'/login\';">Log out</button>';
 
   // Load order data
   var order = JSON.parse(localStorage.getItem('nri_order') || '[]');
   if (!order.length) {
-    window.location.href = 'onboarding.html';
+    window.location.href = '/onboarding';
     return;
   }
 
@@ -483,7 +483,7 @@
             AMOUNT: totalDue,
             PLAN_NAME: invItems[0].description.split(' (')[0],
             DATE: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
-            INVOICE_URL: window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'dashboard.html'
+            INVOICE_URL: window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + '/dashboard'
           }
         })
       }).catch(err => console.warn('Payment email trigger failed:', err));

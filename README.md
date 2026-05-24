@@ -70,8 +70,7 @@ docker run -p 80:80 nri-bridge
 
 ```
 /workspace/project/jeffy-jeff
-├── propnri-saas-site.html    # Main landing page
-├── index.html                # Redirect router
+├── index.html                # Main landing page (served at /)
 ├── login.html                # User login
 ├── signup.html               # User registration
 ├── dashboard.html            # User dashboard

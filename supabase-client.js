@@ -59,9 +59,9 @@ window.getUserRole = function() {
 };
 
 window.homePathForRole = function(role) {
-  if (role === 'admin') return 'admin.html';
-  if (role && role.indexOf('employee-') === 0) return 'employee.html';
-  return 'dashboard.html';
+  if (role === 'admin') return '/admin';
+  if (role && role.indexOf('employee-') === 0) return '/employee';
+  return '/dashboard';
 };
 
 // Sync Supabase Auth state with existing UI logic
@@ -115,9 +115,9 @@ window.supabaseClient.auth.onAuthStateChange((event, session) => {
 
       // Check if this is a login missing phone or country (e.g. from Google OAuth).
       // Employees have their own onboarding flow — skip the complete-profile redirect.
-      const currentPath = window.location.pathname.split('/').pop() || '';
-      if (!isEmployee && (!meta.phone || !meta.country) && currentPath !== 'complete-profile.html' && currentPath !== 'employee-signup.html' && currentPath !== 'employee.html') {
-          window.location.href = 'complete-profile.html' + window.location.search;
+      const currentPath = (window.location.pathname.split('/').pop() || '').replace(/\.html$/, '');
+      if (!isEmployee && (!meta.phone || !meta.country) && currentPath !== 'complete-profile' && currentPath !== 'employee-signup' && currentPath !== 'employee') {
+          window.location.href = '/complete-profile' + window.location.search;
           return;
       }
 
