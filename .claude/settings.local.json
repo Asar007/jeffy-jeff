@@ -11,7 +11,32 @@
       "Bash(where wkhtmltopdf *)",
       "Bash(where pandoc *)",
       "Bash(where python *)",
-      "PowerShell(Test-Path *)"
+      "PowerShell(Test-Path *)",
+      "WebFetch(domain:rocket-ship-plum.vercel.app)",
+      "WebFetch(domain:www.journalowl.in)",
+      "Bash(python \"C:\\\\Users\\\\Arfan\\\\.claude\\\\plugins\\\\cache\\\\agricidaniel-seo\\\\claude-seo\\\\1.9.9\\\\scripts\\\\google_report.py\" --help)",
+      "Bash(git add *)",
+      "Bash(git push *)",
+      "Bash(node -c admin.js)",
+      "Bash(gh pr *)",
+      "PowerShell(gh pr list --head feat/ui-independent-scrolling --state all --json number,title,state,baseRefName,url)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(git cherry-pick *)",
+      "Bash(Select-String -Pattern \"^@@|^\\\\+.*function |^\\\\+.*<!--|^\\\\+.*//.*\")",
+      "Bash(Select-Object -First 60)",
+      "PowerShell(git diff admin.js | Where-Object { $_ -match \"^\\\\+\" -and $_ -match \"\\(function |async |=>|// \\)\" } | Select-Object -First 40)",
+      "Bash(gh repo *)",
+      "PowerShell(Write-Output \"---commit ahead of origin/master---\"; git log origin/master..HEAD --oneline; Write-Output \"---files changed---\"; git diff origin/master..HEAD --stat; Write-Output \"---token env?---\"; if \\($env:GH_TOKEN\\) { \"GH_TOKEN set\" } elseif \\($env:GITHUB_TOKEN\\) { \"GITHUB_TOKEN set\" } else { \"no token env var\" })",
+      "Bash(grep -vE \"nri-dialog\\\\.js|nriAlert|nriConfirm|nriPrompt|seo-audit-|google_apps_script|\\\\.confirm|//\")",
+      "Bash(node *)",
+      "Bash(awk 'NR>=3050 && NR<=3160' admin.js)",
+      "Bash(gh auth *)",
+      "Bash(git revert *)",
+      "Bash(git mv *)",
+      "Bash(grep -iv \"html5\\\\|html2pdf\\\\|application/json\\\\|text/html\\\\|//.*\\\\.html\\\\|/\\\\*.*\\\\.html\\\\|charset\")",
+      "Bash(git diff *)",
+      "Bash(git *)"
     ]
   }
 }

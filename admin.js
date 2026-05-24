@@ -69,12 +69,12 @@
     sb.auth.getSession().then(function(result) {
       var s = result.data && result.data.session;
       if (!s || !s.user) {
-        window.location.href = 'login.html';
+        window.location.href = '/login';
         return;
       }
       var meta = s.user.app_metadata || {};
       if (meta.role !== 'admin') {
-        window.location.href = 'login.html';
+        window.location.href = '/login';
         return;
       }
       loadDashboard();
@@ -1608,7 +1608,7 @@
                   TASK_TITLE: t.service || 'Service Update',
                   TASK_DESC: t.description || '',
                   COMMENT: note || '',
-                  DASHBOARD_URL: window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'dashboard.html'
+                  DASHBOARD_URL: window.location.origin + '/dashboard'
                 }
               }
             });

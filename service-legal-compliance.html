@@ -80,8 +80,8 @@
 <script src="nav.js"></script>
 <div class="breadcrumb-container">
     <ul class="breadcrumbs">
-        <li><a href="propnri-saas-site.html">Home</a></li>
-        <li><a href="legal-documentation.html">Legal & Documentation</a></li>
+        <li><a href="/">Home</a></li>
+        <li><a href="/legal-documentation">Legal & Documentation</a></li>
         <li>Legal & Compliance Management</li>
     </ul>
 </div>
@@ -218,7 +218,7 @@
   <p>Let our expert legal team handle the complexities of Indian property law so you never have to worry.</p>
   <div class="cta-btns">
     <a href="#" class="btn-hero" onclick="handlePlanClick(event,'platinum')">Get Started Today</a>
-    <a href="propnri-saas-site.html#pricing" class="btn-ghost">View All Plans →</a>
+    <a href="/#pricing" class="btn-ghost">View All Plans →</a>
   </div>
 </section>
 
@@ -246,9 +246,9 @@
     e.preventDefault();
     var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
     if (session) {
-      window.location.href = 'onboarding.html?plan=' + plan;
+      window.location.href = '/onboarding?plan=' + plan;
     } else {
-      window.location.href = 'signup.html?plan=' + plan;
+      window.location.href = '/signup?plan=' + plan;
     }
   }
 

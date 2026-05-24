@@ -83,7 +83,7 @@
 
       <!-- Footer link -->
       <div class="auth-footer">
-        Don't have an account? <a href="signup.html">Sign up</a>
+        Don't have an account? <a href="/signup">Sign up</a>
       </div>
 
     </div>
@@ -198,19 +198,19 @@
       rolePromise.then(function(role) {
         setTimeout(function() {
           if (planParam) {
-            window.location.href = 'onboarding.html?plan=' + planParam;
+            window.location.href = '/onboarding?plan=' + planParam;
             return;
           }
           if (requestId) {
-            window.location.href = 'dashboard.html?request_id=' + requestId;
+            window.location.href = '/dashboard?request_id=' + requestId;
             return;
           }
           if (role === 'admin') {
-            window.location.href = 'admin.html';
+            window.location.href = '/admin';
           } else if (role && role.indexOf('employee-') === 0) {
-            window.location.href = 'employee.html';
+            window.location.href = '/employee';
           } else {
-            window.location.href = 'propnri-saas-site.html';
+            window.location.href = '/';
           }
         }, 1500);
       });
@@ -231,7 +231,7 @@
     document.getElementById('googleBtn').addEventListener('click', async function() {
       let basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
       if (!basePath.endsWith('/')) basePath += '/';
-      const redirectPath = window.location.origin + basePath + 'propnri-saas-site.html';
+      const redirectPath = window.location.origin + '/';
       
       const { error } = await supabaseClient.auth.signInWithOAuth({ 
         provider: 'google',

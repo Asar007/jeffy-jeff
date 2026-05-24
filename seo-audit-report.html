@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SEO Audit — nribridgeindia.com</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: #1f2933;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    margin: 0;
+  }
+  h1 {
+    font-size: 22pt;
+    color: #4a6a2e;
+    margin: 0 0 4pt;
+    letter-spacing: -0.3pt;
+  }
+  h2 {
+    font-size: 14pt;
+    color: #3d3f2e;
+    border-bottom: 2pt solid #4a6a2e;
+    padding-bottom: 4pt;
+    margin: 18pt 0 10pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11.5pt;
+    color: #1f2933;
+    margin: 12pt 0 4pt;
+    page-break-after: avoid;
+  }
+  .meta {
+    color: #5a6470;
+    font-size: 9.5pt;
+    margin-bottom: 14pt;
+  }
+  .score-card {
+    background: linear-gradient(135deg, #4a6a2e 0%, #5d8239 100%);
+    color: #fff;
+    padding: 16pt 18pt;
+    border-radius: 6pt;
+    margin: 10pt 0 14pt;
+  }
+  .score-card .big {
+    font-size: 36pt;
+    font-weight: 700;
+    line-height: 1;
+    display: block;
+  }
+  .score-card .label {
+    font-size: 10pt;
+    opacity: 0.9;
+    margin-top: 4pt;
+  }
+  .score-card .verdict {
+    font-size: 11pt;
+    margin-top: 6pt;
+    font-style: italic;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8pt 0 12pt;
+    font-size: 9.8pt;
+  }
+  th {
+    background: #f2efe5;
+    color: #3d3f2e;
+    text-align: left;
+    padding: 6pt 8pt;
+    font-weight: 600;
+    border-bottom: 1.5pt solid #4a6a2e;
+  }
+  td {
+    padding: 5pt 8pt;
+    border-bottom: 1px solid #e3e3dd;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafaf6; }
+  .priority {
+    display: inline-block;
+    padding: 1.5pt 7pt;
+    border-radius: 10pt;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.3pt;
+    color: #fff;
+    margin-right: 6pt;
+    vertical-align: middle;
+  }
+  .p-critical { background: #c62828; }
+  .p-high { background: #ef6c00; }
+  .p-medium { background: #f9a825; color: #3d3f2e; }
+  .p-low { background: #7cb342; }
+  .p-good { background: #2e7d32; }
+  .issue {
+    margin: 10pt 0;
+    padding: 10pt 12pt;
+    border-left: 3pt solid #ccc;
+    background: #fafaf6;
+    border-radius: 0 4pt 4pt 0;
+    page-break-inside: avoid;
+  }
+  .issue.critical { border-color: #c62828; background: #fdecec; }
+  .issue.high { border-color: #ef6c00; background: #fff4e6; }
+  .issue.medium { border-color: #f9a825; background: #fffaeb; }
+  .issue.low { border-color: #7cb342; background: #f4faec; }
+  .issue h4 {
+    margin: 0 0 4pt;
+    font-size: 10.5pt;
+    color: #1f2933;
+  }
+  .issue p { margin: 4pt 0; }
+  .fix {
+    font-size: 9.5pt;
+    color: #2e3a47;
+  }
+  .fix strong { color: #4a6a2e; }
+  ul, ol { margin: 6pt 0 6pt 18pt; padding: 0; }
+  li { margin-bottom: 3pt; }
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #ecebe2;
+    padding: 1pt 4pt;
+    border-radius: 3pt;
+    font-size: 9pt;
+  }
+  .section-cover {
+    page-break-after: always;
+    text-align: left;
+    padding-top: 30pt;
+  }
+  .week {
+    background: #f2efe5;
+    padding: 10pt 14pt;
+    margin: 8pt 0;
+    border-radius: 4pt;
+    page-break-inside: avoid;
+  }
+  .week h3 { margin-top: 0; color: #4a6a2e; }
+  .good-list li { color: #2e7d32; }
+  .footer-strip {
+    margin-top: 24pt;
+    padding-top: 10pt;
+    border-top: 1pt solid #d4d2c5;
+    font-size: 8.5pt;
+    color: #5a6470;
+    text-align: center;
+  }
+  .keep-together { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<div class="section-cover">
+  <h1>SEO Audit Report</h1>
+  <div class="meta">
+    <strong>Site:</strong> https://nribridgeindia.com/ &nbsp;·&nbsp;
+    <strong>Date:</strong> 2026-05-19 &nbsp;·&nbsp;
+    <strong>Business type:</strong> Hybrid Service-Area Business + SaaS &nbsp;·&nbsp;
+    <strong>Operating cities:</strong> Chennai, Coimbatore, Kanyakumari
+  </div>
+
+  <div class="score-card">
+    <span class="big">44 / 100</span>
+    <div class="label">SEO Health Score &nbsp;·&nbsp; weighted composite of 7 categories</div>
+    <div class="verdict">Verdict: Poor — significant work required before this site can compete in organic search.</div>
+  </div>
+
+  <h2>Score Breakdown by Category</h2>
+  <table>
+    <thead><tr><th>Category</th><th>Weight</th><th>Score</th><th>Weighted</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Technical SEO</td><td>22%</td><td>55 / 100</td><td>12.1</td><td><span class="priority p-medium">Mixed</span></td></tr>
+      <tr><td>Content Quality (E-E-A-T)</td><td>23%</td><td>35 / 100</td><td>8.0</td><td><span class="priority p-critical">Poor</span></td></tr>
+      <tr><td>On-Page SEO</td><td>20%</td><td>50 / 100</td><td>10.0</td><td><span class="priority p-medium">Mixed</span></td></tr>
+      <tr><td>Schema / Structured Data</td><td>10%</td><td>45 / 100</td><td>4.5</td><td><span class="priority p-high">Weak</span></td></tr>
+      <tr><td>Performance (CWV)</td><td>10%</td><td>50 / 100</td><td>5.0</td><td><span class="priority p-medium">Mixed</span></td></tr>
+      <tr><td>AI Search Readiness (GEO)</td><td>10%</td><td>41 / 100</td><td>4.1</td><td><span class="priority p-high">Weak</span></td></tr>
+      <tr><td>Images</td><td>5%</td><td>25 / 100</td><td>1.3</td><td><span class="priority p-critical">Poor</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Cross-cutting sub-score</h3>
+  <p><strong>Local SEO: 18 / 100</strong> — the single weakest area. This is a local service business with no published NAP, no Google Business Profile signals, and no city landing pages. Local fixes are the highest-leverage area on the entire site.</p>
+</div>
+
+<!-- ============== CRITICAL ============== -->
+<h2>Critical Issues — Fix Immediately</h2>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 1</span>Zero NAP data anywhere on the site</h4>
+  <p>No phone, address, or email is present in the footer, contact page, or schema. The footer states only "Registered in India" with no CIN, GST number, or legal name. For a local service business handling YMYL categories (elder care + legal/financial), this is fatal — it blocks GBP verification, citations, trust signals, and schema validity.</p>
+  <p class="fix"><strong>Fix:</strong> Publish phone + registered office address in the footer, the contact page, and the <code>ProfessionalService</code> schema today. Even a service-area business benefits from a disclosed city of registration.</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 2</span>Placeholder WhatsApp number on quote-builder.html</h4>
+  <p>Line 466 of <code>quote-builder.html</code> contains <code>https://wa.me/91XXXXXXXXXX</code> — a literal placeholder. Any user who taps "WhatsApp Us" gets a broken link. On a YMYL service site, a broken contact path is a hard trust failure.</p>
+  <p class="fix"><strong>Fix:</strong> Replace <code>91XXXXXXXXXX</code> with the real business WhatsApp number before any further marketing activity.</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 3</span>Unverifiable testimonials and unsourced statistics</h4>
+  <p>Six 5-star testimonials use generic Name / Job / City with initials-only avatars and no platform links. Homepage statistics (62%, 78%, 53%, "₹3.2 L average loss", "4 in 10 vehicles") have no source citations. Under the September 2025 Google Quality Rater Guidelines, specific-looking numbers without traceable sources read as fabricated authority, particularly on YMYL pages.</p>
+  <p class="fix"><strong>Fix:</strong> Link each testimonial to a public review source (GBP, Trustpilot). Source every statistic to a named report (ANAROCK NRI survey, RBI, etc.) — or rewrite them as softer experiential claims ("NRIs we work with consistently report…").</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 4</span>No author / founder / expert attribution on YMYL pages</h4>
+  <p>The Emergency Response and legal service pages promise 5-minute ambulance dispatch, Power of Attorney execution, tax filing, and court monitoring with no named professional behind any of it. The footer "About Us" link is <code>href="#"</code> and no <code>about.html</code> exists in the repository. The September 2025 QRG explicitly requires YMYL content to demonstrate who is accountable.</p>
+  <p class="fix"><strong>Fix:</strong> Build <code>about.html</code> with named founders, photos, and credentials. Add a visible "Service led by [Name], licensed advocate/CA/doctor, registration number] block on each YMYL service page.</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 5</span>signup.html and quote-builder.html are indexable</h4>
+  <p>Both appear in <code>sitemap.xml</code> (lines 36–37) and neither carries a <code>noindex,nofollow</code> meta tag. Google will index a bare signup wall and a placeholder-laden quote form — neither has organic search value.</p>
+  <p class="fix"><strong>Fix:</strong> Add <code>&lt;meta name="robots" content="noindex,nofollow"&gt;</code> to both pages, add <code>Disallow:</code> entries in robots.txt, and remove both URLs from sitemap.xml.</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 6</span>POA page is structurally unrankable for its target query</h4>
+  <p>The page is ~425 words. The dominant SERP format for "power of attorney NRI India" is informational guides of 1,500–3,000 words with step-by-step process, country-specific (UK/USA/UAE) apostille-vs-notarisation guidance, and FAQ schema. The current page leads with pricing on an information-dominant query — a structural mismatch Google will not feature.</p>
+  <p class="fix"><strong>Fix:</strong> Expand to 1,500+ words. Lead with process content. Move pricing below the fold. Add <code>FAQPage</code> schema with at least 6 questions.</p>
+</div>
+
+<!-- ============== HIGH ============== -->
+<h2>High-Priority Issues</h2>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 7</span>Render-blocking Google Fonts on every page</h4>
+  <p>Line 21 of every page is a synchronous <code>&lt;link rel="stylesheet"&gt;</code> to Google Fonts. This blocks the first paint until the browser fetches the font CSS from <code>fonts.googleapis.com</code>. Estimated impact: <strong>+300–800ms LCP penalty</strong> for users in Asia, Middle East, and the Americas.</p>
+  <p class="fix"><strong>Fix:</strong> Replace with the <code>preload</code> + <code>media="print" onload="this.media='all'"</code> non-blocking pattern across all 45 pages. Highest-ROI performance change available.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 8</span>LCP element is an unoptimized PNG with no dimensions</h4>
+  <p>The hero logo <code>NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png</code> is the LCP candidate on every page. It is PNG (no WebP/AVIF), has no <code>width</code>/<code>height</code> attributes, no <code>fetchpriority="high"</code>, and no <code>&lt;link rel="preload"&gt;</code>. The JS-injected nav loads the same image at 80px with no dimensions, causing CLS.</p>
+  <p class="fix"><strong>Fix:</strong> Convert to WebP (50–70% size reduction). Add explicit <code>width</code>/<code>height</code>, <code>fetchpriority="high"</code>, and a preload hint in <code>&lt;head&gt;</code>. Set dimensions on the nav logo inside <code>nav.js</code>.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 9</span>Schema is under-specified across the site</h4>
+  <p>The homepage <code>ProfessionalService</code> node lacks <code>telephone</code>, <code>address</code>, <code>geo</code>, city-level <code>areaServed</code>, <code>aggregateRating</code>, and <code>sameAs</code>. No <code>BreadcrumbList</code> JSON-LD on any service page despite visible HTML breadcrumbs. <code>contact.html</code> and <code>quote-builder.html</code> have no schema at all.</p>
+  <p class="fix"><strong>Fix:</strong> Deploy enriched <code>LocalBusiness</code>/<code>ProfessionalService</code> schema with three city-level <code>areaServed</code> entries (Chennai, Coimbatore, Kanyakumari) and full NAP. Add <code>BreadcrumbList</code> JSON-LD on all 26 service pages. Add <code>AggregateRating</code> to homepage once real reviews exist.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 10</span>Plan-tier naming inconsistency</h4>
+  <p><code>service-rent-collection.html</code> references Bronze / Silver / Platinum tiers; the homepage pricing section uses Starter / Standard / Premium. This is a visible contradiction for any user navigating between pages.</p>
+  <p class="fix"><strong>Fix:</strong> Standardise tier names sitewide to Starter / Standard / Premium.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 11</span>Service pages are thin for YMYL category</h4>
+  <p><code>service-rent-collection.html</code> ~280–300 words. <code>service-emergency-response.html</code> ~260 words. Both handle financial and elder-care medical topics respectively. The rent collection page does not cover NRO/NRE account tax implications, FEMA, or TDS obligations on rental income. The emergency page does not list networked hospitals, caretaker ratios, or response-team qualifications.</p>
+  <p class="fix"><strong>Fix:</strong> Expand each service page to at least 900 words. Add a "What to expect" narrative, a real scenario walkthrough, and a 5-question FAQ.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 12</span>Three Google Business Profiles are missing</h4>
+  <p>The business operates in Chennai, Coimbatore, and Kanyakumari. There are zero GBP signals on the site (no Maps embed, no Place ID, no review widget, no GBP badge). For a 3-city operation, three separate GBP listings are required.</p>
+  <p class="fix"><strong>Fix:</strong> Create and verify three GBP listings with city-specific primary categories ("Property Management Company" or "Home Health Care Service" as appropriate). Wrong category is the #1 negative local ranking factor.</p>
+</div>
+
+<!-- ============== MEDIUM ============== -->
+<h2>Medium-Priority Issues</h2>
+
+<table>
+  <thead><tr><th>Issue</th><th>Evidence</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Sitemap uses deprecated <code>&lt;priority&gt;</code> + <code>&lt;changefreq&gt;</code></td>
+      <td>All 37 URLs. Google has ignored both since 2023.</td>
+      <td>Strip both fields. Keep only <code>&lt;loc&gt;</code> and <code>&lt;lastmod&gt;</code>.</td>
+    </tr>
+    <tr>
+      <td>All sitemap <code>lastmod</code> values identical (2026-05-16)</td>
+      <td>Google treats uniform <code>lastmod</code> as unreliable and discounts the sitemap's freshness signal.</td>
+      <td>Replace with real per-file modification timestamps.</td>
+    </tr>
+    <tr>
+      <td>No <code>llms.txt</code></td>
+      <td>Highest-leverage GEO gap. AI crawlers must infer site identity cold.</td>
+      <td>Publish <code>/llms.txt</code> with site description, canonical URLs with one-line descriptions, contact URL, license declaration. 30 min effort.</td>
+    </tr>
+    <tr>
+      <td>No city landing pages</td>
+      <td>Footer "Cities We Cover" is <code>href="#"</code>. No <code>*chennai*</code> / <code>*coimbatore*</code> files exist.</td>
+      <td>Build <strong>three</strong> substantive city pages with local team bios, city testimonials, regulatory notes. <strong>Do not</strong> generate templated thin city pages — that is a doorway-page violation.</td>
+    </tr>
+    <tr>
+      <td>Duplicate OG descriptions on inner pages</td>
+      <td><code>service-rent-collection.html</code>, <code>quote-builder.html</code>, <code>contact.html</code> all share the homepage OG description.</td>
+      <td>Write unique 150–160 char OG + meta descriptions per page.</td>
+    </tr>
+    <tr>
+      <td>Supabase JS SDK loads on marketing pages</td>
+      <td>~120KB gzipped, blocks parse on pure marketing pages that need no auth state.</td>
+      <td><code>defer</code> the SDK on non-app pages, or conditionally load only on auth pages.</td>
+    </tr>
+    <tr>
+      <td>No custom nginx config detected</td>
+      <td><code>Dockerfile</code> is bare <code>nginx:alpine</code>. Recent commit messages claim caching but no <code>nginx.conf</code> exists in the repo.</td>
+      <td>Add nginx config with HSTS, <code>X-Content-Type-Options</code>, <code>Referrer-Policy</code>, and explicit <code>Cache-Control</code> for static assets (1y immutable) + HTML (1h).</td>
+    </tr>
+    <tr>
+      <td>Missing <code>AggregateRating</code> schema</td>
+      <td>Six named testimonials on homepage but no review schema.</td>
+      <td>If testimonials are genuine, add <code>AggregateRating</code> to <code>ProfessionalService</code> — highest-CTR rich result available for service businesses.</td>
+    </tr>
+    <tr>
+      <td>No freshness signals on YMYL pages</td>
+      <td>No <code>datePublished</code> or <code>dateModified</code> on legal/financial/medical pages.</td>
+      <td>Add visible "Last updated [Date]" lines + <code>dateModified</code> in schema across all service pages.</td>
+    </tr>
+    <tr>
+      <td>No <code>FAQPage</code> schema on any page</td>
+      <td>Largest missed source of PAA (People Also Ask) box capture.</td>
+      <td>Add 5-question FAQ + <code>FAQPage</code> JSON-LD on every service page.</td>
+    </tr>
+    <tr>
+      <td>SVG <code>feTurbulence</code> filter as <code>position:fixed</code> overlay</td>
+      <td><code>shared.css</code> applies this to every page; recomposites on every scroll frame, hurting mobile INP.</td>
+      <td>Convert to a static PNG/WebP texture or remove.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============== LOW ============== -->
+<h2>Low-Priority Issues</h2>
+
+<ul>
+  <li><strong>Homepage H1 has zero keywords.</strong> "We bridge the distance, you feel the difference" is brand copy. Suggested rewrite: <em>"Complete Property, Vehicle, Parental Care &amp; Legal Management for NRIs — Chennai, Coimbatore &amp; Kanyakumari."</em></li>
+  <li><strong>Contact page hero is grammatically broken:</strong> "Our NRI Bridge India support team would get back to you." Rewrite as a complete sentence.</li>
+  <li><strong>Conflicting trust claims:</strong> homepage says "Trusted by 1,000+ NRIs" in the hero and "Trusted by hundreds of NRI property owners" in the value-card section. Reconcile.</li>
+  <li><strong>No currency toggle.</strong> Pricing is ₹-only. Most of the target audience thinks in USD, GBP, or AED — add a secondary display.</li>
+  <li><strong>Hero <code>h1</code> opacity-0 + animation-delay risks FOUT</strong> with Playfair Display swap. Consider <code>font-display: optional</code> for headings or a metric override.</li>
+  <li><strong>robots.txt lacks named AI crawler rules.</strong> Add explicit <code>Allow</code> blocks for GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended to signal intentional AI search participation.</li>
+</ul>
+
+<!-- ============== 30-DAY PLAN ============== -->
+<h2>30-Day Action Plan</h2>
+
+<div class="week">
+  <h3>Week 1 — Trust &amp; blockers</h3>
+  <ol>
+    <li>Publish phone + address in footer, contact page, and <code>ProfessionalService</code> schema.</li>
+    <li>Replace the WhatsApp placeholder number on <code>quote-builder.html</code>.</li>
+    <li>Add <code>noindex,nofollow</code> to <code>signup.html</code> + <code>quote-builder.html</code>; remove both from sitemap.</li>
+    <li>Build <code>about.html</code> with named founders + photos. Wire footer link.</li>
+    <li>Source or rewrite every unattributed homepage statistic.</li>
+  </ol>
+</div>
+
+<div class="week">
+  <h3>Week 2 — Performance &amp; schema</h3>
+  <ol start="6">
+    <li>Deploy the non-blocking Google Fonts pattern across all 45 pages.</li>
+    <li>Convert logo to WebP; add <code>width</code>/<code>height</code>, <code>fetchpriority="high"</code>, and preload hint in head.</li>
+    <li><code>defer</code> the Supabase SDK on marketing pages.</li>
+    <li>Deploy enriched LocalBusiness schema (city-level <code>areaServed</code>, telephone, address, geo) on the homepage.</li>
+    <li>Add <code>BreadcrumbList</code> JSON-LD on every service page (26 pages).</li>
+    <li>Add nginx config with security headers and explicit caching directives.</li>
+  </ol>
+</div>
+
+<div class="week">
+  <h3>Week 3 — Content depth (top 5 pages first)</h3>
+  <ol start="12">
+    <li>Expand to 900+ words with 5-question FAQ + <code>FAQPage</code> schema on: POA, rent-collection, emergency-response, doctor-appointment, companion-caretaker.</li>
+    <li>Standardise plan-tier naming sitewide to Starter / Standard / Premium.</li>
+    <li>Add expert attribution + <code>dateModified</code> on every YMYL page.</li>
+    <li>Rewrite first 60 words of each H2 section as a self-contained, entity-rich answer passage (improves AI citation).</li>
+  </ol>
+</div>
+
+<div class="week">
+  <h3>Week 4 — Local + GEO foundations</h3>
+  <ol start="16">
+    <li>Create and verify three Google Business Profiles (Chennai, Coimbatore, Kanyakumari).</li>
+    <li>Build three differentiated city landing pages — local team bios, city testimonials, regulatory notes.</li>
+    <li>Publish <code>/llms.txt</code>.</li>
+    <li>Strip deprecated tags from sitemap; replace identical <code>lastmod</code> values with real per-file dates.</li>
+    <li>Build citations on Justdial, Sulekha, IndiaMART; link via <code>sameAs</code> in <code>Organization</code> schema.</li>
+  </ol>
+</div>
+
+<!-- ============== STRENGTHS ============== -->
+<h2>What's Already Good</h2>
+<ul class="good-list">
+  <li><strong>robots.txt</strong> correctly disallows all private application pages and references the sitemap.</li>
+  <li>All private portals (admin, dashboard, employee, payment, login, etc.) carry <code>noindex,nofollow</code> — defence in depth done right.</li>
+  <li>Canonical, Open Graph, and Twitter card tags are present on inner pages.</li>
+  <li>Homepage schema <code>@graph</code> structure is well-formed (just under-specified).</li>
+  <li>HTTPS, viewport meta, <code>lang="en"</code> all correctly set.</li>
+  <li>Sitemap covers all 26 service pages and 4 category hubs — no missing public content.</li>
+</ul>
+
+<!-- ============== LIMITATIONS ============== -->
+<h2>Audit Limitations</h2>
+<p>The following could not be measured without paid tools or manual verification:</p>
+<ul>
+  <li>Live CrUX / PageSpeed Insights field data (no Google API credentials configured). Performance findings are derived from static source analysis.</li>
+  <li>Live SERP rank tracking and competitor backlink data (no DataForSEO extension installed).</li>
+  <li>Actual Google Business Profile existence, citation presence on Justdial / Sulekha / IndiaMART, and review velocity (require manual platform search or BrightLocal / Whitespark).</li>
+  <li>Real-world INP and CLS measurements (require RUM data from production traffic).</li>
+</ul>
+<p>To unlock these, run <code>/seo google setup</code> or install the DataForSEO extension, then re-audit.</p>
+
+<div class="footer-strip">
+  Built by agricidaniel — Join the AI Marketing Hub community<br>
+  Free → https://www.skool.com/ai-marketing-hub &nbsp;·&nbsp; Pro → https://www.skool.com/ai-marketing-hub-pro
+</div>
+
+</body>
+</html>

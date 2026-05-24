@@ -35,7 +35,7 @@
   var mainEl = document.getElementById('empMain');
   var session = JSON.parse(localStorage.getItem('nri_session') || 'null');
   if (!session || !session.email) {
-    window.location.href = 'login.html';
+    window.location.href = '/login';
     return;
   }
 
@@ -126,7 +126,7 @@
     sb.auth.signOut().then(function() {
       localStorage.removeItem('nri_session');
       sessionStorage.removeItem('nri_role');
-      window.location.href = 'login.html';
+      window.location.href = '/login';
     });
   }
 

@@ -311,7 +311,7 @@
 (function(){
   'use strict';
   var session = JSON.parse(localStorage.getItem('nri_session')||'null');
-  if(!session){window.location.href='login.html';return}
+  if(!session){window.location.href='/login';return}
   document.getElementById('welcomeHeading').textContent='Welcome, '+session.name.split(' ')[0]+'!';
 
   // State

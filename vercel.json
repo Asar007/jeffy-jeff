@@ -12,10 +12,8 @@
       "has": [{ "type": "query", "key": "access_token" }],
       "destination": "/auth-callback"
     },
-    { "source": "/index.html", "destination": "/", "permanent": true }
-  ],
-  "rewrites": [
-    { "source": "/", "destination": "/propnri-saas-site" }
+    { "source": "/propnri-saas-site.html", "destination": "/", "permanent": true },
+    { "source": "/propnri-saas-site", "destination": "/", "permanent": true }
   ],
   "headers": [
     {

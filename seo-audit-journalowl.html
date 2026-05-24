@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SEO Audit — Journal Owl (journalowl.in)</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: #1f2933;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    margin: 0;
+  }
+  h1 {
+    font-size: 22pt;
+    color: #4a6a2e;
+    margin: 0 0 4pt;
+    letter-spacing: -0.3pt;
+  }
+  h2 {
+    font-size: 14pt;
+    color: #3d3f2e;
+    border-bottom: 2pt solid #4a6a2e;
+    padding-bottom: 4pt;
+    margin: 18pt 0 10pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11.5pt;
+    color: #1f2933;
+    margin: 12pt 0 4pt;
+    page-break-after: avoid;
+  }
+  .meta { color: #5a6470; font-size: 9.5pt; margin-bottom: 14pt; }
+  .score-card {
+    background: linear-gradient(135deg, #ef6c00 0%, #f57c00 100%);
+    color: #fff;
+    padding: 16pt 18pt;
+    border-radius: 6pt;
+    margin: 10pt 0 14pt;
+  }
+  .score-card .big { font-size: 36pt; font-weight: 700; line-height: 1; display: block; }
+  .score-card .label { font-size: 10pt; opacity: 0.9; margin-top: 4pt; }
+  .score-card .verdict { font-size: 11pt; margin-top: 6pt; font-style: italic; }
+  .headline-callout {
+    background: #fff4e6;
+    border-left: 4pt solid #ef6c00;
+    padding: 10pt 14pt;
+    border-radius: 0 4pt 4pt 0;
+    margin: 12pt 0;
+    font-size: 10.5pt;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 8pt 0 12pt; font-size: 9.8pt; }
+  th { background: #f2efe5; color: #3d3f2e; text-align: left; padding: 6pt 8pt; font-weight: 600; border-bottom: 1.5pt solid #4a6a2e; }
+  td { padding: 5pt 8pt; border-bottom: 1px solid #e3e3dd; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafaf6; }
+  .priority { display: inline-block; padding: 1.5pt 7pt; border-radius: 10pt; font-size: 8.5pt; font-weight: 700; letter-spacing: 0.3pt; color: #fff; margin-right: 6pt; vertical-align: middle; }
+  .p-critical { background: #c62828; }
+  .p-high { background: #ef6c00; }
+  .p-medium { background: #f9a825; color: #3d3f2e; }
+  .p-low { background: #7cb342; }
+  .p-good { background: #2e7d32; }
+  .issue {
+    margin: 10pt 0;
+    padding: 10pt 12pt;
+    border-left: 3pt solid #ccc;
+    background: #fafaf6;
+    border-radius: 0 4pt 4pt 0;
+    page-break-inside: avoid;
+  }
+  .issue.critical { border-color: #c62828; background: #fdecec; }
+  .issue.high { border-color: #ef6c00; background: #fff4e6; }
+  .issue.medium { border-color: #f9a825; background: #fffaeb; }
+  .issue.low { border-color: #7cb342; background: #f4faec; }
+  .issue h4 { margin: 0 0 4pt; font-size: 10.5pt; color: #1f2933; }
+  .issue p { margin: 4pt 0; }
+  .fix { font-size: 9.5pt; color: #2e3a47; }
+  .fix strong { color: #4a6a2e; }
+  ul, ol { margin: 6pt 0 6pt 18pt; padding: 0; }
+  li { margin-bottom: 3pt; }
+  code { font-family: 'Consolas', 'Courier New', monospace; background: #ecebe2; padding: 1pt 4pt; border-radius: 3pt; font-size: 9pt; }
+  pre {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #2e3a47;
+    color: #e5e7eb;
+    padding: 8pt 10pt;
+    border-radius: 4pt;
+    font-size: 8.5pt;
+    line-height: 1.4;
+    overflow-x: auto;
+    margin: 6pt 0;
+    page-break-inside: avoid;
+  }
+  pre code { background: transparent; padding: 0; color: inherit; }
+  .section-cover { page-break-after: always; padding-top: 30pt; }
+  .week { background: #f2efe5; padding: 10pt 14pt; margin: 8pt 0; border-radius: 4pt; page-break-inside: avoid; }
+  .week h3 { margin-top: 0; color: #4a6a2e; }
+  .good-list li { color: #2e7d32; }
+  .footer-strip { margin-top: 24pt; padding-top: 10pt; border-top: 1pt solid #d4d2c5; font-size: 8.5pt; color: #5a6470; text-align: center; }
+  .biz-info { background: #f2efe5; padding: 10pt 14pt; border-radius: 4pt; margin: 8pt 0 14pt; font-size: 9.8pt; }
+  .biz-info strong { color: #3d3f2e; }
+</style>
+</head>
+<body>
+
+<div class="section-cover">
+  <h1>SEO Audit Report</h1>
+  <div class="meta">
+    <strong>Site:</strong> https://www.journalowl.in/ &nbsp;·&nbsp;
+    <strong>Date:</strong> 2026-05-19 &nbsp;·&nbsp;
+    <strong>Business type:</strong> Hybrid Local Service (workshops) + E-commerce (kits, stickers)
+  </div>
+
+  <div class="biz-info">
+    <strong>Business:</strong> Journal Owl &nbsp;·&nbsp; <strong>Founded:</strong> ~2022 &nbsp;·&nbsp; <strong>Platform:</strong> Wix<br>
+    <strong>Address:</strong> 650/741 T.S.R Nagar, Thiruvottriyur, Chennai 600019 &nbsp;<em>(buried on Customer Support page only)</em><br>
+    <strong>Contact:</strong> 93424 52963 &nbsp;·&nbsp; Journalowl2022@gmail.com<br>
+    <strong>Niche:</strong> Women's art journaling community + workshops + journaling kits &amp; stickers<br>
+    <strong>Claim:</strong> 100+ workshops, 1,000+ participants (unsubstantiated on-site)
+  </div>
+
+  <div class="score-card">
+    <span class="big">36 / 100</span>
+    <div class="label">SEO Health Score &nbsp;·&nbsp; weighted composite of 7 categories</div>
+    <div class="verdict">Verdict: Poor — every conversion path is broken in some way.</div>
+  </div>
+
+  <div class="headline-callout">
+    <strong>Headline:</strong> The site is live, but every conversion path is broken. The workshops page shows <em>"No events at the moment"</em>, store URLs return 404, and the homepage H1 is <em>"Our Story"</em>. For a workshop business, this is the worst possible state — both Google and a real visitor land on dead ends.
+  </div>
+
+  <h2>Score Breakdown by Category</h2>
+  <table>
+    <thead><tr><th>Category</th><th>Weight</th><th>Score</th><th>Weighted</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Technical SEO</td><td>22%</td><td>51 / 100</td><td>11.2</td><td><span class="priority p-medium">Mixed</span></td></tr>
+      <tr><td>Content Quality (E-E-A-T)</td><td>23%</td><td>34 / 100</td><td>7.8</td><td><span class="priority p-critical">Poor</span></td></tr>
+      <tr><td>On-Page SEO</td><td>20%</td><td>30 / 100</td><td>6.0</td><td><span class="priority p-critical">Poor</span></td></tr>
+      <tr><td>Schema / Structured Data</td><td>10%</td><td>25 / 100</td><td>2.5</td><td><span class="priority p-high">Weak</span></td></tr>
+      <tr><td>Performance (CWV)</td><td>10%</td><td>40 / 100</td><td>4.0</td><td><span class="priority p-high">Weak</span></td></tr>
+      <tr><td>AI Search Readiness (GEO)</td><td>10%</td><td>29 / 100</td><td>2.9</td><td><span class="priority p-critical">Poor</span></td></tr>
+      <tr><td>Images</td><td>5%</td><td>30 / 100</td><td>1.5</td><td><span class="priority p-high">Weak</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Cross-cutting sub-score</h3>
+  <p><strong>Local SEO: 19 / 100.</strong> A real Thiruvottriyur address exists but is buried on a Customer Support page; it never appears in footer, contact page, or schema. No GBP signals anywhere. No Maps embed. No JSON-LD. For a workshop business that lives or dies on local discovery, this is the most fixable high-impact area.</p>
+</div>
+
+<!-- ============== CRITICAL ============== -->
+<h2>Critical Issues — Fix This Week</h2>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 1</span>/workshops page is empty — "No events at the moment"</h4>
+  <p>The highest-intent page on the entire site is currently a dead state. A user landing here from a Google search for "journaling workshop Chennai" sees nothing actionable, no date, no price, no booking path. Google also gets nothing indexable.</p>
+  <p class="fix"><strong>Fix:</strong> Never let this page go empty. Add a waitlist form (<em>"Notify me of the next workshop — leave your email"</em>) plus a recurring-schedule blurb (<em>"We run workshops every month — be first to know"</em>). Re-publish a confirmed next-workshop date within 7 days. Even a single live event with date + price + venue + "Reserve My Spot" CTA unblocks every other ranking opportunity.</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 2</span>Store pages return 404</h4>
+  <p>Per the SXO crawl, <code>/store</code> and <code>/store/journaling-kit</code> both return HTTP 404. The navigation advertises these products but the URLs are broken. Zero e-commerce visibility for "buy journaling kit India" or any product query.</p>
+  <p class="fix"><strong>Fix:</strong> Audit nav links → confirm Wix store URL slugs → republish; enable Wix's native Product schema in SEO settings. Verify each product page renders with title, price, image, and an Add-to-Cart button.</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 3</span>Homepage H1 is "Our Story" with ~180–200 words of body content</h4>
+  <p>Zero target keywords. 60% below the 500-word homepage content floor. Google has no signal to associate this page with "journaling workshops Chennai" or any other intent.</p>
+  <p class="fix"><strong>Fix:</strong> Change H1 to <em>"Art Journaling Workshops for Women in Chennai — Journal Owl"</em>. Move "Our Story" to an H2 below the fold. Expand body to 600–800 words covering: who the founder is, what workshops deliver emotionally, the Thiruvottriyur venue, the 100+ workshops claim with proof (dates, photos, named participants), kit descriptions, and a trust section with a therapy disclaimer.</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 4</span>Zero structured data sitewide</h4>
+  <p>No JSON-LD detected on homepage, workshops, or store pages. No <code>LocalBusiness</code>, no <code>Event</code>, no <code>Product</code>, no <code>FAQPage</code>. Wix auto-generates partial Product schema on <code>/product-page/</code> URLs but it omits <code>availability</code>, <code>itemCondition</code>, <code>sku</code>, and <code>brand</code> — blocking Google Shopping eligibility.</p>
+  <p class="fix"><strong>Fix:</strong> Via Wix → Settings → Custom Code → Head, inject <code>LocalBusiness</code> (or <code>EducationalOrganization</code>) sitewide.</p>
+  <pre><code>{
+  "@context": "https://schema.org",
+  "@type": ["LocalBusiness","EducationalOrganization"],
+  "name": "Journal Owl",
+  "url": "https://www.journalowl.in/",
+  "telephone": "+919342452963",
+  "email": "hello@journalowl.in",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "650/741 T.S.R Nagar, Thiruvottriyur",
+    "addressLocality": "Chennai",
+    "postalCode": "600019",
+    "addressRegion": "Tamil Nadu",
+    "addressCountry": "IN"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 13.16042,
+    "longitude": 80.30118
+  },
+  "sameAs": ["https://www.instagram.com/journal.owl/"]
+}</code></pre>
+  <p class="fix">Add <code>Event</code> JSON-LD on every workshop page (with <code>eventAttendanceMode</code>, <code>organizer</code>, <code>offers</code>). Enable Wix's Google Shopping integration to fix Product schema gaps and earn free Shopping listings.</p>
+</div>
+
+<div class="issue critical">
+  <h4><span class="priority p-critical">CRITICAL 5</span>No named founder, no instructor bio anywhere</h4>
+  <p>For a wellness-adjacent workshop business, the facilitator IS the product. Anonymous instruction is a direct E-E-A-T failure under the September 2025 Quality Rater Guidelines. The "100+ workshops since 2022" claim floats without a human anchor.</p>
+  <p class="fix"><strong>Fix:</strong> Add a "Meet [Name]" section with founder photo, 2–3 sentence bio, and credentials (art training, mindfulness practice, years of facilitating, any therapy or art-therapy adjacent qualifications). Repeat the bio on the workshops page.</p>
+</div>
+
+<!-- ============== HIGH ============== -->
+<h2>High-Priority Issues</h2>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 6</span>Full venue address is buried on the Customer Support page only</h4>
+  <p>The address (<code>650/741 T.S.R Nagar, Thiruvottriyur, Chennai 600019</code>) is invisible from the homepage, contact page, and footer. Local SEO for a workshop business requires NAP visibility on every page.</p>
+  <p class="fix"><strong>Fix:</strong> Surface the address in the footer (every page), the contact page, and inside the <code>LocalBusiness</code> schema.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 7</span>Zero Google Business Profile signals</h4>
+  <p>No Maps embed, no Place ID, no GBP badge, no review widget anywhere. The single biggest ranking factor for a Chennai workshop business is missing.</p>
+  <p class="fix"><strong>Fix:</strong> Claim GBP with primary category "Art School" (secondaries: "Workshop", "Stationery Store"). Upload 10+ photos of past workshops + the venue. Embed a Google Maps iframe pointing to the verified Place ID on the contact page. Apply directly to the Thiruvottriyur address.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 8</span>No meta descriptions on any page</h4>
+  <p>Google auto-generates snippets, currently surfacing "Our Story..." or the copyright line. Both kill CTR.</p>
+  <p class="fix"><strong>Fix:</strong> Via Wix SEO Tools, write unique 150–160 char meta descriptions per page:</p>
+  <ul>
+    <li><strong>Homepage:</strong> "Join Journal Owl's guided journaling and art journaling workshops in Chennai. Beginner-friendly, women-focused sessions every month. Book your spot today."</li>
+    <li><strong>/workshops:</strong> "Browse upcoming journaling workshop dates in Chennai. Art journaling, mindfulness journaling, and private group sessions. Book online."</li>
+    <li><strong>/store:</strong> "Shop journaling starter kits and sticker sets from Journal Owl, Chennai. Curated tools for beginners."</li>
+  </ul>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 9</span>Wix client-side rendering may hide content from AI crawlers</h4>
+  <p>Workshop and product descriptions delivered as JS-rendered Wix gallery/event widgets may not appear in the SSR HTML that ClaudeBot and GPTBot see. The crawled content extraction was thin across all pages — a strong indicator.</p>
+  <p class="fix"><strong>Fix:</strong> Place critical copy (workshop description, kit description, FAQ) in static Wix text blocks rather than dynamic widgets. Verify via Google Search Console → URL Inspection → View Crawled Page that body text is present in the raw HTML.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 10</span>Single weak testimonial; "1,000+ participants" + "100+ workshops" unsubstantiated</h4>
+  <p>Only one named testimonial ("Thilo") was found. The 1,000+ / 100+ counts are not anchored to dated photos, venue names, or named participants. Trust gap for a business collecting workshop bookings + e-commerce payments.</p>
+  <p class="fix"><strong>Fix:</strong> 6–8 testimonials with first name + last initial + photo + workshop attended (and date). Visible counter for the 1,000+ claim. Link Google reviews once GBP is live. Add a dated workshop gallery with venue captions.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 11</span>Wix Product schema is incomplete — blocks Google Shopping</h4>
+  <p>Wix's auto-emitted Product schema omits <code>availability</code>, <code>itemCondition</code>, <code>sku</code>, and <code>brand</code>. Google's free Shopping listings require these. The entire catalog currently fails Merchant Center feed validation.</p>
+  <p class="fix"><strong>Fix:</strong> Enable Wix's Google Shopping channel integration (Settings → Marketing Integrations → Google). This forces correct structured data emission and auto-syncs the feed. Expected free Shopping impressions on google.in within 3–5 days of feed approval.</p>
+</div>
+
+<div class="issue high">
+  <h4><span class="priority p-high">HIGH 12</span>No real llms.txt</h4>
+  <p>Wix auto-generates a <code>/llms.txt</code> but it's a Wix MCP endpoint document, not a content-citation file per the community spec. For AI engines this is functionally useless.</p>
+  <p class="fix"><strong>Fix:</strong> Publish a real <code>/llms.txt</code> at root with site description, service list, location, and 4–5 FAQ answers. 30 min effort.</p>
+</div>
+
+<!-- ============== MEDIUM ============== -->
+<h2>Medium-Priority Issues</h2>
+
+<table>
+  <thead><tr><th>Issue</th><th>Evidence</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Free Gmail handle as primary contact</td>
+      <td><code>Journalowl2022@gmail.com</code> — weakens E-E-A-T for a business claiming 1,000+ customers.</td>
+      <td>Switch to <code>hello@journalowl.in</code> via Wix custom email or Google Workspace (15 min).</td>
+    </tr>
+    <tr>
+      <td>Wellness language without therapy disclaimer</td>
+      <td>"Healing via creative process", "connect with souls" used without clarifying this is not licensed therapy.</td>
+      <td>Add one-line disclaimer: <em>"Journal Owl workshops are creative experiences for self-expression and community — not licensed therapy or mental health treatment."</em> Improves trust + reduces legal exposure.</td>
+    </tr>
+    <tr>
+      <td>Phone formatting inconsistent</td>
+      <td><code>93424 52963</code> vs <code>9342452963</code> across pages.</td>
+      <td>Standardise to E.164: <code>+919342452963</code> sitewide and on GBP.</td>
+    </tr>
+    <tr>
+      <td>Email casing inconsistent</td>
+      <td><code>Journalowl2022</code> vs <code>journalowl2022</code>.</td>
+      <td>Lowercase everywhere.</td>
+    </tr>
+    <tr>
+      <td>Wix CWV likely Needs Improvement / Poor</td>
+      <td>Wix's JS bundle + late-injecting components hurt LCP and CLS by default.</td>
+      <td>Disable unused Wix apps (chat, cookie banner if not legally required); set hero image as a static <code>&lt;img&gt;</code> not a ProGallery widget; run PageSpeed Insights to confirm field data.</td>
+    </tr>
+    <tr>
+      <td>No blog / educational layer</td>
+      <td>Zero editorial content surfacing.</td>
+      <td>Launch 6–8 posts on "What is art journaling," "Journaling for anxiety," "What to expect at a Chennai journaling workshop" — supports SEO + E-E-A-T + featured snippet capture.</td>
+    </tr>
+    <tr>
+      <td>No Eventbrite / BookMyShow / Insider.in cross-listing</td>
+      <td>Workshops live only on the Wix events module.</td>
+      <td>Publish each workshop on Eventbrite India + BookMyShow Events — both auto-generate Event schema and appear in event rich results.</td>
+    </tr>
+    <tr>
+      <td><code>/_partials/*</code> URL pollution risk</td>
+      <td>Wix internal partial routes can accidentally get indexed.</td>
+      <td>Audit GSC → Coverage for <code>/_partials/</code> indexed URLs. Already blocked in robots.txt — verify no leakage.</td>
+    </tr>
+    <tr>
+      <td>PetalBot blocked overly aggressively</td>
+      <td>Huawei Search has a tiny but non-zero India market.</td>
+      <td>Remove the PetalBot block in Wix SEO Tools → Robots.txt editor.</td>
+    </tr>
+    <tr>
+      <td>Product descriptions thin (Wix-default ~40–80 words)</td>
+      <td>Below the 250-word threshold Google treats as substantive.</td>
+      <td>Expand each product page to 250+ words covering: materials, dimensions, what's included, suggested use cases, gifting context. Under 20 SKUs — one-time ~2 hour effort.</td>
+    </tr>
+    <tr>
+      <td>Category page titles generic</td>
+      <td>"Shop | Journal Owl" type titles.</td>
+      <td>Override to <em>"Journaling Kits India | Handmade Journal Sets — Journal Owl"</em> and <em>"Aesthetic Stickers India | Journaling Stickers — Journal Owl"</em>. Target 55–60 characters.</td>
+    </tr>
+    <tr>
+      <td>No workshop→product internal linking</td>
+      <td>Workshop pages don't cross-sell kits.</td>
+      <td>Add a "What you'll need" sidebar on workshop pages linking to the relevant kit product page.</td>
+    </tr>
+    <tr>
+      <td>"No address visible" repeats across most pages</td>
+      <td>Address sits only on Customer Support.</td>
+      <td>Repeat in homepage footer + contact + LocalBusiness schema (Critical 6).</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============== LOW ============== -->
+<h2>Low-Priority Issues</h2>
+<ul>
+  <li>Image alt text likely defaulted to filenames in Wix Media Manager — rewrite to descriptive alt: <em>"Journal Owl Chennai art journaling workshop participants"</em>, etc.</li>
+  <li>IndexNow may be active by default — verify in Wix SEO panel under "Get Found on Google."</li>
+  <li>10-second crawl delay on AhrefsBot/dotbot is harmless — keep as-is.</li>
+  <li>Sticker SKUs could be listed on Amazon.in as a discovery channel (high impulse-buy volume); keep kits direct-to-site.</li>
+  <li>AggregateRating schema absent — add once Wix Reviews app is installed and 10+ reviews exist.</li>
+</ul>
+
+<!-- ============== 30-DAY PLAN ============== -->
+<h2>30-Day Action Plan</h2>
+
+<div class="week">
+  <h3>Week 1 — Stop the bleeding</h3>
+  <ol>
+    <li>Republish at least one upcoming workshop on <code>/workshops</code> with date, price, location, and a "Reserve My Spot" CTA. Add a waitlist form so this page never goes empty again.</li>
+    <li>Fix the store 404s — verify every nav link resolves.</li>
+    <li>Rewrite homepage H1 + hero (date + price + CTA above the fold; "Our Story" demoted to an H2 below).</li>
+    <li>Surface the Thiruvottriyur address in homepage footer + contact page.</li>
+  </ol>
+</div>
+
+<div class="week">
+  <h3>Week 2 — Make the site machine-readable</h3>
+  <ol start="5">
+    <li>Deploy <code>LocalBusiness</code> (or <code>EducationalOrganization</code>) JSON-LD sitewide via Wix Custom Code.</li>
+    <li>Add <code>Event</code> JSON-LD to each workshop page (with <code>eventAttendanceMode</code>, <code>organizer</code>, <code>offers</code>).</li>
+    <li>Enable Wix Google Shopping integration to fix Product schema + earn free Shopping listings.</li>
+    <li>Write unique meta descriptions for homepage, /workshops, /store, /contact-us in Wix SEO Tools.</li>
+  </ol>
+</div>
+
+<div class="week">
+  <h3>Week 3 — Content depth + trust</h3>
+  <ol start="9">
+    <li>Expand homepage to 600–800 words; add founder bio with name, photo, and credentials.</li>
+    <li>Add a "What is Art Journaling?" 500–700 word section to /workshops — featured snippet target.</li>
+    <li>Expand each product description to 250+ words with kit contents + curation story.</li>
+    <li>Add 6–8 named testimonials with photos and workshop names; install Wix Reviews app to unlock <code>AggregateRating</code>.</li>
+    <li>Add the therapy disclaimer; switch to a custom-domain email (<code>hello@journalowl.in</code>).</li>
+  </ol>
+</div>
+
+<div class="week">
+  <h3>Week 4 — Local + GEO foundations</h3>
+  <ol start="14">
+    <li>Claim Google Business Profile (primary: "Art School"); upload 10+ photos; embed Maps on contact page.</li>
+    <li>List JustDial, Sulekha, Eventbrite India, BookMyShow Events — link via <code>sameAs</code> in <code>LocalBusiness</code> schema.</li>
+    <li>Publish a real <code>/llms.txt</code> (overriding Wix's auto-generated MCP doc).</li>
+    <li>Cross-post 2 YouTube videos titled <em>"Art Journaling Workshop Chennai — What to Expect"</em> (highest off-site AI citation lift).</li>
+    <li>Wire workshop → product internal links ("What you'll need" CTA).</li>
+  </ol>
+</div>
+
+<!-- ============== STRENGTHS ============== -->
+<h2>What's Already Good</h2>
+<ul class="good-list">
+  <li>Wix-managed essentials are solid: HTTPS sitewide, valid sitemap index with 4 children (events / products / categories / pages), correct robots.txt with sitemap reference.</li>
+  <li><code>?lightbox=</code> duplicate parameters correctly blocked in robots.txt.</li>
+  <li>Wix Events module is in place — just needs schema enrichment + active events.</li>
+  <li>Real address exists (Thiruvottriyur, Chennai 600019) — just needs to be surfaced from the Customer Support page.</li>
+  <li>Instagram presence (<code>@journal.owl</code>) is the natural off-site brand signal — keep feeding it.</li>
+  <li>Mobile responsiveness is Wix-default and works out of the box.</li>
+</ul>
+
+<!-- ============== LIMITATIONS ============== -->
+<h2>Audit Limitations</h2>
+<ul>
+  <li>Live PageSpeed / CrUX field data was not measured. Run PageSpeed Insights at <code>https://pagespeed.web.dev/</code> for ground-truth LCP / INP / CLS.</li>
+  <li>Live GBP status, JustDial / Sulekha presence, and Amazon.in marketplace gap could not be verified without DataForSEO.</li>
+  <li>Live SERP rank tracking not run — target query likelihoods are inferred from known Chennai workshop SERP patterns.</li>
+  <li>Wix Events module's auto-emitted Event schema (if any) could not be verified against Google's Rich Results Test in this session — paste a workshop URL into <code>search.google.com/test/rich-results</code> once an event is live.</li>
+</ul>
+
+<div class="footer-strip">
+  Built by agricidaniel — Join the AI Marketing Hub community<br>
+  Free → https://www.skool.com/ai-marketing-hub &nbsp;·&nbsp; Pro → https://www.skool.com/ai-marketing-hub-pro
+</div>
+
+</body>
+</html>

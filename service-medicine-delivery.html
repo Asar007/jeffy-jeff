@@ -66,7 +66,7 @@
 </script>
 </head>
 <body><nav></nav>
-<div class="breadcrumb-container"><ul class="breadcrumbs"><li><a href="propnri-saas-site.html">Home</a></li><li><a href="parental-care.html">Parental Care</a></li><li>Medicine Delivery</li></ul></div>
+<div class="breadcrumb-container"><ul class="breadcrumbs"><li><a href="/">Home</a></li><li><a href="/parental-care">Parental Care</a></li><li>Medicine Delivery</li></ul></div>
 <script src="nav.js"></script>
 <section class="service-hero section-pad"><div class="section-tag">Family Care</div><h1>Medicine Delivery Coordination</h1><p>Elderly parents often forget medications, run out of refills, or struggle to source specific drugs. We manage prescriptions end-to-end — ordering, delivery, and adherence tracking — so nothing is ever missed.</p></section>
 <section class="service-details section-pad"><div style="text-align:center;"><div class="section-tag">What's Included</div><h2 class="section-title">Complete Medication Management</h2><p class="section-sub">From prescriptions to doorstep delivery, your parents' medications are always in order.</p></div>
@@ -88,7 +88,7 @@
 <div class="coverage-card included"><div class="plan-name">Standard</div><div class="plan-price">&#8377;8,999/mo</div><div class="plan-status">&#10003; Full Access</div><a href="#" onclick="handlePlanClick(event,'standard')">Get Started</a></div>
 <div class="coverage-card included"><div class="plan-name">Premium</div><div class="plan-price">&#8377;14,999/mo</div><div class="plan-status">&#10003; Priority Delivery</div><a href="#" onclick="handlePlanClick(event,'premium')">Get Started</a></div>
 </div></section>
-<section class="cta-section section-pad"><h2>Medicines managed, always on time</h2><p>Your parents' medications — ordered, delivered, and monitored. No missed doses, no worries.</p><div class="cta-btns"><a href="#" class="btn-hero" onclick="handlePlanClick(event,'standard')">Get Started Today</a><a href="propnri-saas-site.html#pricing" class="btn-ghost">View All Plans &rarr;</a></div></section>
+<section class="cta-section section-pad"><h2>Medicines managed, always on time</h2><p>Your parents' medications — ordered, delivered, and monitored. No missed doses, no worries.</p><div class="cta-btns"><a href="#" class="btn-hero" onclick="handlePlanClick(event,'standard')">Get Started Today</a><a href="/#pricing" class="btn-ghost">View All Plans &rarr;</a></div></section>
 <footer></footer><script src="footer.js"></script>
-<script>const observer=new IntersectionObserver((e)=>{e.forEach(t=>{if(t.isIntersecting){t.target.style.animation='fadeUp 0.7s ease both';t.target.style.animationDelay=t.target.dataset.delay||'0s';observer.unobserve(t.target)}})},{threshold:0.12});document.querySelectorAll('.detail-card,.value-card,.coverage-card').forEach((el,i)=>{el.style.opacity='0';el.dataset.delay=`${(i%6)*0.1}s`;observer.observe(el)});function handlePlanClick(e,p){e.preventDefault();var s=JSON.parse(localStorage.getItem('nri_session')||'null');window.location.href=s?'onboarding.html?plan='+p+'&category=parental':'signup.html?plan='+p+'&category=parental'}</script>
+<script>const observer=new IntersectionObserver((e)=>{e.forEach(t=>{if(t.isIntersecting){t.target.style.animation='fadeUp 0.7s ease both';t.target.style.animationDelay=t.target.dataset.delay||'0s';observer.unobserve(t.target)}})},{threshold:0.12});document.querySelectorAll('.detail-card,.value-card,.coverage-card').forEach((el,i)=>{el.style.opacity='0';el.dataset.delay=`${(i%6)*0.1}s`;observer.observe(el)});function handlePlanClick(e,p){e.preventDefault();var s=JSON.parse(localStorage.getItem('nri_session')||'null');window.location.href=s?'/onboarding?plan='+p+'&category=parental':'/signup?plan='+p+'&category=parental'}</script>
 </body></html>
