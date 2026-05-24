@@ -1,21 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true,
   "redirects": [
     {
       "source": "/",
       "has": [{ "type": "query", "key": "token_hash" }],
-      "destination": "/auth-callback"
+      "destination": "/auth-callback.html"
     },
     {
       "source": "/",
       "has": [{ "type": "query", "key": "access_token" }],
-      "destination": "/auth-callback"
+      "destination": "/auth-callback.html"
     },
     { "source": "/index.html", "destination": "/", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/", "destination": "/propnri-saas-site" }
+    { "source": "/", "destination": "/propnri-saas-site.html" }
   ],
   "headers": [
     {
