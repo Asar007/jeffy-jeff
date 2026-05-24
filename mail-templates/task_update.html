@@ -28,28 +28,22 @@
         </div>
         <div class="content">
             <h2>Progress Update</h2>
-            <p>Hi {{name}},</p>
+            <p>Hi {{{FIRST_NAME}}},</p>
             <p>We've made progress on your service request. Here's the latest update from our team:</p>
-            
             <div class="status-update">
-                <span class="status-badge">{{new_status}}</span>
-                <span>Update for your property at <strong>{{property_name}}</strong></span>
+                <span class="status-badge">{{{NEW_STATUS}}}</span>
+                <span>Update for your property at <strong>{{{PROPERTY_NAME}}}</strong></span>
             </div>
-            
             <div class="task-info">
-                <span class="task-title">{{task_title}}</span>
-                <span class="task-desc">{{task_description}}</span>
+                <span class="task-title">{{{TASK_TITLE}}}</span>
+                <span class="task-desc">{{{TASK_DESC}}}</span>
             </div>
-            
-            {{#if comment}}
+            {{{#if COMMENT}}}
             <p><strong>Team Note:</strong><br>
-            <em>"{{comment}}"</em></p>
-            {{/if}}
-            
-            <a href="{{dashboard_url}}" class="button">Track Progress</a>
-            
+            <em>"{{{COMMENT}}}"</em></p>
+            {{{/if}}}
+            <a href="{{{DASHBOARD_URL}}}" class="button">Track Progress</a>
             <p>We'll keep you informed as we move to the next steps.</p>
-            
             <p>Best regards,<br>
             <strong>Jeff</strong><br>
             NRI Bridge India Team</p>

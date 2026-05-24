@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful - NRI Bridge India</title>
+    <title>Dispute Update - NRI Bridge India</title>
     <style>
         body { margin: 0; padding: 0; background-color: #f2efe5; font-family: 'DM Sans', Arial, sans-serif; color: #1a1e0e; }
         .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05); }
@@ -11,11 +11,10 @@
         .header h1 { color: #f2efe5; font-family: 'Playfair Display', Georgia, serif; font-size: 28px; margin: 0; letter-spacing: -0.5px; text-transform: uppercase; }
         .content { padding: 40px; line-height: 1.6; }
         .content h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; color: #4a6a2e; margin-top: 0; }
-        .payment-summary { background-color: #f9f8f4; border-radius: 12px; padding: 24px; margin: 24px 0; border: 1px solid rgba(74,106,46,0.1); }
-        .summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.03); padding-bottom: 12px; }
-        .summary-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .summary-label { color: #3d4228; font-weight: 500; }
-        .summary-value { color: #1a1e0e; font-weight: 700; text-align: right; }
+        .status-banner { background-color: #f9f8f4; border-radius: 12px; padding: 20px; margin: 24px 0; border: 1px solid rgba(74,106,46,0.1); text-align: center; }
+        .status-label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #4a6a2e; font-weight: 700; margin-bottom: 8px; }
+        .status-value { display: inline-block; background-color: #e85d3a; color: #ffffff; padding: 6px 16px; border-radius: 100px; font-size: 14px; font-weight: 700; }
+        .update-message { font-style: italic; color: #3d4228; padding: 20px; background-color: rgba(0,0,0,0.02); border-radius: 8px; margin: 24px 0; border-left: 3px solid #e85d3a; }
         .button { display: inline-block; padding: 14px 32px; background-color: #4a6a2e; color: #f2efe5 !important; text-decoration: none; border-radius: 100px; font-weight: 600; margin: 20px 0; }
         .footer { background-color: #3d3f2e; color: #9a9d7e; padding: 30px 40px; font-size: 13px; text-align: left; }
         .footer strong { color: #f2efe5; font-size: 15px; }
@@ -31,29 +30,23 @@
             <h1>NRI BRIDGE INDIA</h1>
         </div>
         <div class="content">
-            <h2>Payment Successful</h2>
+            <h2>Dispute Case Update</h2>
             <p>Hi {{{FIRST_NAME}}},</p>
-            <p>Your payment has been successfully processed. Thank you for your continued trust in NRI Bridge India.</p>
-            <div class="payment-summary">
-                <div class="summary-row">
-                    <span class="summary-label">Transaction ID</span>
-                    <span class="summary-value">{{{TXN_ID}}}</span>
-                </div>
-                <div class="summary-row">
-                    <span class="summary-label">Amount Paid</span>
-                    <span class="summary-value">₹{{{AMOUNT}}}</span>
-                </div>
-                <div class="summary-row">
-                    <span class="summary-label">Service/Plan</span>
-                    <span class="summary-value">{{{PLAN_NAME}}}</span>
-                </div>
-                <div class="summary-row">
-                    <span class="summary-label">Date</span>
-                    <span class="summary-value">{{{DATE}}}</span>
-                </div>
+            <p>Our mediation team has an update regarding your dispute case: <strong>#{{{CASE_ID}}}</strong>.</p>
+            
+            <div class="status-banner">
+                <span class="status-label">Case Status</span>
+                <span class="status-value">{{{NEW_STATUS}}}</span>
             </div>
-            <p>You can view your full invoice and payment history in your dashboard.</p>
-            <a href="{{{INVOICE_URL}}}" class="button">View Invoice</a>
+            
+            <div class="update-message">
+                "{{{UPDATE_MESSAGE}}}"
+            </div>
+            
+            <p>You can review the investigation details and respond directly through the Dispute Center.</p>
+            
+            <a href="{{{DISPUTE_URL}}}" class="button">View Dispute Details</a>
+            
             <p>Best regards,<br>
             <strong>Jeff</strong><br>
             NRI Bridge India Team</p>
