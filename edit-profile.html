@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7CGS5FG5Q7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-7CGS5FG5Q7');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Profile — NRI Bridge India</title>
+<link rel="icon" type="image/png" href="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png">
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  .edit-container { max-width: 720px; margin: 120px auto 60px; padding: 0 20px; }
+  .edit-header { margin-bottom: 32px; }
+  .edit-header h1 { font-family: 'Playfair Display', serif; color: var(--text-dark); margin-bottom: 4px; }
+  .edit-header p { color: var(--text-mid); }
+  .edit-section {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+  }
+  .edit-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+  }
+  .section-hint { color: var(--text-mid); font-size: 0.88rem; margin-bottom: 20px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field-row .form-group { margin-bottom: 0; }
+  .section-actions { margin-top: 18px; display: flex; gap: 12px; align-items: center; }
+  .section-status { font-size: 0.88rem; }
+  .section-status.success { color: var(--green-pop); }
+  .section-status.error { color: #dc3545; }
+  .btn-section {
+    background: var(--green-pop); color: var(--white); border: none;
+    padding: 12px 22px; border-radius: var(--radius-md); font-weight: 600;
+    cursor: pointer; font-size: 0.95rem; font-family: inherit;
+  }
+  .btn-section:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-section.secondary { background: transparent; color: var(--text-dark); border: 1px solid rgba(0,0,0,0.15); }
+  .loading-state { text-align: center; padding: 60px 0; color: var(--text-mid); }
+  @media (max-width: 600px) {
+    .field-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav></nav>
+<script src="nav.js"></script>
+
+<main class="edit-container">
+  <div id="loadingState" class="loading-state"><p>Loading your profile…</p></div>
+
+  <div id="editContent" style="display:none;">
+    <div class="edit-header">
+      <h1>Edit Profile</h1>
+      <p>Update your personal information, email, or password.</p>
+    </div>
+
+    <!-- ─── PERSONAL INFO ─── -->
+    <section class="edit-section">
+      <h2>Personal Information</h2>
+      <p class="section-hint">Your name, phone, and country.</p>
+
+      <form id="infoForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="fullName">Full Name</label>
+          <input class="form-input" type="text" id="fullName" required>
+        </div>
+
+        <div class="field-row">
+          <div class="form-group">
+            <label class="form-label" for="phone">Phone Number</label>
+            <input class="form-input" type="tel" id="phone" placeholder="+91 9000000000" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="country">Country</label>
+            <select id="country" class="form-input" required>
+              <option value="">Select your country</option>
+              <option value="USA">USA</option>
+              <option value="UK">UK</option>
+              <option value="UAE">UAE</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+              <option value="India">India</option>
+              <option value="Germany">Germany</option>
+              <option value="New Zealand">New Zealand</option>
+              <option value="Malaysia">Malaysia</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-actions">
+          <button type="submit" class="btn-section" id="infoBtn">Save Changes</button>
+          <span class="section-status" id="infoStatus"></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- ─── EMAIL ─── -->
+    <section class="edit-section">
+      <h2>Email Address</h2>
+      <p class="section-hint">Changing your email sends a confirmation link to both your current and new address. The change applies after you click the link in the new email.</p>
+
+      <form id="emailForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="newEmail">New Email Address</label>
+          <input class="form-input" type="email" id="newEmail" placeholder="you@example.com" required>
+        </div>
+
+        <div class="section-actions">
+          <button type="submit" class="btn-section" id="emailBtn">Update Email</button>
+          <span class="section-status" id="emailStatus"></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- ─── PASSWORD ─── -->
+    <section class="edit-section">
+      <h2>Password</h2>
+      <p class="section-hint">Enter your current password, then choose a new one.</p>
+
+      <form id="passwordForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="currentPassword">Current Password</label>
+          <input class="form-input" type="password" id="currentPassword" required autocomplete="current-password">
+        </div>
+
+        <div class="field-row">
+          <div class="form-group">
+            <label class="form-label" for="newPassword">New Password</label>
+            <input class="form-input" type="password" id="newPassword" placeholder="At least 6 characters" required autocomplete="new-password">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="confirmNewPassword">Confirm New Password</label>
+            <input class="form-input" type="password" id="confirmNewPassword" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="section-actions">
+          <button type="submit" class="btn-section" id="passwordBtn">Change Password</button>
+          <span class="section-status" id="passwordStatus"></span>
+        </div>
+      </form>
+    </section>
+
+    <div class="section-actions" style="margin-top:8px;">
+      <a href="/account" class="btn-section secondary" style="text-decoration:none; display:inline-block;">Back to Account</a>
+    </div>
+  </div>
+</main>
+
+<footer></footer>
+<script src="footer.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  var currentUser = null;
+
+  function setStatus(elId, msg, kind) {
+    var el = document.getElementById(elId);
+    el.textContent = msg;
+    el.classList.remove('success', 'error');
+    if (kind) el.classList.add(kind);
+  }
+
+  function clearStatusOnInput(formId, statusId) {
+    document.querySelectorAll('#' + formId + ' .form-input').forEach(function(el) {
+      el.addEventListener('input', function() { setStatus(statusId, '', ''); });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+    if (error || !user) {
+      window.location.href = '/login';
+      return;
+    }
+    currentUser = user;
+
+    var meta = user.user_metadata || {};
+    document.getElementById('fullName').value = meta.full_name || '';
+    document.getElementById('phone').value = meta.phone || '';
+    document.getElementById('country').value = meta.country || '';
+    document.getElementById('newEmail').value = user.email || '';
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('editContent').style.display = 'block';
+
+    clearStatusOnInput('infoForm', 'infoStatus');
+    clearStatusOnInput('emailForm', 'emailStatus');
+    clearStatusOnInput('passwordForm', 'passwordStatus');
+  });
+
+  // ── Personal info ──
+  document.getElementById('infoForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var name = document.getElementById('fullName').value.trim();
+    var phone = document.getElementById('phone').value.trim();
+    var country = document.getElementById('country').value;
+
+    if (!name || !phone || !country) {
+      setStatus('infoStatus', 'Please fill in all fields.', 'error');
+      return;
+    }
+
+    var btn = document.getElementById('infoBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const { error } = await window.supabaseClient.auth.updateUser({
+      data: { full_name: name, phone: phone, country: country }
+    });
+
+    btn.disabled = false; btn.textContent = 'Save Changes';
+    if (error) {
+      setStatus('infoStatus', error.message, 'error');
+      return;
+    }
+    setStatus('infoStatus', 'Saved.', 'success');
+  });
+
+  // ── Email ──
+  document.getElementById('emailForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var newEmail = document.getElementById('newEmail').value.trim().toLowerCase();
+    if (!newEmail) {
+      setStatus('emailStatus', 'Enter a new email address.', 'error');
+      return;
+    }
+    if (newEmail === (currentUser.email || '').toLowerCase()) {
+      setStatus('emailStatus', 'That’s already your current email.', 'error');
+      return;
+    }
+
+    var btn = document.getElementById('emailBtn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+
+    const { error } = await window.supabaseClient.auth.updateUser({ email: newEmail });
+
+    btn.disabled = false; btn.textContent = 'Update Email';
+    if (error) {
+      setStatus('emailStatus', error.message, 'error');
+      return;
+    }
+    setStatus('emailStatus', 'Confirmation sent. Check your new inbox.', 'success');
+  });
+
+  // ── Password ──
+  document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    var current = document.getElementById('currentPassword').value;
+    var pw = document.getElementById('newPassword').value;
+    var cpw = document.getElementById('confirmNewPassword').value;
+
+    if (!current) { setStatus('passwordStatus', 'Enter your current password.', 'error'); return; }
+    if (pw.length < 6) { setStatus('passwordStatus', 'New password must be at least 6 characters.', 'error'); return; }
+    if (pw !== cpw) { setStatus('passwordStatus', 'New passwords don’t match.', 'error'); return; }
+    if (pw === current) { setStatus('passwordStatus', 'New password must differ from current.', 'error'); return; }
+
+    var btn = document.getElementById('passwordBtn');
+    btn.disabled = true; btn.textContent = 'Updating…';
+
+    // Verify current password by attempting sign-in.
+    const verify = await window.supabaseClient.auth.signInWithPassword({
+      email: currentUser.email,
+      password: current
+    });
+    if (verify.error) {
+      btn.disabled = false; btn.textContent = 'Change Password';
+      setStatus('passwordStatus', 'Current password is incorrect.', 'error');
+      return;
+    }
+
+    const { error } = await window.supabaseClient.auth.updateUser({ password: pw });
+    btn.disabled = false; btn.textContent = 'Change Password';
+    if (error) {
+      setStatus('passwordStatus', error.message, 'error');
+      return;
+    }
+    setStatus('passwordStatus', 'Password updated.', 'success');
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmNewPassword').value = '';
+  });
+
+})();
+</script>
+
+</body>
+</html>
