@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7CGS5FG5Q7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-7CGS5FG5Q7');
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Account — NRI Bridge India</title>
@@ -150,7 +159,7 @@
       profileCard.innerHTML = `
         <div class="profile-header">
           <div class="profile-avatar">
-            ${avatarUrl ? `<img src="${avatarUrl}" alt="${fullName}">` : initials}
+            ${avatarUrl ? `<img src="${avatarUrl}" alt="${fullName}" width="80" height="80">` : initials}
           </div>
           <div class="profile-info">
             <h1>${fullName}</h1>
