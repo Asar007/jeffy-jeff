@@ -158,11 +158,9 @@
       
       profileCard.innerHTML = `
         <div class="profile-header">
-          <div class="profile-avatar">
-            ${avatarUrl ? `<img src="${avatarUrl}" alt="${fullName}" width="80" height="80">` : initials}
-          </div>
+          <div class="profile-avatar" id="profAvatar"></div>
           <div class="profile-info">
-            <h1>${fullName}</h1>
+            <h1 id="profName"></h1>
             <p>NRI Bridge India Member</p>
           </div>
         </div>
@@ -171,19 +169,19 @@
         <div class="profile-details">
           <div class="detail-item">
             <div class="detail-label">Email Address</div>
-            <div class="detail-value">${user.email}</div>
+            <div class="detail-value" id="profEmail"></div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Phone Number</div>
-            <div class="detail-value">${phone}</div>
+            <div class="detail-value" id="profPhone"></div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Country of Residence</div>
-            <div class="detail-value">${country}</div>
+            <div class="detail-value" id="profCountry"></div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Account Created</div>
-            <div class="detail-value">${new Date(user.created_at).toLocaleDateString()}</div>
+            <div class="detail-value" id="profCreated"></div>
           </div>
         </div>
 
@@ -192,6 +190,25 @@
           <button class="btn-outline" id="logoutBtn" style="color: #dc3545; border-color: rgba(220, 53, 69, 0.3);">Sign Out</button>
         </div>
       `;
+
+      // Set values safely using textContent
+      document.getElementById('profName').textContent = fullName;
+      document.getElementById('profEmail').textContent = user.email;
+      document.getElementById('profPhone').textContent = phone;
+      document.getElementById('profCountry').textContent = country;
+      document.getElementById('profCreated').textContent = new Date(user.created_at).toLocaleDateString();
+
+      const avatarContainer = document.getElementById('profAvatar');
+      if (avatarUrl) {
+        const img = document.createElement('img');
+        img.src = avatarUrl;
+        img.alt = fullName;
+        img.width = 80;
+        img.height = 80;
+        avatarContainer.appendChild(img);
+      } else {
+        avatarContainer.textContent = initials;
+      }
 
       // Handle Logout
       document.getElementById('logoutBtn').addEventListener('click', async function() {

@@ -9,6 +9,7 @@ const CORS_HEADERS = {
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
 const MAIL_FROM_EMAIL = Deno.env.get('MAIL_FROM_EMAIL') ?? 'NRI Bridge India <noreply@nribridgeindia.com>';
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://nribridgeindia.com';
@@ -78,6 +79,18 @@ serve(async (req) => {
   if (req.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
 
   try {
+    // Verify the caller presents our project's anon key. This is the same
+    // gate other public Edge Functions use; it stops anonymous internet
+    // scrapers but does not prevent an attacker who has the anon key (it's
+    // shipped in client JS). Per-email rate limiting below provides the
+    // actual abuse protection.
+    const authHeader = req.headers.get('Authorization') || '';
+    const apikey = req.headers.get('apikey') || '';
+    const presented = apikey || authHeader.replace(/^Bearer\s+/i, '');
+    if (!SUPABASE_ANON_KEY || presented !== SUPABASE_ANON_KEY) {
+      return json({ ok: false, error: 'Unauthorized' }, 401);
+    }
+
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       return json({ ok: false, error: 'Supabase admin credentials not configured' }, 500);
     }
@@ -96,6 +109,18 @@ serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
+    // Per-email rate limit (1/min, 5/hour) enforced in Postgres. We still
+    // return a generic success response when throttled so attackers can't
+    // tell registered emails from unregistered ones.
+    const { data: allowed, error: rlErr } = await admin.rpc('check_password_reset_rate_limit', { p_email: email });
+    if (rlErr) {
+      console.error('rate-limit check failed');
+      return json({ ok: false, error: 'Internal error' }, 500);
+    }
+    if (!allowed) {
+      return json({ ok: true });
+    }
+
     // generateLink succeeds only for existing users. We deliberately return
     // a generic success response either way so callers can't enumerate emails.
     const { data, error: linkErr } = await admin.auth.admin.generateLink({
@@ -105,7 +130,8 @@ serve(async (req) => {
     });
 
     if (linkErr || !data || !data.properties || !data.properties.hashed_token) {
-      console.log('generateLink miss for', email, linkErr?.message || 'no token');
+      // VULN-006 FIXED: Removed email from logs
+      console.log('generateLink miss (user not found or internal error)');
       return json({ ok: true });
     }
 
@@ -128,14 +154,15 @@ serve(async (req) => {
     });
 
     if (!res.ok) {
-      const errText = await res.text().catch(() => '');
-      console.error('Resend send failed:', res.status, errText);
+      // Log generic error
+      console.error('Resend send failed');
       return json({ ok: false, error: 'Failed to send email' }, 502);
     }
 
     return json({ ok: true });
   } catch (e) {
-    console.error('send-password-reset error:', e);
+    // VULN-006 FIXED: Generic error logging
+    console.error('send-password-reset error');
     return json({ ok: false, error: 'Unexpected error' }, 500);
   }
 });
