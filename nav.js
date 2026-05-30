@@ -122,14 +122,19 @@
       dropdown.classList.remove('open');
     });
 
-    // Sign out handler
-    document.getElementById('navSignOut').addEventListener('click', function(e) {
+    // Sign out handler — must await signOut() before navigating, otherwise the
+    // in-flight request is cancelled by the redirect and the session persists.
+    document.getElementById('navSignOut').addEventListener('click', async function(e) {
       e.preventDefault();
-      if (window.supabaseClient) {
-        window.supabaseClient.auth.signOut();
+      try {
+        if (window.supabaseClient) {
+          await window.supabaseClient.auth.signOut();
+        }
+      } finally {
+        localStorage.removeItem('nri_session');
+        sessionStorage.removeItem('nri_role');
+        window.location.href = '/login';
       }
-      localStorage.removeItem('nri_session');
-      window.location.href = '/login';
     });
   }
 
