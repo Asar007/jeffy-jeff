@@ -30,53 +30,253 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
-  /* Pricing service tabs */
-  .pricing-service-tabs {
-    display:flex; justify-content:center; gap:6px; margin-bottom:36px; flex-wrap:wrap;
+  /* ════════════════════════════════════════════════════
+     LANDING v2 — "Nestive"-style redesign (page-scoped)
+     All rules namespaced under body.lp to avoid touching
+     other pages. Reuses shared.css design tokens.
+     ════════════════════════════════════════════════════ */
+
+  body.lp { background: var(--bg-cream); color: var(--text-dark); }
+  body.lp::before { opacity: 0.5; } /* soften global noise on the light page */
+
+  .lp section { position: relative; }
+
+  /* Section header primitives (light) */
+  .lp .sec-head { text-align: center; max-width: 680px; margin: 0 auto 56px; }
+  .lp .sec-tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--green-pop); background: rgba(74,106,46,0.08);
+    padding: 7px 16px; border-radius: var(--radius-pill); margin-bottom: 20px;
   }
+  .lp .sec-tag .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green-pop); }
+  .lp .sec-title {
+    font-family: 'Playfair Display', serif; font-weight: 400;
+    font-size: clamp(1.9rem, 3.6vw, 2.9rem); line-height: 1.15;
+    color: var(--text-dark); letter-spacing: -0.01em;
+  }
+  .lp .sec-title em { font-style: italic; color: var(--green-pop); }
+  .lp .sec-sub {
+    margin-top: 16px; font-size: 1.02rem; line-height: 1.75; font-weight: 300;
+    color: var(--text-mid); opacity: 0.85;
+  }
+
+  /* ── HERO ──────────────────────────────────────────── */
+  .np-hero {
+    min-height: 100vh;
+    padding: 150px 48px 48px;
+    background:
+      radial-gradient(120% 80% at 78% 30%, rgba(255,243,214,0.55) 0%, rgba(255,243,214,0) 55%),
+      linear-gradient(160deg, #b7c0a6 0%, #a7b196 45%, #9aa588 100%);
+    display: flex; flex-direction: column; gap: 40px;
+    overflow: hidden;
+  }
+  .np-hero::after {
+    content: ''; position: absolute; right: -120px; top: -120px;
+    width: 520px; height: 520px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,236,196,0.45) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .np-hero-grid {
+    display: grid; grid-template-columns: 1.05fr 1.1fr; gap: 56px;
+    align-items: center; max-width: 1320px; margin: 0 auto; width: 100%;
+    flex: 1;
+  }
+
+  /* Left column */
+  .np-hero-copy { animation: fadeUp 0.8s ease both; }
+  .np-proof {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.35); border: 1px solid rgba(255,255,255,0.45);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    padding: 7px 18px 7px 8px; border-radius: var(--radius-pill);
+    margin-bottom: 30px;
+  }
+  .np-avatars { display: flex; }
+  .np-avatars span {
+    width: 30px; height: 30px; border-radius: 50%; margin-left: -9px;
+    border: 2px solid rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center;
+    font-size: 0.62rem; font-weight: 700; color: #fff; letter-spacing: 0.02em;
+  }
+  .np-avatars span:first-child { margin-left: 0; }
+  .np-avatars span:nth-child(1){ background: linear-gradient(135deg,#5c7a3a,#3d5226); }
+  .np-avatars span:nth-child(2){ background: linear-gradient(135deg,#7a6a3a,#52472a); }
+  .np-avatars span:nth-child(3){ background: linear-gradient(135deg,#3a6a5e,#264540); }
+  .np-proof p { font-size: 0.82rem; font-weight: 500; color: var(--text-dark); }
+  .np-proof p strong { font-weight: 700; }
+
+  .np-hero h1 {
+    font-family: 'Playfair Display', serif; font-weight: 400;
+    font-size: clamp(2.7rem, 5vw, 4.4rem); line-height: 1.08;
+    color: var(--text-dark); letter-spacing: -0.015em; margin-bottom: 22px;
+  }
+  .np-hero h1 em { font-style: italic; font-weight: 600; }
+  .np-hero h1 .accent { color: var(--green-btn); }
+  .np-hero-lead {
+    max-width: 480px; font-size: 1.06rem; line-height: 1.7; font-weight: 300;
+    color: var(--text-mid); margin-bottom: 36px;
+  }
+
+  .np-cta-row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .np-cta {
+    display: inline-flex; align-items: center; gap: 14px;
+    background: #fff; color: var(--text-dark);
+    padding: 8px 26px 8px 8px; border-radius: var(--radius-pill);
+    font-size: 0.92rem; font-weight: 700; text-decoration: none;
+    box-shadow: 0 10px 30px rgba(45,58,30,0.18);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .np-cta .np-cta-ic {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--green-pop); color: #fff;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .np-cta .np-cta-ic svg { width: 18px; height: 18px; }
+  .np-cta:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(45,58,30,0.26); }
+  .np-cta-text {
+    font-size: 0.92rem; font-weight: 600; color: var(--text-dark);
+    text-decoration: none; border-bottom: 1.5px solid rgba(26,30,14,0.25);
+    padding-bottom: 2px; transition: border-color 0.3s;
+  }
+  .np-cta-text:hover { border-color: var(--green-pop); }
+
+  /* Right column — hero image */
+  .np-hero-visual { position: relative; animation: fadeUp 0.9s ease 0.15s both; }
+  .np-hero-art {
+    width: 100%; height: auto; display: block;
+    filter: drop-shadow(0 34px 46px rgba(30,45,75,0.32));
+    animation: floatHouse 7s ease-in-out infinite;
+  }
+  @keyframes floatHouse { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  @media (prefers-reduced-motion: reduce) { .np-hero-art { animation: none; } }
+
+  /* Hero step strip */
+  .np-steps {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    max-width: 1320px; margin: 0 auto; width: 100%;
+    background: rgba(255,255,255,0.28); border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    overflow: hidden; animation: fadeUp 0.9s ease 0.3s both;
+  }
+  .np-step {
+    padding: 22px 24px; position: relative;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .np-step + .np-step { border-left: 1px solid rgba(255,255,255,0.4); }
+  .np-step-ic {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: rgba(255,255,255,0.55); color: var(--green-btn);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .np-step-ic svg { width: 20px; height: 20px; }
+  .np-step h4 { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); }
+  .np-step .np-step-num { font-size: 0.78rem; font-weight: 700; color: rgba(45,58,30,0.5); letter-spacing: 0.05em; }
+
+  /* ── TRUST BAR ─────────────────────────────────────── */
+  .np-trust { padding: 44px 40px; background: var(--bg-cream); text-align: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+  .np-trust p { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted); margin-bottom: 18px; }
+  .np-trust-logos { display: flex; justify-content: center; align-items: center; gap: 44px; flex-wrap: wrap; }
+  .np-trust-logos span { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 600; color: var(--text-mid); opacity: 0.55; }
+
+  /* ── STATS / pain points ──────────────────────────── */
+  .np-stats { padding: 84px 40px; background: #fff; }
+  .np-stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; max-width: 1160px; margin: 0 auto; }
+  .np-stat {
+    background: var(--bg-cream); border: 1px solid rgba(0,0,0,0.05);
+    border-radius: var(--radius-md); padding: 28px 22px; text-align: center;
+  }
+  .np-stat-num { font-family: 'Playfair Display', serif; font-size: 1.85rem; font-weight: 700; color: var(--green-pop); margin-bottom: 10px; }
+  .np-stat-label { font-size: 0.76rem; line-height: 1.55; color: var(--text-mid); }
+
+  /* ── SERVICES ─────────────────────────────────────── */
+  .np-services { padding: 96px 40px; background: var(--bg-cream); }
+  .np-serv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; max-width: 1200px; margin: 0 auto; }
+  .np-serv-card {
+    display: block; text-decoration: none; color: inherit;
+    background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: var(--radius-lg);
+    padding: 34px 28px; transition: transform 0.4s, box-shadow 0.4s, border-color 0.4s;
+  }
+  .np-serv-card:hover { transform: translateY(-6px); border-color: rgba(74,106,46,0.25); box-shadow: 0 22px 50px rgba(45,58,30,0.1); }
+  .np-serv-ic { width: 58px; height: 58px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 22px; }
+  .np-serv-ic svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .np-serv-card.cat-home .np-serv-ic { background: rgba(74,106,46,0.1); color: var(--green-pop); }
+  .np-serv-card.cat-vehicle .np-serv-ic { background: rgba(58,106,94,0.1); color: #3a6a5e; }
+  .np-serv-card.cat-parental .np-serv-ic { background: rgba(166,108,70,0.12); color: #a06a3e; }
+  .np-serv-card.cat-legal .np-serv-ic { background: rgba(46,74,106,0.1); color: #2e4a6a; }
+  .np-serv-card h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: var(--text-dark); }
+  .np-serv-card p { font-size: 0.86rem; line-height: 1.6; color: var(--text-mid); margin-bottom: 18px; }
+  .np-serv-more { font-size: 0.8rem; font-weight: 700; color: var(--green-pop); display: inline-flex; align-items: center; gap: 6px; transition: gap 0.3s; }
+  .np-serv-card:hover .np-serv-more { gap: 11px; }
+
+  /* ── HOW IT WORKS (detailed) ──────────────────────── */
+  .np-how { padding: 96px 40px; background: #fff; }
+  .np-how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; max-width: 1200px; margin: 0 auto; }
+  .np-how-card { position: relative; padding: 34px 26px; background: var(--bg-cream); border: 1px solid rgba(0,0,0,0.05); border-radius: var(--radius-lg); }
+  .np-how-card .np-how-num {
+    font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 700;
+    color: rgba(74,106,46,0.18); line-height: 1; margin-bottom: 16px;
+  }
+  .np-how-card h3 { font-family: 'Playfair Display', serif; font-size: 1.12rem; font-weight: 600; margin-bottom: 10px; color: var(--text-dark); }
+  .np-how-card p { font-size: 0.85rem; line-height: 1.65; color: var(--text-mid); }
+
+  /* ── PRICING wrapper (reuses shared .pricing-grid/.price-card) ── */
+  .np-pricing { padding: 96px 40px; background: var(--bg-cream); }
+  .np-pricing-inner { max-width: 1200px; margin: 0 auto; }
+  .pricing-service-tabs { display:flex; justify-content:center; gap:8px; margin-bottom:32px; flex-wrap:wrap; }
   .pricing-service-tab {
+    display:inline-flex; align-items:center; gap:7px;
     padding:10px 22px; border:1.5px solid rgba(0,0,0,0.08); border-radius:var(--radius-pill);
-    background:var(--white); cursor:pointer; font-family:inherit; font-size:0.82rem;
+    background:#fff; cursor:pointer; font-family:inherit; font-size:0.82rem;
     font-weight:500; color:var(--text-mid); transition:all 0.3s;
   }
   .pricing-service-tab:hover { border-color:var(--green-pop); color:var(--green-pop); }
-  .pricing-service-tab.active {
-    border-color:var(--green-pop); background:var(--green-pop); color:var(--white); font-weight:600;
-  }
+  .pricing-service-tab.active { border-color:var(--green-pop); background:var(--green-pop); color:#fff; font-weight:600; }
 
-  /* Services grid on landing */
-  .landing-services-grid {
-    display:grid; grid-template-columns:repeat(4,1fr); gap:20px; max-width:1100px; margin:0 auto;
-  }
-  .landing-service-card {
-    display:block; text-align:center; padding:36px 24px; border-radius:var(--radius-md);
-    border:1.5px solid rgba(0,0,0,0.06); background:var(--white); text-decoration:none;
-    color:inherit; transition:all 0.4s;
-  }
-  .landing-service-card:hover {
-    border-color:rgba(74,106,46,0.2); transform:translateY(-4px);
-    box-shadow:0 12px 40px rgba(0,0,0,0.08);
-  }
-  .landing-service-card .ls-icon {
-    width:56px; height:56px; border-radius:16px; margin:0 auto 18px;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .landing-service-card .ls-icon svg { width:26px; height:26px; stroke-width:1.5; fill:none; stroke:currentColor; }
-  .landing-service-card.cat-home .ls-icon { background:rgba(74,106,46,0.1); color:var(--green-pop); }
-  .landing-service-card.cat-vehicle .ls-icon { background:rgba(58,106,94,0.1); color:var(--service-vehicle); }
-  .landing-service-card.cat-parental .ls-icon { background:rgba(106,74,46,0.1); color:var(--service-parental); }
-  .landing-service-card.cat-legal .ls-icon { background:rgba(46,74,106,0.1); color:var(--service-legal); }
-  .landing-service-card h3 { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:600; margin-bottom:8px; color:var(--text-dark); }
-  .landing-service-card p { font-size:0.82rem; line-height:1.55; color:var(--text-mid); margin-bottom:14px; }
-  .landing-service-card .learn-more { font-size:0.8rem; font-weight:600; color:var(--green-pop); }
+  /* ── WHY ─────────────────────────────────────────── */
+  .np-why { padding: 96px 40px; background: #fff; }
+  .np-why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; max-width: 1200px; margin: 0 auto; }
+  .np-why-card { padding: 32px 26px; border-radius: var(--radius-lg); border: 1px solid rgba(0,0,0,0.06); background: var(--bg-cream); }
+  .np-why-ic { width: 50px; height: 50px; border-radius: 14px; background: rgba(74,106,46,0.1); color: var(--green-pop); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+  .np-why-ic svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .np-why-card h3 { font-family: 'Playfair Display', serif; font-size: 1.08rem; font-weight: 600; margin-bottom: 10px; color: var(--text-dark); }
+  .np-why-card p { font-size: 0.85rem; line-height: 1.65; color: var(--text-mid); }
 
-  @media(max-width:900px) {
-    .landing-services-grid { grid-template-columns:repeat(2,1fr); }
+  /* ── TESTIMONIALS wrapper (reuses shared .testimonials-grid/.testimonial-card) ── */
+  .np-testi { padding: 96px 40px; background: var(--bg-cream); }
+  .np-testi-inner { max-width: 1200px; margin: 0 auto; }
+
+  /* ── FINAL CTA ───────────────────────────────────── */
+  .np-cta-section { padding: 40px; background: var(--bg-cream); }
+  .np-cta-card {
+    max-width: 1100px; margin: 0 auto; text-align: center;
+    padding: 80px 48px; border-radius: var(--radius-xl);
+    background:
+      radial-gradient(120% 120% at 80% 0%, rgba(197,201,168,0.22) 0%, transparent 55%),
+      linear-gradient(160deg, #4e5136 0%, var(--bg-deep) 100%);
+    position: relative; overflow: hidden;
   }
-  @media(max-width:600px) {
-    .landing-services-grid { grid-template-columns:1fr; }
-    .pricing-service-tabs { gap:4px; }
-    .pricing-service-tab { padding:8px 14px; font-size:0.75rem; }
+  .np-cta-card h2 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 400; color: var(--text-light); line-height: 1.15; margin-bottom: 18px; }
+  .np-cta-card h2 em { font-style: italic; color: var(--bg-highlight); }
+  .np-cta-card p { max-width: 560px; margin: 0 auto 34px; font-size: 1.02rem; line-height: 1.7; font-weight: 300; color: var(--text-muted); }
+  .np-cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+  /* ── Responsive ──────────────────────────────────── */
+  @media (max-width: 1080px) {
+    .np-hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .np-hero-visual { max-width: 560px; }
+    .np-stats-grid { grid-template-columns: repeat(3, 1fr); }
+    .np-serv-grid, .np-how-grid, .np-why-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 760px) {
+    .np-hero { padding: 130px 22px 36px; }
+    .np-steps { grid-template-columns: repeat(2, 1fr); }
+    .np-step:nth-child(3) { border-left: none; }
+    .np-step { border-top: 1px solid rgba(255,255,255,0.4); }
+    .np-step:nth-child(-n+2) { border-top: none; }
+    .np-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .np-serv-grid, .np-how-grid, .np-why-grid { grid-template-columns: 1fr; }
+    .np-trust-logos { gap: 26px; }
+    .np-cta-card { padding: 56px 26px; }
   }
 </style>
 <script type="application/ld+json">
@@ -87,27 +287,68 @@
 ]}
 </script>
 </head>
-<body>
+<body class="lp">
 
 <nav></nav>
 <script src="nav.js"></script>
 
-<!-- HERO -->
-<section class="hero">
-  <img src="NRI-BRIDGE-INDIA_LOGO-WHITE-PNG.png" alt="NRI Bridge India" width="120" height="120" style="height:120px;width:auto;margin-bottom:16px;">
-  <div class="hero-badge"><span class="dot"></span> Trusted by 1,000+ NRIs</div>
-  <h1>We bridge the <em>distance</em>,<br>you feel the <strong>difference</strong></h1>
-  <p>NRI Bridge India offers end-to-end support for NRIs, including property management, legal documentation, parental care arrangements, vehicle management, and investment advice. We also provide curated custom services — submit your requirement, and our team will review it and deliver a tailored quotation curated specifically to your needs.</p>
-  <div class="hero-ctas">
-    <a href="/signup" class="btn-hero hide-when-logged-in">Get Started — Create Account</a>
-    <a href="#how" class="btn-ghost">See How It Works →</a>
+<!-- ══ HERO ══ -->
+<section class="np-hero">
+  <div class="np-hero-grid">
+    <div class="np-hero-copy">
+      <div class="np-proof">
+        <div class="np-avatars">
+          <span>RK</span><span>AG</span><span>VM</span>
+        </div>
+        <p><strong>+1,000 NRIs</strong> already trust us with home</p>
+      </div>
+
+      <h1>Manage Your <em>Home</em><br>in India, <span class="accent">Worry-Free</span></h1>
+      <p class="np-hero-lead">End-to-end care for your property, vehicle, parents, and legal paperwork — handled on the ground in India while you live abroad. Your life back home is just four steps away.</p>
+
+      <div class="np-cta-row">
+        <a href="/signup" class="np-cta hide-when-logged-in">
+          <span class="np-cta-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+          CONNECT YOUR HOME
+        </a>
+        <a href="#how" class="np-cta-text">See how it works →</a>
+      </div>
+    </div>
+
+    <div class="np-hero-visual">
+      <img class="np-hero-art" src="assets/hero-house.png" alt="3D render of a modern smart home with warmly lit, fully furnished interiors" width="2048" height="2048" loading="eager" fetchpriority="high">
+    </div>
+  </div>
+
+  <!-- step strip -->
+  <div class="np-steps">
+    <div class="np-step">
+      <div class="np-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <h4>Register</h4>
+      <span class="np-step-num">01</span>
+    </div>
+    <div class="np-step">
+      <div class="np-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></div>
+      <h4>Choose Services</h4>
+      <span class="np-step-num">02</span>
+    </div>
+    <div class="np-step">
+      <div class="np-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+      <h4>We Handle It</h4>
+      <span class="np-step-num">03</span>
+    </div>
+    <div class="np-step">
+      <div class="np-step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+      <h4>Track Live</h4>
+      <span class="np-step-num">04</span>
+    </div>
   </div>
 </section>
 
-<!-- TRUST BAR -->
-<div class="trust-bar">
+<!-- ══ TRUST BAR ══ -->
+<div class="np-trust">
   <p>Trusted by NRIs across</p>
-  <div class="trust-logos">
+  <div class="np-trust-logos">
     <span>🇺🇸 USA</span>
     <span>🇬🇧 UK</span>
     <span>🇦🇪 UAE</span>
@@ -117,269 +358,232 @@
   </div>
 </div>
 
-<!-- NRI PAIN POINTS -->
-<div class="stats-ribbon" style="padding:28px 32px;">
-  <div class="stat-item" style="max-width:200px;">
-    <div class="stat-num" style="font-size:1.6rem;">62%</div>
-    <div class="stat-label" style="font-size:0.68rem;line-height:1.5;text-transform:none;letter-spacing:normal;">of NRI property owners say maintenance is their biggest stress</div>
+<!-- ══ STATS / PAIN POINTS ══ -->
+<section class="np-stats">
+  <div class="sec-head">
+    <div class="sec-tag"><span class="dot"></span> The NRI reality</div>
+    <h2 class="sec-title">Managing life back home is <em>harder</em> than it should be</h2>
   </div>
-  <div class="stat-item" style="max-width:200px;">
-    <div class="stat-num" style="font-size:1.6rem;">₹3.2L</div>
-    <div class="stat-label" style="font-size:0.68rem;line-height:1.5;text-transform:none;letter-spacing:normal;">average annual loss from unmanaged vacant properties</div>
+  <div class="np-stats-grid">
+    <div class="np-stat"><div class="np-stat-num">62%</div><div class="np-stat-label">of NRI property owners say maintenance is their biggest stress</div></div>
+    <div class="np-stat"><div class="np-stat-num">₹3.2L</div><div class="np-stat-label">average annual loss from unmanaged vacant properties</div></div>
+    <div class="np-stat"><div class="np-stat-num">78%</div><div class="np-stat-label">of NRIs worry about their parents' medical emergencies</div></div>
+    <div class="np-stat"><div class="np-stat-num">4 in 10</div><div class="np-stat-label">idle vehicles develop battery or tyre issues within 3 months</div></div>
+    <div class="np-stat"><div class="np-stat-num">53%</div><div class="np-stat-label">of NRIs miss critical legal deadlines due to timezone gaps</div></div>
   </div>
-  <div class="stat-item" style="max-width:200px;">
-    <div class="stat-num" style="font-size:1.6rem;">78%</div>
-    <div class="stat-label" style="font-size:0.68rem;line-height:1.5;text-transform:none;letter-spacing:normal;">of NRIs worry about their parents' medical emergencies</div>
-  </div>
-  <div class="stat-item" style="max-width:200px;">
-    <div class="stat-num" style="font-size:1.6rem;">4 in 10</div>
-    <div class="stat-label" style="font-size:0.68rem;line-height:1.5;text-transform:none;letter-spacing:normal;">vehicles parked idle develop battery or tyre issues within 3 months</div>
-  </div>
-  <div class="stat-item" style="max-width:200px;">
-    <div class="stat-num" style="font-size:1.6rem;">53%</div>
-    <div class="stat-label" style="font-size:0.68rem;line-height:1.5;text-transform:none;letter-spacing:normal;">of NRIs miss critical legal deadlines due to timezone gaps</div>
-  </div>
-</div>
+</section>
 
-<section class="services section-pad" id="services">
-  <div class="section-tag">Our Services</div>
-  <h2 class="section-title">Everything Your Life in India Needs</h2>
-  <p class="section-sub">Four comprehensive service categories, one trusted platform. Pick what you need, bundle for savings.</p>
+<!-- ══ SERVICES ══ -->
+<section class="np-services" id="services">
+  <div class="sec-head">
+    <div class="sec-tag"><span class="dot"></span> Our Services</div>
+    <h2 class="sec-title">Everything your life in India <em>needs</em></h2>
+    <p class="sec-sub">Four comprehensive service categories, one trusted platform. Pick what you need, bundle for savings.</p>
+  </div>
 
-  <div class="landing-services-grid">
-    <a href="/home-management" class="landing-service-card cat-home">
-      <div class="ls-icon">
-        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      </div>
+  <div class="np-serv-grid">
+    <a href="/home-management" class="np-serv-card cat-home">
+      <div class="np-serv-ic"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
       <h3>Home Management</h3>
       <p>Tenant sourcing, rent collection, maintenance, inspections — 8 professional services under one roof.</p>
-      <span class="learn-more">8 Services →</span>
+      <span class="np-serv-more">8 Services →</span>
     </a>
-
-    <a href="/vehicle-management" class="landing-service-card cat-vehicle">
-      <div class="ls-icon">
-        <svg viewBox="0 0 24 24"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 5h3v6h-2"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </div>
+    <a href="/vehicle-management" class="np-serv-card cat-vehicle">
+      <div class="np-serv-ic"><svg viewBox="0 0 24 24"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-6l2-5h9l4 5h3v6h-2"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
       <h3>Vehicle Management</h3>
       <p>Insurance, servicing, fitness certificates, parking, selling, and registration — all handled remotely.</p>
-      <span class="learn-more">6 Services →</span>
+      <span class="np-serv-more">6 Services →</span>
     </a>
-
-    <a href="/parental-care" class="landing-service-card cat-parental">
-      <div class="ls-icon">
-        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      </div>
+    <a href="/parental-care" class="np-serv-card cat-parental">
+      <div class="np-serv-ic"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
       <h3>Parental Care</h3>
       <p>Health check-ups, doctor visits, medicine delivery, emergency response, and regular well-being updates.</p>
-      <span class="learn-more">6 Services →</span>
+      <span class="np-serv-more">6 Services →</span>
     </a>
-
-    <a href="/legal-documentation" class="landing-service-card cat-legal">
-      <div class="ls-icon">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      </div>
-      <h3>Legal & Documentation</h3>
+    <a href="/legal-documentation" class="np-serv-card cat-legal">
+      <div class="np-serv-ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <h3>Legal &amp; Documentation</h3>
       <p>Power of Attorney, property registration, tax filing, court monitoring, and government documents.</p>
-      <span class="learn-more">6 Services →</span>
+      <span class="np-serv-more">6 Services →</span>
     </a>
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section class="how-it-works section-pad" id="how">
-  <div style="text-align:center;">
-    <div class="section-tag">Process</div>
-    <h2 class="section-title" style="color:var(--text-light);">How it works</h2>
-    <p class="section-sub">Four simple steps to hassle-free management of your life in India, from anywhere in the world.</p>
+<!-- ══ HOW IT WORKS ══ -->
+<section class="np-how" id="how">
+  <div class="sec-head">
+    <div class="sec-tag"><span class="dot"></span> The Process</div>
+    <h2 class="sec-title">Hassle-free in <em>four steps</em></h2>
+    <p class="sec-sub">From anywhere in the world to fully managed on the ground in India.</p>
   </div>
-
-  <div class="steps-grid">
-    <div class="step-card">
-      <div class="step-num">1</div>
+  <div class="np-how-grid">
+    <div class="np-how-card">
+      <div class="np-how-num">01</div>
       <h3>Select Your Services</h3>
-      <p>Choose the service categories you need — home, vehicle, parental care, or legal. Bundle them for savings.</p>
+      <p>Choose the categories you need — home, vehicle, parental care, or legal. Bundle them for savings.</p>
     </div>
-    <div class="step-card">
-      <div class="step-num">2</div>
+    <div class="np-how-card">
+      <div class="np-how-num">02</div>
       <h3>Onboard Your Details</h3>
-      <p>Share your property, vehicle, family, or legal details. We'll do a thorough assessment and set up your account.</p>
+      <p>Share your property, vehicle, family, or legal details. We do a thorough assessment and set up your account.</p>
     </div>
-    <div class="step-card">
-      <div class="step-num">3</div>
+    <div class="np-how-card">
+      <div class="np-how-num">03</div>
       <h3>We Handle Everything</h3>
-      <p>Our on-ground teams across Chennai, Coimbatore & Kanyakumari take over — managing, coordinating, and resolving issues in real-time.</p>
+      <p>Our on-ground teams across Chennai, Coimbatore &amp; Kanyakumari take over — managing and resolving in real time.</p>
     </div>
-    <div class="step-card">
-      <div class="step-num">4</div>
-      <h3>Track & Live Worry-Free</h3>
-      <p>Monitor everything from your dashboard. Receive reports, updates, and alerts — all from the comfort of your home abroad.</p>
+    <div class="np-how-card">
+      <div class="np-how-num">04</div>
+      <h3>Track &amp; Live Worry-Free</h3>
+      <p>Monitor everything from your dashboard. Reports, updates, and alerts — all from the comfort of home abroad.</p>
     </div>
   </div>
 </section>
 
-<!-- PRICING -->
-<section class="pricing section-pad" id="pricing">
-  <div class="section-tag">Pricing</div>
-  <h2 class="section-title">Transparent, simple pricing</h2>
-  <p class="section-sub">No hidden fees. Choose the plan that fits your needs. Bundle services to save 20% on add-ons.</p>
+<!-- ══ PRICING ══ -->
+<section class="np-pricing" id="pricing">
+  <div class="np-pricing-inner">
+    <div class="sec-head">
+      <div class="sec-tag"><span class="dot"></span> Pricing</div>
+      <h2 class="sec-title">Transparent, <em>simple</em> pricing</h2>
+      <p class="sec-sub">No hidden fees. Choose the plan that fits your needs. Bundle services to save on add-ons.</p>
+    </div>
 
-  <!-- Service Category Tabs -->
-  <div class="pricing-service-tabs">
-    <button class="pricing-service-tab active" data-category="home" onclick="switchPricingCategory('home')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home</button>
-    <button class="pricing-service-tab" data-category="vehicle" onclick="switchPricingCategory('vehicle')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2M7 17v2m10-2v2"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg> Vehicle</button>
-    <button class="pricing-service-tab" data-category="parental" onclick="switchPricingCategory('parental')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Parental</button>
-    <button class="pricing-service-tab" data-category="legal" onclick="switchPricingCategory('legal')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Legal</button>
-  </div>
+    <!-- Service Category Tabs -->
+    <div class="pricing-service-tabs">
+      <button class="pricing-service-tab active" data-category="home" onclick="switchPricingCategory('home')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home</button>
+      <button class="pricing-service-tab" data-category="vehicle" onclick="switchPricingCategory('vehicle')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2M7 17v2m10-2v2"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg> Vehicle</button>
+      <button class="pricing-service-tab" data-category="parental" onclick="switchPricingCategory('parental')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Parental</button>
+      <button class="pricing-service-tab" data-category="legal" onclick="switchPricingCategory('legal')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Legal</button>
+    </div>
 
-  <!-- Billing Toggle -->
-  <div style="display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:40px;">
-    <span id="lblMonthly" style="font-size:0.9rem;font-weight:600;color:var(--text-dark);">Monthly</span>
-    <label style="position:relative;width:52px;height:28px;cursor:pointer;">
-      <input type="checkbox" id="billingToggle" style="display:none;">
-      <span id="toggleTrack" style="position:absolute;inset:0;background:var(--border);border-radius:100px;transition:background 0.3s;"></span>
-      <span id="toggleThumb" style="position:absolute;top:3px;left:3px;width:22px;height:22px;background:var(--white);border-radius:50%;transition:transform 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.15);"></span>
-    </label>
-    <span id="lblAnnual" style="font-size:0.9rem;font-weight:500;color:var(--text-mid);opacity:0.6;">Annual</span>
-    <span style="font-size:0.72rem;font-weight:700;background:rgba(74,106,46,0.1);color:var(--green-pop);padding:3px 10px;border-radius:100px;">Save 15%</span>
-  </div>
+    <!-- Billing Toggle -->
+    <div style="display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:40px;">
+      <span id="lblMonthly" style="font-size:0.9rem;font-weight:600;color:var(--text-dark);">Monthly</span>
+      <label style="position:relative;width:52px;height:28px;cursor:pointer;">
+        <input type="checkbox" id="billingToggle" style="display:none;">
+        <span id="toggleTrack" style="position:absolute;inset:0;background:var(--border);border-radius:100px;transition:background 0.3s;"></span>
+        <span id="toggleThumb" style="position:absolute;top:3px;left:3px;width:22px;height:22px;background:var(--white);border-radius:50%;transition:transform 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.15);"></span>
+      </label>
+      <span id="lblAnnual" style="font-size:0.9rem;font-weight:500;color:var(--text-mid);opacity:0.6;">Annual</span>
+      <span style="font-size:0.72rem;font-weight:700;background:rgba(74,106,46,0.1);color:var(--green-pop);padding:3px 10px;border-radius:100px;">Save 15%</span>
+    </div>
 
-  <!-- Pricing cards — data driven via JS -->
-  <div class="pricing-grid" id="pricingGrid"></div>
+    <!-- Pricing cards — data driven via JS -->
+    <div class="pricing-grid" id="pricingGrid"></div>
 
-  <!-- Custom Service Request CTA -->
-  <div class="quote-builder" style="text-align:center;padding:44px 40px;">
-    <div class="section-tag" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.15);">Custom Request</div>
-    <h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:8px;">Need a Service That's Not Listed?</h3>
-    <p style="font-size:0.9rem;opacity:0.7;max-width:480px;margin:0 auto 24px;line-height:1.6;">Tell us what you need — property, vehicle, family, legal, or anything else. We'll craft a tailored solution and get back to you within 24 hours.</p>
-    <a href="/quote-builder" class="btn-hero" style="background:var(--bg-cream);color:var(--text-dark);">Request a Custom Service →</a>
+    <!-- Custom Service Request CTA -->
+    <div class="quote-builder" style="text-align:center;padding:44px 40px;margin-top:32px;">
+      <div class="section-tag" style="color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.15);">Custom Request</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:8px;">Need a Service That's Not Listed?</h3>
+      <p style="font-size:0.9rem;opacity:0.7;max-width:480px;margin:0 auto 24px;line-height:1.6;">Tell us what you need — property, vehicle, family, legal, or anything else. We'll craft a tailored solution and get back to you within 24 hours.</p>
+      <a href="/quote-builder" class="btn-hero" style="background:var(--bg-cream);color:var(--text-dark);">Request a Custom Service →</a>
+    </div>
   </div>
 </section>
 
-<!-- WHY CHOOSE US -->
-<section class="why section-pad">
-  <div style="text-align:center;">
-    <div class="section-tag">Why NRI Bridge India</div>
-    <h2 class="section-title" style="color:var(--text-light);">Built for NRIs, by people who understand</h2>
-    <p class="section-sub">We know the challenges of managing life in India from overseas. That's exactly why we built this.</p>
+<!-- ══ WHY ══ -->
+<section class="np-why">
+  <div class="sec-head">
+    <div class="sec-tag"><span class="dot"></span> Why NRI Bridge India</div>
+    <h2 class="sec-title">Built for NRIs, by people who <em>understand</em></h2>
+    <p class="sec-sub">We know the challenges of managing life in India from overseas. That's exactly why we built this.</p>
   </div>
-
-  <div class="why-grid">
-    <div class="why-card">
-      <div class="why-icon">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      </div>
+  <div class="np-why-grid">
+    <div class="np-why-card">
+      <div class="np-why-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
       <h3>Timezone Friendly</h3>
       <p>Dashboard access 24/7. Our team works across IST, EST, and GST to match your schedule.</p>
     </div>
-    <div class="why-card">
-      <div class="why-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <h3>Verified & Trusted</h3>
+    <div class="np-why-card">
+      <div class="np-why-ic"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <h3>Verified &amp; Trusted</h3>
       <p>All service providers are background-checked. Every process is documented and transparent.</p>
     </div>
-    <div class="why-card">
-      <div class="why-icon">
-        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      </div>
+    <div class="np-why-card">
+      <div class="np-why-ic"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
       <h3>Real-Time Dashboard</h3>
-      <p>Track properties, vehicles, family well-being, and legal cases — all from one clean, intuitive dashboard.</p>
+      <p>Track properties, vehicles, family well-being, and legal cases — all from one clean dashboard.</p>
     </div>
-    <div class="why-card">
-      <div class="why-icon">
-        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-      </div>
+    <div class="np-why-card">
+      <div class="np-why-ic"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
       <h3>On-Ground Teams</h3>
-      <p>Local teams in Chennai, Coimbatore & Kanyakumari who physically visit, inspect, coordinate, and resolve issues fast.</p>
+      <p>Local teams in Chennai, Coimbatore &amp; Kanyakumari who physically visit, inspect, and resolve fast.</p>
     </div>
   </div>
 </section>
 
-<!-- TESTIMONIALS -->
-<section class="testimonials section-pad">
-  <div style="text-align:center;">
-    <div class="section-tag">Testimonials</div>
-    <h2 class="section-title">What NRIs say about us</h2>
-    <p class="section-sub">Hear from clients across the globe who trust NRI Bridge India with their most important needs.</p>
-  </div>
+<!-- ══ TESTIMONIALS ══ -->
+<section class="np-testi">
+  <div class="np-testi-inner">
+    <div class="sec-head">
+      <div class="sec-tag"><span class="dot"></span> Testimonials</div>
+      <h2 class="sec-title">What NRIs <em>say</em> about us</h2>
+      <p class="sec-sub">Hear from clients across the globe who trust NRI Bridge India with their most important needs.</p>
+    </div>
 
-  <div class="testimonials-grid">
-    <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <blockquote>"I have two flats in Chennai and live in San Francisco. NRI Bridge India handles everything — I just check my dashboard once a month. Absolute peace of mind."</blockquote>
-      <div class="testimonial-author">
-        <div class="author-avatar">RK</div>
-        <div class="author-info">
-          <strong>Rajesh Kumar</strong>
-          <span>Software Engineer · San Francisco</span>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"I have two flats in Chennai and live in San Francisco. NRI Bridge India handles everything — I just check my dashboard once a month. Absolute peace of mind."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">RK</div>
+          <div class="author-info"><strong>Rajesh Kumar</strong><span>Software Engineer · San Francisco</span></div>
         </div>
       </div>
-    </div>
-    <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <blockquote>"My parents in Coimbatore get regular health check-ups, medicine deliveries, and weekly companionship visits. I sleep better at night knowing they're looked after."</blockquote>
-      <div class="testimonial-author">
-        <div class="author-avatar">AG</div>
-        <div class="author-info">
-          <strong>Anita Gupta</strong>
-          <span>Data Scientist · Toronto</span>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"My parents in Coimbatore get regular health check-ups, medicine deliveries, and weekly companionship visits. I sleep better at night knowing they're looked after."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">AG</div>
+          <div class="author-info"><strong>Anita Gupta</strong><span>Data Scientist · Toronto</span></div>
         </div>
       </div>
-    </div>
-    <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <blockquote>"Left my car in Kanyakumari 3 years ago. NBI handles insurance, servicing, and even got the PUC renewed remotely. The car is in better shape than when I drove it!"</blockquote>
-      <div class="testimonial-author">
-        <div class="author-avatar">VM</div>
-        <div class="author-info">
-          <strong>Vikram Malhotra</strong>
-          <span>Consultant · Dubai</span>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Left my car in Kanyakumari 3 years ago. NBI handles insurance, servicing, and even got the PUC renewed remotely. The car is in better shape than when I drove it!"</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">VM</div>
+          <div class="author-info"><strong>Vikram Malhotra</strong><span>Consultant · Dubai</span></div>
         </div>
       </div>
-    </div>
-    <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <blockquote>"The tax filing help alone is worth the subscription. They handled my TDS, ITR, and even the repatriation paperwork without me lifting a finger."</blockquote>
-      <div class="testimonial-author">
-        <div class="author-avatar">PS</div>
-        <div class="author-info">
-          <strong>Priya Sharma</strong>
-          <span>Finance Manager · Dubai</span>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"The tax filing help alone is worth the subscription. They handled my TDS, ITR, and even the repatriation paperwork without me lifting a finger."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">PS</div>
+          <div class="author-info"><strong>Priya Sharma</strong><span>Finance Manager · Dubai</span></div>
         </div>
       </div>
-    </div>
-    <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <blockquote>"Finding good tenants from abroad was my biggest headache. NRI Bridge India placed a verified family within 10 days. Rent has been on time every single month."</blockquote>
-      <div class="testimonial-author">
-        <div class="author-avatar">AM</div>
-        <div class="author-info">
-          <strong>Arjun Mehta</strong>
-          <span>Doctor · London</span>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Finding good tenants from abroad was my biggest headache. NRI Bridge India placed a verified family within 10 days. Rent has been on time every single month."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">AM</div>
+          <div class="author-info"><strong>Arjun Mehta</strong><span>Doctor · London</span></div>
         </div>
       </div>
-    </div>
-    <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <blockquote>"Getting a Power of Attorney executed from Singapore used to be a nightmare. NBI coordinated everything — drafting, notarisation, apostille — in under 2 weeks."</blockquote>
-      <div class="testimonial-author">
-        <div class="author-avatar">NK</div>
-        <div class="author-info">
-          <strong>Neha Kapoor</strong>
-          <span>Banking VP · Singapore</span>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Getting a Power of Attorney executed from Singapore used to be a nightmare. NBI coordinated everything — drafting, notarisation, apostille — in under 2 weeks."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">NK</div>
+          <div class="author-info"><strong>Neha Kapoor</strong><span>Banking VP · Singapore</span></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CTA -->
-<section class="cta-section section-pad">
-  <h2>Your life in India deserves<br>better management</h2>
-  <p>Join thousands of NRIs who manage their Indian properties, vehicles, family care, and legal needs stress-free from anywhere in the world.</p>
-  <div class="cta-btns">
-    <a href="/signup" class="btn-hero hide-when-logged-in">Get Started — Create Account</a>
-    <a href="#pricing" class="btn-ghost">View Plans & Pricing →</a>
+<!-- ══ FINAL CTA ══ -->
+<section class="np-cta-section">
+  <div class="np-cta-card">
+    <h2>Your life in India deserves<br><em>better</em> management</h2>
+    <p>Join thousands of NRIs who manage their Indian properties, vehicles, family care, and legal needs stress-free from anywhere in the world.</p>
+    <div class="np-cta-btns">
+      <a href="/signup" class="btn-hero hide-when-logged-in">Get Started — Create Account</a>
+      <a href="#pricing" class="btn-ghost">View Plans &amp; Pricing →</a>
+    </div>
   </div>
 </section>
 
@@ -401,9 +605,9 @@
     });
   }, { threshold: 0.12 });
 
-  document.querySelectorAll('.landing-service-card, .price-card, .why-card, .step-card, .testimonial-card, .stat-item').forEach((el, i) => {
+  document.querySelectorAll('.np-serv-card, .price-card, .np-why-card, .np-how-card, .testimonial-card, .np-stat').forEach((el, i) => {
     el.style.opacity = '0';
-    el.dataset.delay = `${(i % 8) * 0.08}s`;
+    el.dataset.delay = `${(i % 8) * 0.07}s`;
     observer.observe(el);
   });
 
@@ -415,9 +619,9 @@
       premium: { name: 'Premium', tag: 'Full Management', customPrice: '10% of rent', features: ['Everything in Standard', 'Full tenant management', 'Background verification', 'Rent collection & transfers', 'Monthly financial report', 'Move-in / move-out handling'] }
     },
     vehicle: {
-      starter: { name: 'Guardian', tag: 'For the car that sits while you\'re away', monthly: 1499, features: ['Monthly health check \u2014 battery, tyres, fluids with photo report', '1 pickup & drop per month (service centre runs)', 'Document expiry tracker \u2014 PUC, insurance, registration alerts', 'Idle car care \u2014 engine warm-up runs once a week', 'WhatsApp updates after every visit'] },
-      standard: { name: 'Command', tag: 'Full control from 10,000 km away', monthly: 2999, features: ['Everything in Guardian, plus \u2014', '2 scheduled services/year included (oil, filters, basic parts)', '3 pickups & drops per month', 'Pre-arrival prep + post-departure check', 'Document renewal execution \u2014 we handle it, send you scans', '24\u00d77 emergency coordination \u2014 breakdown, towing, repair shop', 'Dedicated service manager, video call on request'] },
-      premium: { name: 'Concierge', tag: 'Your personal fleet manager in Chennai', monthly: 5499, features: ['Everything in Command, plus \u2014', 'Unlimited pickups & drops', 'Annual comprehensive service fully covered (parts at cost)', 'Chauffeur-on-call during India visits (up to 10 hrs/month)', 'Insurance claim assistance & negotiation', 'Car wash & detailing \u2014 bi-monthly', 'Priority same-day response on all requests', 'Monthly video health report \u2014 walk-around of the car'] }
+      starter: { name: 'Guardian', tag: 'For the car that sits while you\'re away', monthly: 1499, features: ['Monthly health check — battery, tyres, fluids with photo report', '1 pickup & drop per month (service centre runs)', 'Document expiry tracker — PUC, insurance, registration alerts', 'Idle car care — engine warm-up runs once a week', 'WhatsApp updates after every visit'] },
+      standard: { name: 'Command', tag: 'Full control from 10,000 km away', monthly: 2999, features: ['Everything in Guardian, plus —', '2 scheduled services/year included (oil, filters, basic parts)', '3 pickups & drops per month', 'Pre-arrival prep + post-departure check', 'Document renewal execution — we handle it, send you scans', '24×7 emergency coordination — breakdown, towing, repair shop', 'Dedicated service manager, video call on request'] },
+      premium: { name: 'Concierge', tag: 'Your personal fleet manager in Chennai', monthly: 5499, features: ['Everything in Command, plus —', 'Unlimited pickups & drops', 'Annual comprehensive service fully covered (parts at cost)', 'Chauffeur-on-call during India visits (up to 10 hrs/month)', 'Insurance claim assistance & negotiation', 'Car wash & detailing — bi-monthly', 'Priority same-day response on all requests', 'Monthly video health report — walk-around of the car'] }
     },
     parental: {
       starter: { name: 'Starter', tag: 'Well-Being Check', monthly: 4999, features: ['Weekly phone check-ins', 'Monthly health vitals report', 'Medicine ordering reminders', 'Emergency helpline access', 'Family update emails'] },
@@ -547,8 +751,7 @@
     this.removeEventListener('mousemove', tiltCard);
     this.removeEventListener('mouseleave', resetCard);
   }
-
-
 </script>
+
 </body>
 </html>
