@@ -92,18 +92,27 @@ nav {
 .nav-dropdown { position: relative; }
 .nav-dropdown > a { display: inline-flex; align-items: center; gap: 4px; }
 .nav-arrow { font-size: 0.65rem; transition: transform 0.3s; }
-.nav-dropdown:hover .nav-arrow { transform: rotate(180deg); }
+.nav-dropdown:hover .nav-arrow,
+.nav-dropdown:focus-within .nav-arrow { transform: rotate(180deg); }
 .nav-dropdown-menu {
-  position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%);
+  position: absolute; top: calc(100% + 12px); left: 50%;
   background: var(--white); border-radius: var(--radius-lg); padding: 12px;
   min-width: 240px; box-shadow: 0 20px 60px rgba(0,0,0,0.18);
   border: 1px solid rgba(0,0,0,0.06);
   opacity: 0; visibility: hidden; pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1), visibility 0.3s, transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   transform: translateX(-50%) translateY(8px);
   z-index: 200;
 }
-.nav-dropdown:hover .nav-dropdown-menu {
+/* Invisible hover bridge across the 12px gap between trigger and menu — without
+   it the cursor loses :hover mid-travel and the menu closes before the user
+   can click any option. */
+.nav-dropdown-menu::before {
+  content: ''; position: absolute; left: 0; right: 0;
+  top: -12px; height: 12px;
+}
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu {
   opacity: 1; visibility: visible; pointer-events: auto;
   transform: translateX(-50%) translateY(0);
 }
