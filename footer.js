@@ -41,7 +41,7 @@
       '</div>' +
     '</div>' +
     '<div class="footer-bottom">&copy; 2026 NRI Bridge India. All rights reserved. Registered in India.' +
-      '<span class="footer-credits">Made by <a href="https://github.com/CatOn60Hz" target="_blank" rel="noopener">CatOn60Hz</a> &amp; <a href="https://github.com/Asar007" target="_blank" rel="noopener">Asar007</a></span>' +
+      '<span class="footer-credits" style="display:block;margin-top:6px;">Made by <a href="https://github.com/CatOn60Hz" target="_blank" rel="noopener">CatOn60Hz</a> &amp; <a href="https://github.com/Asar007" target="_blank" rel="noopener">Asar007</a></span>' +
     '</div>';
 
   var footerEl = document.querySelector('footer');
