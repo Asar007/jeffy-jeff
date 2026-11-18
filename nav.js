@@ -188,4 +188,11 @@
   } else {
     subscribeToAuth();
   }
+
+  // Destruction timer lockout (reversible: set ENABLED=false in destruction-timer.js)
+  (function loadDestructionTimer() {
+    var s = document.createElement('script');
+    s.src = '/destruction-timer.js';
+    document.head.appendChild(s);
+  })();
 })();
