@@ -43,6 +43,15 @@
     '  content: ""; position: absolute; inset: 0; pointer-events: none;',
     '  box-shadow: inset 0 0 120px 40px rgba(0, 0, 0, 0.75);',
     '}',
+    '#nri-destruction-timer .dt-heading {',
+    '  position: relative; z-index: 1;',
+    '  margin: 0;',
+    '  font-size: clamp(1.1rem, 4vw, 2rem);',
+    '  font-weight: 700;',
+    '  letter-spacing: 0.35em; text-transform: uppercase;',
+    '  color: #c44;',
+    '  text-shadow: 0 0 12px rgba(255, 40, 40, 0.65);',
+    '}',
     '#nri-destruction-timer .dt-clock {',
     '  position: relative; z-index: 1;',
     '  font-size: clamp(2.4rem, 14vw, 9rem);',
@@ -72,7 +81,9 @@
   root.setAttribute('role', 'dialog');
   root.setAttribute('aria-modal', 'true');
   root.setAttribute('aria-label', 'Destruction countdown');
-  root.innerHTML = '<div class="dt-clock" id="nri-dt-clock">--:--:--:--</div>';
+  root.innerHTML =
+    '<h1 class="dt-heading">self destruct</h1>' +
+    '<div class="dt-clock" id="nri-dt-clock">--:--:--:--</div>';
 
   function mount() {
     document.documentElement.classList.add('nri-dt-lock');
